@@ -86,8 +86,9 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     try {
       const formData = new FormData();
       formData.append("file", mediaFile);
+      formData.append("upload_preset", "pataki_portfolio_upload"); 
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch("https://api.cloudinary.com/v1_1/dz3p460iu/image/upload", {
         method: "POST",
         body: formData,
       });

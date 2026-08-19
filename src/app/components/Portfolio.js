@@ -1,143 +1,177 @@
-export default function Portfolio({ portfolioData }) {
+"use client";
+
+import { getTemplateStyles } from "@/app/config/themeStyles"; // Ajusta la ruta según donde tengas tu archivo de estilos
+
+export default function Portfolio({ portfolioData, template }) {
   const imageSrc = portfolioData?.mainImage || portfolioData?.imagen || portfolioData?.image;
-  const currentTemplate = portfolioData?.template || "minimal";
+  
+  // Soporta tanto si viene dentro del objeto como por prop directo del componente padre
+  const currentTemplate = template || portfolioData?.template || "minimal";
 
-  // Clases y estilos dinámicos según la plantilla seleccionada
-  const getTemplateStyles = () => {
-    switch (currentTemplate) {
-      case "neon":
-        return {
-          container: "bg-slate-950 border-purple-500/50 shadow-lg shadow-purple-500/20",
-          title: "text-purple-400 font-extrabold tracking-wider",
-          badge: "bg-purple-500/10 text-purple-400 border border-purple-500/30",
-          imageWrapper: "border-purple-500/40 bg-purple-950/20",
-          socialIconBtn: "bg-purple-950/40 border-purple-500/40 text-purple-300 hover:bg-purple-900/60 hover:border-purple-400",
-          description: "text-purple-200/80 font-light italic"
-        };
-      case "classic":
-        return {
-          container: "bg-zinc-900 border-zinc-700 shadow-md",
-          title: "text-zinc-100 font-serif tracking-normal",
-          badge: "bg-zinc-800 text-zinc-300 border border-zinc-700",
-          imageWrapper: "border-zinc-700 bg-zinc-950",
-          socialIconBtn: "bg-zinc-800/80 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:border-zinc-500",
-          description: "text-zinc-300 font-serif"
-        };
-      case "minimal":
-      default:
-        return {
-          container: "bg-slate-900 border-slate-800 shadow-xl",
-          title: "text-white font-bold tracking-tight",
-          badge: "bg-slate-800 text-slate-300 border border-slate-700",
-          imageWrapper: "border-slate-800 bg-slate-950",
-          socialIconBtn: "bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:border-slate-700",
-          description: "text-slate-400 font-normal"
-        };
-    }
-  };
+  // Obtenemos los estilos centralizados desde el archivo de configuración
+  const styles = getTemplateStyles(currentTemplate);
 
-  const styles = getTemplateStyles();
-
-  // Función para detectar la red social y retornar el ícono correspondiente o el genérico
   const getSocialIcon = (url) => {
     if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
-    
     const lowerUrl = url.toLowerCase();
-    if (lowerUrl.includes("instagram.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg";
-    } else if (lowerUrl.includes("whatsapp.com") || lowerUrl.includes("wa.me")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg";
-    } else if (lowerUrl.includes("linkedin.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg";
-    } else if (lowerUrl.includes("github.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg";
-    } else if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg";
-    } else if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg";
-    } else if (lowerUrl.includes("facebook.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg";
-    } else if (lowerUrl.includes("tiktok.com")) {
-      return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/tiktok.svg";
-    }
+    if (lowerUrl.includes("instagram")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg";
+    if (lowerUrl.includes("wa.me") || lowerUrl.includes("whatsapp")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg";
+    if (lowerUrl.includes("linkedin")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg";
+    if (lowerUrl.includes("github")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg";
+    if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg";
+    if (lowerUrl.includes("youtube") || lowerUrl.includes("youtu.be")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg";
+    if (lowerUrl.includes("facebook")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg";
+    if (lowerUrl.includes("tiktok")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/tiktok.svg";
     
     return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
   };
 
-  // Obtenemos los links del estado; si no hay ninguno registrado, se puede dejar un array vacío
   const socialLinks = portfolioData?.socialLinks || [];
+  const pages = portfolioData?.pages || [];
+
+  // Filtrar únicamente los links destacados (`isFeatured === true`)
+  const featuredLinks = pages
+    .filter((page) => page.type === "link" && page.items)
+    .flatMap((page) => page.items)
+    .filter((item) => item.isFeatured === true);
 
   return (
-    <div className={`w-full max-w-xs border rounded-2xl p-5 space-y-4 transition-all duration-300 ${styles.container}`}>
-      
-      {/* Indicador de la plantilla activa en la vista previa */}
-      <div className="flex justify-between items-center">
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Estilo</span>
-        <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium uppercase ${styles.badge}`}>
+    <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200 p-6 rounded-3xl' : ''}`}>
+      <div className={`w-full max-w-xs border p-5 transition-all duration-300 ${styles.container}`}>
+        
+        {/* Etiqueta flotante absoluta */}
+        <span className={`text-[9px] py-0.5 font-medium uppercase tracking-widest z-20 ${styles.badge}`}>
           {currentTemplate}
         </span>
-      </div>
 
-      {/* 1. Vista previa de la Imagen Principal */}
-      <div className={`w-full h-44 rounded-xl overflow-hidden flex items-center justify-center border ${styles.imageWrapper}`}>
-        {imageSrc ? (
-          <img 
-            src={imageSrc} 
-            alt="Imagen Principal" 
-            className="w-full h-full object-cover"
-          />
+        {/* Cabecera dinámica */}
+        <div className={styles.headerLayout}>
+          
+          <div className={`overflow-hidden flex items-center justify-center z-10 ${styles.imageWrapper}`}>
+            {imageSrc ? (
+              <img 
+                src={imageSrc} 
+                alt="Perfil" 
+                className={`w-full h-full object-cover ${currentTemplate === 'glass' ? 'rounded-[1.8rem]' : ''}`}
+              />
+            ) : (
+              <span className="text-[10px] opacity-50 italic">Sin img</span>
+            )}
+          </div>
+
+          <div className={`w-full ${styles.textContainer}`}>
+            <h1 className={styles.title}>
+              {portfolioData?.title || "Tu Título Aquí"}
+            </h1>
+            <p className={`whitespace-pre-wrap ${styles.description}`}>
+              {portfolioData?.description || "Bio o descripción de tu portfolio..."}
+            </p>
+          </div>
+
+        </div>
+
+        {/* Redes Sociales */}
+        {socialLinks.length > 0 ? (
+          <div className={styles.socialWrapper}>
+            {socialLinks.map((linkItem, index) => {
+              const iconUrl = getSocialIcon(linkItem.url);
+              const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
+              
+              const iconFilter = styles.customIconFilter ? styles.customIconFilter : 
+                                 styles.invertIcon ? "invert(1)" : "none";
+              
+              const urlName = linkItem.url.replace(/https?:\/\/(www\.)?/i, "").split('/')[0];
+
+              return (
+                <a
+                  key={index}
+                  href={formattedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={linkItem.url}
+                  className={`flex items-center justify-center border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
+                >
+                  <img 
+                    src={iconUrl} 
+                    alt="Red social" 
+                    className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
+                    style={{ filter: iconFilter }} 
+                  />
+                  {styles.showSocialText && <span className="text-[10px] uppercase font-mono tracking-wider">[{urlName}]</span>}
+                </a>
+              );
+            })}
+          </div>
         ) : (
-          <span className="text-xs text-slate-500 italic">Sin imagen principal</span>
+          <div className="text-center py-2">
+            <span className="text-[10px] opacity-50 italic">Sin redes sociales</span>
+          </div>
         )}
+
+        {/* 1. Trabajos / Colecciones de Imágenes (Primero) */}
+        {pages.length > 0 && (
+          <div className="space-y-3 pt-3 mt-1 border-t border-slate-800/50">
+            <div className="space-y-2.5">
+              {pages.map((page) => {
+                if (page.type === "link") return null;
+
+                let previewImages = [];
+                if (page.type === "image" && page.galleries) {
+                  previewImages = page.galleries.flatMap(g => g.items || []).slice(0, 3);
+                }
+
+                return (
+                  <div key={page.id} className={`w-full p-3 transition-all duration-200 cursor-pointer ${styles.pageCard}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-xs truncate pr-2 ${styles.pageTitle}`}>{page.title}</span>
+                      <span className="text-[9px] uppercase tracking-wider opacity-50 shrink-0 font-bold">
+                        {currentTemplate === 'terminal' ? '[+]' : '→'}
+                      </span>
+                    </div>
+                    
+                    {previewImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-1.5 mt-2">
+                        {previewImages.map((img, idx) => (
+                          <div key={img.id || idx} className={`aspect-square overflow-hidden bg-slate-900 border border-slate-800/50 ${styles.miniImgShape}`}>
+                            <img src={img.url} alt="Preview" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Sección de Links Destacados (Al final, estilo Linktree) */}
+        {featuredLinks.length > 0 && (
+          <div className="space-y-2 pt-3 mt-3 border-t border-slate-800/50">
+            <p className="text-[10px] uppercase tracking-widest opacity-50 font-semibold mb-1">Links Destacados</p>
+            {featuredLinks.map((link) => {
+              const formattedUrl = link.url.startsWith("http") ? link.url : `https://${link.url}`;
+              return (
+                <a
+                  key={link.id}
+                  href={formattedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full p-3 transition-all duration-200 cursor-pointer block flex items-center justify-between gap-2 ${styles.pageCard}`}
+                >
+                  <span className={`text-xs font-semibold whitespace-normal break-words pr-1 ${styles.pageTitle}`}>
+                    {link.title}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider opacity-60 shrink-0 font-bold self-center">
+                    {currentTemplate === 'terminal' ? '[↗]' : '→'}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        )}
+
       </div>
-
-      {/* 2. Título Principal */}
-      <div className="space-y-1 text-center">
-        <h1 className={`text-base ${styles.title}`}>
-          {portfolioData?.title || "Título de tu Portfolio"}
-        </h1>
-      </div>
-
-      {/* 3. Botones dinámicos basados en los links del Admin Form */}
-      {socialLinks.length > 0 ? (
-        <div className="flex flex-wrap items-center justify-center gap-2.5 py-1">
-          {socialLinks.map((linkItem, index) => {
-            const iconUrl = getSocialIcon(linkItem.url);
-            // Aseguramos que la URL tenga un formato válido con http/https si el usuario no lo escribió
-            const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
-
-            return (
-              <a
-                key={index}
-                href={formattedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={linkItem.url}
-                className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
-              >
-                <img 
-                  src={iconUrl} 
-                  alt="Ícono de enlace" 
-                  className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
-                  style={{ filter: "invert(1)" }} 
-                />
-              </a>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-1">
-          <span className="text-[11px] text-slate-500 italic">No hay redes sociales configuradas</span>
-        </div>
-      )}
-
-      {/* 4. Descripción dinámica adaptada al template */}
-      <div className="text-center">
-        <p className={`text-xs leading-relaxed whitespace-pre-wrap ${styles.description}`}>
-          {portfolioData?.description || "Escribe una breve bio o descripción para tu portfolio..."}
-        </p>
-      </div>
-
     </div>
   );
 }

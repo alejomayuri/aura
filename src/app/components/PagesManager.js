@@ -176,6 +176,7 @@ export default function PagesManager({ portfolioData, onUpdatePages }) {
             <option value="image">Imagen / Galería</option>
             <option value="audio">Audio / Podcast</option>
             <option value="text">Texto / Artículo</option>
+            <option value="link">Enlace / Linktree</option>
           </select>
         </div>
 

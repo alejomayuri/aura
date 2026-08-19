@@ -1,7 +1,7 @@
 "use client";
 
 export default function DesignForm({ portfolioData, setPortfolioData, onSave, saving, saveMessage }) {
-  // Opciones de plantillas de ejemplo
+  // Opciones completas de plantillas (incluyendo las nuevas locuras experimentales)
   const templates = [
     {
       id: "minimal",
@@ -20,6 +20,97 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       name: "Clásico Profesional",
       description: "Estructura tradicional enfocada 100% en conversión y lectura.",
       previewColor: "bg-zinc-900 border-zinc-700"
+    },
+    {
+      id: "brutal",
+      name: "Brutalism",
+      description: "Diseño crudo, tipografías pesadas y contrastes directos estilo retro-web.",
+      previewColor: "bg-yellow-400 border-black"
+    },
+    {
+      id: "glass",
+      name: "Glassmorphism",
+      description: "Efecto de cristal esmerilado translúcido con desenfoques modernos.",
+      previewColor: "bg-white/30 backdrop-blur-md border-white/50"
+    },
+    {
+      id: "terminal",
+      name: "Terminal de Comandos",
+      description: "Estilo consola de código puro con tipografía monoespaciada verde.",
+      previewColor: "bg-black border-green-500/50"
+    },
+    {
+      id: "cyberpunk",
+      name: "Cyberpunk Tech",
+      description: "Estética futurista oscura con acentos cian y rosados eléctricos.",
+      previewColor: "bg-slate-950 border-cyan-500"
+    },
+    {
+      id: "aurora",
+      name: "Aurora Boreal",
+      description: "Tonos verde agua / teal fluidos, modernos y sumamente elegantes.",
+      previewColor: "bg-slate-900 border-teal-500/40"
+    },
+    {
+      id: "retro",
+      name: "Retro 8-Bit",
+      description: "Consola antigua cálida con bloques marcados en tonos ámbar.",
+      previewColor: "bg-amber-950 border-amber-600"
+    },
+    {
+      id: "luxury",
+      name: "Luxury Gold",
+      description: "Elegancia minimalista oscura con detalles y tipografías en oro fino.",
+      previewColor: "bg-neutral-950 border-amber-500/60"
+    },
+    // ================= NUEVOS TEMAS LOCOS Y EXTREMOS =================
+    {
+      id: "y2k",
+      name: "Y2K Retro-Futurista",
+      description: "Fucsia eléctrico, verde lima, bordes duros y vibración milenaria.",
+      previewColor: "bg-fuchsia-600 border-lime-300"
+    },
+    {
+      id: "holographic",
+      name: "Holográfico Tornasol",
+      description: "Gradientes tornasol, brillos translúcidos y bordes ultra redondeados.",
+      previewColor: "bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-500 border-white/80"
+    },
+    {
+      id: "comic",
+      name: "Comic / Pop-Art",
+      description: "Estilo historieta con bordes negros marcados y sombras duras.",
+      previewColor: "bg-yellow-200 border-black"
+    },
+    {
+      id: "zine",
+      name: "Zine / Papel Rasgado",
+      description: "Estética fanzine monocromática, punk analógico y texturas raw.",
+      previewColor: "bg-zinc-100 border-zinc-900"
+    },
+    {
+      id: "cyberpunk_tech",
+      name: "Cyberpunk Tech",
+      description: "Estética futurista oscura con acentos cian y rosados eléctricos.",
+      previewColor: "bg-slate-950 border-cyan-500"
+    },
+    {
+      id: "y2k_retro",
+      name: "Y2K Retro-Futurista",
+      description: "Fucsia eléctrico, verde lima, bordes duros y vibración milenaria.",
+      previewColor: "bg-fuchsia-600 border-lime-300"
+    },
+    {
+      id: "brutalist",
+      name: "Brutalist",
+      description: "Estética minimalista con elementos rústicos y formas geométricas.",
+      previewColor: "bg-lime-300 border-black"
+    },
+    {
+      id:"zen",
+      name: "Zen",
+      description: "Estética minimalista con elementos rústicos y formas geométricas.",
+      previewColor: "bg-lime-300 border-black"
     }
   ];
 
@@ -49,7 +140,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       </div>
 
       {/* Lista de Plantillas */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 max-h-[420px] overflow-y-auto pr-1">
         {templates.map((t) => {
           const isSelected = portfolioData.template === t.id || (!portfolioData.template && t.id === "minimal");
           
@@ -74,7 +165,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
               </div>
 
               {/* Indicador visual en miniatura */}
-              <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${t.previewColor}`}>
+              <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ml-3 ${t.previewColor}`}>
                 <div className={`w-4 h-4 rounded-full ${isSelected ? "bg-purple-400" : "bg-slate-700"}`} />
               </div>
             </div>
@@ -82,7 +173,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
         })}
       </div>
 
-      {/* Botón de Guardar limpio (Sin pasarle parámetros de eventos) */}
+      {/* Botón de Guardar limpio */}
       <button
         onClick={() => {
           if (typeof onSave === "function") {
