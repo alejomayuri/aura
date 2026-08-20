@@ -32,8 +32,8 @@ export default function RegisterPage() {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      // Redirigir al panel de administración tras registrarse con éxito
-      router.push("/admin");
+      // Redirigir a la página dedicada para escoger su URL personalizada
+      router.push("/admin/setup");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
         setError("Este correo electrónico ya está registrado.");
