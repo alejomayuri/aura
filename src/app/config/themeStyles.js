@@ -3,6 +3,7 @@ export const getTemplateStyles = (currentTemplate) => {
     // ================= NUEVOS TEMAS LOCOS Y EXTREMOS =================
     case "zen":
     return {
+        bgScreen: "bg-[#fdfbf7] min-h-screen flex items-center justify-center",
         container: "bg-[#f5f4f0] border border-[#d1cfc5] shadow-sm rounded-none relative pt-14 mt-8 font-serif",
         badge: "bg-[#e3e1d8] text-[#333] border border-[#c7c5bc] rounded-none px-3 absolute top-4 right-4 text-[10px] tracking-widest uppercase",
         headerLayout: "gap-2 flex flex-col items-center",
@@ -19,6 +20,7 @@ export const getTemplateStyles = (currentTemplate) => {
     };
     case "brutalist":
     return {
+        bgScreen: "bg-neutral-900 min-h-screen flex items-center justify-center",
         container: "bg-lime-300 border-4 border-black shadow-[8px_8px_0px_0px_#000000] rounded-none relative pt-14 mt-8",
         badge: "bg-black text-lime-300 font-extrabold border-2 border-black rounded-none px-3 absolute top-4 right-4 shadow-[3px_3px_0px_0px_#fff]",
         headerLayout: "gap-2 flex flex-col items-center",
@@ -35,7 +37,8 @@ export const getTemplateStyles = (currentTemplate) => {
     };
     case "y2k_retro":
     return {
-        container: "bg-gradient-to-tr from-purple-900 via-fuchsia-800 to-pink-600 border-4 border-pink-300 shadow-[0_0_30px_rgba(236,72,153,0.6)] rounded-[40px] relative pt-14 mt-8",
+        bgScreen: "bg-purple-950 min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-900 via-purple-950 to-black",
+        container: "bg-gradient-to-tr from-purple-900 via-fuchsia-800 to-pink-600 border-4 border-pink-300 shadow-[0_0_30px_rgba(236,72,153,0.6)] rounded-t-[40px] relative pt-14 mt-8",
         badge: "bg-pink-300 text-purple-950 font-black border-2 border-white rounded-full px-4 absolute top-4 right-4 shadow-md animate-pulse",
         headerLayout: "gap-2 flex flex-col items-center",
         description: "text-pink-200 font-extrabold text-xs tracking-tight text-center drop-shadow",
@@ -51,6 +54,7 @@ export const getTemplateStyles = (currentTemplate) => {
     };
     case "cyberpunk_tech":
     return {
+        bgScreen: "bg-zinc-950 min-h-screen flex items-center justify-center bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px]",
         container: "bg-black border-2 border-yellow-400 shadow-[0_0_25px_rgba(234,179,8,0.5)] rounded-none relative pt-14 mt-8 uppercase font-mono",
         badge: "bg-yellow-400 text-black font-extrabold border border-yellow-300 rounded-none px-3 absolute top-4 right-4 rotate-2 shadow-[2px_2px_0px_0px_#fff]",
         headerLayout: "gap-2 flex flex-col items-center",
@@ -67,6 +71,7 @@ export const getTemplateStyles = (currentTemplate) => {
     };
     case "y2k":
       return {
+        bgScreen: "bg-fuchsia-950 min-h-screen flex items-center justify-center",
         container: "bg-fuchsia-600 border-4 border-lime-300 shadow-[10px_10px_0px_0px_#bef264] rounded-none relative pt-12 transform -rotate-1",
         badge: "bg-lime-300 text-fuchsia-950 font-black tracking-widest text-[10px] px-3 py-1 absolute top-2 right-2 border-2 border-fuchsia-950",
         headerLayout: "flex flex-col items-center",
@@ -83,7 +88,8 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "holographic":
       return {
-        container: "bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-500 border-2 border-white/80 shadow-[0_0_40px_rgba(236,72,153,0.5)] rounded-[3rem] relative pt-16 overflow-hidden backdrop-blur-2xl",
+        bgScreen: "bg-slate-950 min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-950 via-purple-950 to-slate-900",
+        container: "bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-500 border-2 border-white/80 shadow-[0_0_40px_rgba(236,72,153,0.5)] rounded-t-[3.5rem] relative pt-16 overflow-hidden backdrop-blur-2xl",
         badge: "bg-white/30 text-white font-bold backdrop-blur-md border border-white/50 rounded-full px-4 absolute top-4 right-4 text-[10px] tracking-widest shadow-lg",
         headerLayout: "flex flex-col items-center",
         description: "text-white font-bold text-xs tracking-tight text-center",
@@ -99,7 +105,8 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "comic":
       return {
-        container: "bg-yellow-200 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] rounded-[2rem] relative pt-12 overflow-hidden",
+        bgScreen: "bg-sky-400 min-h-screen flex items-center justify-center",
+        container: "bg-yellow-200 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] rounded-t-[2rem] relative pt-12 overflow-hidden",
         badge: "bg-red-600 text-yellow-200 font-black tracking-widest uppercase border-2 border-black absolute top-3 right-4 px-3 py-0.5 rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -rotate-3",
         headerLayout: "flex flex-col items-center",
         description: "text-black font-bold text-xs tracking-tight text-center",
@@ -115,6 +122,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "zine":
       return {
+        bgScreen: "bg-zinc-300 min-h-screen flex items-center justify-center",
         container: "bg-zinc-100 border-2 border-dashed border-zinc-900 shadow-[8px_8px_0px_0px_#18181b] rounded-none relative pt-12 grayscale contrast-125",
         badge: "bg-black text-white font-mono text-[9px] uppercase px-2 py-0.5 absolute top-2 right-2 rounded-none",
         headerLayout: "flex flex-col items-start px-2",
@@ -134,6 +142,7 @@ export const getTemplateStyles = (currentTemplate) => {
     // ================= TEMAS ANTERIORES =================
     case "neon":
       return {
+        bgScreen: "bg-slate-950 min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]",
         container: "bg-slate-950 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] rounded-none border-x-2 border-y-0 relative overflow-hidden pt-10",
         badge: "bg-purple-900/50 text-purple-300 border border-purple-500/50 rounded-none absolute top-3 right-4",
         headerLayout: "flex flex-col",
@@ -150,7 +159,8 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "classic":
       return {
-        container: "bg-zinc-900 border-zinc-700 shadow-md rounded-sm relative pt-12",
+        bgScreen: "bg-zinc-950 min-h-screen flex items-center justify-center",
+        container: "bg-zinc-900 border-zinc-700 shadow-md rounded-t-sm relative pt-12",
         badge: "bg-zinc-800 text-zinc-300 border border-zinc-700 rounded-sm font-serif absolute top-3 right-4",
         headerLayout: "flex flex-row items-center gap-4 mb-2",
         description: "text-zinc-400 font-serif text-sm tracking-wide text-center",
@@ -166,6 +176,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "brutal":
       return {
+        bgScreen: "bg-zinc-900 min-h-screen flex items-center justify-center",
         container: "bg-yellow-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none relative pt-12",
         badge: "bg-white text-black border-2 border-black font-black uppercase absolute top-3 right-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
         headerLayout: "flex flex-col items-start gap-2",
@@ -182,7 +193,8 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "glass":
       return {
-        container: "bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] rounded-[2.5rem] relative overflow-hidden pt-14",
+        bgScreen: "bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200",
+        container: "bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] rounded-t-[2.5rem] relative overflow-hidden pt-14",
         badge: "bg-white/20 text-slate-700 backdrop-blur-md border border-white/50 rounded-full absolute top-4 right-5 px-3 py-1 shadow-sm",
         headerLayout: "flex flex-col items-center gap-3 pt-2",
         description: "text-slate-700 font-bold text-xs tracking-tight text-center",
@@ -198,6 +210,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "terminal":
       return {
+        bgScreen: "bg-zinc-950 min-h-screen flex items-center justify-center",
         container: "bg-black border border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.1)] rounded-none relative font-mono pt-10",
         badge: "bg-black text-green-400 border border-green-500/50 absolute top-2 right-2 text-[9px] px-2",
         headerLayout: "flex flex-col items-start gap-3",
@@ -216,6 +229,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "cyberpunk":
       return {
+        bgScreen: "bg-slate-950 min-h-screen flex items-center justify-center bg-[linear-gradient(to_right,#06b6d410_1px,transparent_1px),linear-gradient(to_bottom,#06b6d410_1px,transparent_1px)] bg-[size:24px_24px]",
         container: "bg-slate-950 border-2 border-cyan-500/60 shadow-[0_0_20px_rgba(6,182,212,0.2)] rounded-none relative pt-12",
         badge: "bg-cyan-500 text-slate-950 font-black tracking-widest text-[9px] px-2 py-0.5 absolute top-2 right-2",
         headerLayout: "flex flex-col items-start",
@@ -232,7 +246,8 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "aurora":
       return {
-        container: "bg-slate-900/90 border border-teal-500/30 shadow-[0_0_30px_rgba(20,184,166,0.15)] rounded-2xl relative pt-12 overflow-hidden",
+        bgScreen: "bg-slate-950 min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-teal-950 via-slate-950 to-black",
+        container: "bg-slate-900/90 border border-teal-500/30 shadow-[0_0_30px_rgba(20,184,166,0.15)] rounded-t-2xl relative pt-12 overflow-hidden",
         badge: "bg-teal-950 text-teal-300 border border-teal-500/40 rounded-full px-3 absolute top-3 right-4",
         headerLayout: "flex flex-col items-center gap-2",
         description: "text-teal-300 font-bold text-xs tracking-tight text-center",
@@ -249,6 +264,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "retro":
       return {
+        bgScreen: "bg-stone-950 min-h-screen flex items-center justify-center",
         container: "bg-amber-950/40 border-2 border-amber-600/60 shadow-[4px_4px_0px_0px_rgba(217,119,6,0.4)] rounded-none relative pt-12 font-mono",
         badge: "bg-amber-600 text-amber-950 font-bold text-[9px] px-2 absolute top-2 right-2 rounded-none uppercase",
         headerLayout: "flex flex-row items-center gap-3 px-3",
@@ -265,6 +281,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "luxury":
       return {
+        bgScreen: "bg-black min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black",
         container: "bg-neutral-950 border border-amber-500/40 shadow-2xl rounded-none relative pt-14",
         badge: "bg-neutral-900 text-amber-400 border border-amber-500/30 rounded-none px-3 absolute top-3 right-4 tracking-widest text-[9px] uppercase",
         headerLayout: "flex flex-col items-center text-center",
@@ -283,7 +300,8 @@ export const getTemplateStyles = (currentTemplate) => {
     case "minimal":
     default:
       return {
-        container: "bg-slate-900 border-slate-800 shadow-xl rounded-3xl relative pt-14 mt-8",
+        bgScreen: "bg-slate-950 min-h-screen flex items-center justify-center",
+        container: "bg-slate-900 border-slate-800 shadow-xl rounded-t-3xl relative pt-14 mt-8",
         badge: "bg-slate-800 text-slate-300 border border-slate-700 rounded-full px-3 absolute top-4 right-4",
         headerLayout: "gap-2 flex flex-col items-center",
         description: "text-slate-700 font-bold text-xs tracking-tight text-center",

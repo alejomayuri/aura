@@ -66,7 +66,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     // ================= NUEVOS TEMAS LOCOS Y EXTREMOS =================
     {
       id: "y2k",
-      name: "Y2K Retro-Futurista",
+      name: "Y2K",
       description: "Fucsia eléctrico, verde lima, bordes duros y vibración milenaria.",
       previewColor: "bg-fuchsia-600 border-lime-300"
     },
