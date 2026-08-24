@@ -1,7 +1,7 @@
 "use client";
 
 import { getTemplateStyles } from "@/app/config/themeStyles";
-import PortfolioLayout from "@/app/components/PortfolioLayout"; // 👈 Importamos el layout compartido
+import PortfolioLayout from "@/app/components/PortfolioLayout";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

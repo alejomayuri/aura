@@ -36,17 +36,15 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
   return (
     <main className={`${styles.bgScreen || "min-h-screen bg-slate-950 relative"} pt-0 xl:pt-12 flex flex-col items-center justify-start`}>
       
-      {/* Menú y Overlay con desenfoque, animación suave y control de eventos */}
+      {/* Menú y Overlay: Se oculta visualmente por completo y bloquea interacción si no está abierto */}
       {isPortfolioPage && (
         <div className={`fixed inset-0 z-[100] flex justify-center items-end transition-all duration-300 ${
-          isMenuOpen ? "pointer-events-auto" : "pointer-events-none"
+          isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}>
           {/* Overlay oscuro con desenfoque */}
           <div 
             onClick={() => setIsMenuOpen(false)}
-            className={`absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ${
-              isMenuOpen ? "opacity-100" : "opacity-0"
-            }`}
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300"
           />
 
           {/* Menú deslizante */}

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import PagePreview from "@/app/components/PagePreview";
-import PortfolioLayout from "@/app/components/PortfolioLayout"; // 👈 Importamos nuestro nuevo layout
 
 export default function PublicCustomPage({ params }) {
   const resolvedParams = use(params);
