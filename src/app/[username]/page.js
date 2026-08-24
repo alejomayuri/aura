@@ -3,8 +3,7 @@
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Portfolio from "@/app/components/Portfolio";
-import { getTemplateStyles } from "@/app/config/themeStyles"; // Asegúrate de ajustar esta ruta según la ubicación real de tu función de estilos
-import { db } from "@/lib/firebase"; // Asegúrate de que esta sea la ruta correcta a tu instancia de Firebase
+import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function UserPortfolioPage({ params }) {
@@ -75,17 +74,12 @@ export default function UserPortfolioPage({ params }) {
     );
   }
 
-  // Obtenemos el template actual y sus estilos correspondientes
   const currentTemplate = portfolioData.template || "minimal";
-  const styles = getTemplateStyles(currentTemplate);
 
   return (
-    <main className={`${styles.bgScreen || "min-h-screen bg-slate-950 relative"} pt-0 xl:pt-12`}>
-      {/* Renderizamos el componente Portfolio adaptando el fondo de pantalla general por template */}
-        <Portfolio 
-          portfolioData={portfolioData} 
-          template={currentTemplate} 
-        />
-    </main>
+      <Portfolio 
+        portfolioData={portfolioData} 
+        template={currentTemplate} 
+      />
   );
 }

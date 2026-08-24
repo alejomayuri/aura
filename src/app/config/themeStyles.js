@@ -115,7 +115,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-black font-black uppercase text-xl tracking-tighter drop-shadow-[2px_2px_0px_#fff]",
         socialWrapper: "flex flex-wrap items-center justify-center gap-2.5 py-3 border-y-4 border-black my-2 bg-white/50",
         socialIconBtn: "w-10 h-10 bg-cyan-400 border-3 border-black text-black hover:bg-red-500 hover:text-white transition-all rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] flex items-center justify-center font-bold",
-        pageCard: "bg-white border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left mb-2",
+        pageCard: "bg-white border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
         pageTitle: "text-black font-black uppercase text-xs tracking-tight",
         miniImgShape: "rounded-lg border-2 border-black",
         invertIcon: false
@@ -132,7 +132,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-zinc-900 font-mono font-black tracking-widest text-lg uppercase underline decoration-2",
         socialWrapper: "flex flex-col gap-1 py-3 border-y border-zinc-900 my-2 w-full",
         socialIconBtn: "w-full py-1.5 px-3 bg-zinc-200 border border-black text-black hover:bg-black hover:text-white transition-colors text-xs flex items-center justify-start gap-2 rounded-none shadow-[2px_2px_0px_0px_#000]",
-        pageCard: "bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:bg-zinc-200 transition-colors text-left rounded-none mb-2",
+        pageCard: "bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:bg-zinc-200 transition-colors text-left rounded-none",
         pageTitle: "text-black font-mono font-bold text-xs uppercase",
         miniImgShape: "rounded-none border border-black",
         invertIcon: false,

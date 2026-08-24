@@ -5,9 +5,9 @@ import Link from "next/link";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import PagePreview from "@/app/components/PagePreview";
+import PortfolioLayout from "@/app/components/PortfolioLayout"; // 👈 Importamos nuestro nuevo layout
 
 export default function PublicCustomPage({ params }) {
-  // Resolvemos los parámetros dinámicos de la URL en Next.js (App Router)
   const resolvedParams = use(params);
   const slug = resolvedParams.username?.toLowerCase().trim();
   const pageSlug = resolvedParams.pageSlug?.toLowerCase().trim();
@@ -21,7 +21,6 @@ export default function PublicCustomPage({ params }) {
     const fetchPortfolioAndPage = async () => {
       setLoading(true);
       try {
-        // Consultamos en la colección de portfolios filtrando por el campo "slug"
         const q = query(collection(db, "portfolios"), where("slug", "==", slug));
         const querySnapshot = await getDocs(q);
 
@@ -31,7 +30,6 @@ export default function PublicCustomPage({ params }) {
           const userData = querySnapshot.docs[0].data();
           setPortfolioData(userData);
 
-          // Buscamos dentro del array "pages" la página que coincida con el pageSlug o id
           const foundPage = userData?.pages?.find(
             (p) => p.slug === pageSlug || p.id === pageSlug
           );
@@ -55,7 +53,6 @@ export default function PublicCustomPage({ params }) {
     }
   }, [slug, pageSlug]);
 
-  // Pantalla de carga
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center">
@@ -65,7 +62,6 @@ export default function PublicCustomPage({ params }) {
     );
   }
 
-  // Pantalla de error 404 si no se encuentra el portfolio o la subpágina
   if (error || !portfolioData || !targetPage) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
@@ -85,22 +81,6 @@ export default function PublicCustomPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col items-center">
-      {/* Navegación superior para regresar al portfolio principal */}
-      <nav className="w-full max-w-xl mb-6 flex items-center justify-between">
-        <Link 
-          href={`/${slug}`} 
-          className="text-xs uppercase font-bold tracking-widest text-slate-400 hover:text-white transition-colors cursor-pointer"
-        >
-          ← Volver a {portfolioData?.title || slug}
-        </Link>
-        <span className="text-xs font-mono text-slate-600">/{slug}/{pageSlug}</span>
-      </nav>
-
-      {/* Renderizado idéntico usando tu componente PagePreview */}
-      <div className="w-full max-w-xl flex flex-col items-center">
         <PagePreview page={targetPage} portfolioData={portfolioData} />
-      </div>
-    </main>
   );
 }
