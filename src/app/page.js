@@ -2,15 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import Portfolio from "@/app/components/Portfolio"; // Importación correcta de tu componente real
+import Portfolio from "@/app/components/Portfolio";
 
-// --- COMPONENTE AUXILIAR: Efecto de Escritura Robusto (Typer Animation) ---
 function UrlTyper() {
   const urls = ["opal-home", "fromsoftware", "studio-amber", "buenabakery", "maria-dev"];
   const [displayText, setDisplayText] = useState("");
   const [showCursor, setShowCursor] = useState(true);
-  
-  // Usamos useRef para mantener el índice actual sin re-renderizados innecesarios del efecto
   const indexRef = useRef(0);
 
   useEffect(() => {
@@ -22,12 +19,10 @@ function UrlTyper() {
       const currentWord = urls[indexRef.current];
 
       if (!isDeleting) {
-        // Escribiendo caracteres uno a uno
         currentChar++;
         setDisplayText(currentWord.substring(0, currentChar));
 
         if (currentChar === currentWord.length) {
-          // Palabra completa: pausa de 2 segundos antes de empezar a borrar
           timeoutId = setTimeout(() => {
             isDeleting = true;
             typeLoop();
@@ -36,12 +31,10 @@ function UrlTyper() {
           timeoutId = setTimeout(typeLoop, 100);
         }
       } else {
-        // Borrando caracteres uno a uno
         currentChar--;
         setDisplayText(currentWord.substring(0, currentChar));
 
         if (currentChar === 0) {
-          // Palabra totalmente borrada: pasar a la siguiente palabra
           isDeleting = false;
           indexRef.current = (indexRef.current + 1) % urls.length;
           timeoutId = setTimeout(typeLoop, 400);
@@ -52,11 +45,9 @@ function UrlTyper() {
     };
 
     timeoutId = setTimeout(typeLoop, 100);
-
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Efecto independiente para el parpadeo del cursor
   useEffect(() => {
     const cursorTimer = setInterval(() => {
       setShowCursor((prev) => !prev);
@@ -65,17 +56,65 @@ function UrlTyper() {
   }, []);
 
   return (
-    <div className="font-mono text-xl md:text-2xl bg-slate-950 border border-slate-800 rounded-xl px-5 py-3 inline-flex items-center shadow-inner mb-6 h-14">
-      <span className="text-slate-500 select-none">aura.com/</span>
-      <span className="text-purple-400 font-bold">{displayText}</span>
-      <span className={`text-purple-400 select-none ${showCursor ? 'opacity-100' : 'opacity-0'}`}>|</span>
+    <div className="font-mono text-2xl sm:text-3xl md:text-5xl bg-gradient-to-r from-purple-700 to-indigo-800 text-white rounded-2xl px-6 sm:px-10 py-5 inline-flex items-center shadow-lg mb-8 h-20 sm:h-24 border border-purple-400/30 max-w-full overflow-hidden">
+      <span className="text-purple-200 select-none truncate">lightjaus.com/</span>
+      <span className="font-bold text-white truncate">{displayText}</span>
+      <span className={`select-none text-purple-300 ${showCursor ? 'opacity-100' : 'opacity-0'}`}>|</span>
     </div>
   );
 }
-// --- FIN COMPONENTE AUXILIAR ---
+
+function WordRotator() {
+  const words = ["website", "link in bio", "tienda", "música", "visión", "trabajo", "presencia"];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false);
+      
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % words.length);
+        setIsVisible(true);
+      }, 300);
+      
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [words.length]);
+
+  return (
+    <span className="inline-block overflow-hidden py-1 align-bottom">
+      <span 
+        className={`inline-block bg-gradient-to-r from-purple-800 via-indigo-600 to-purple-600 bg-clip-text text-transparent transition-all duration-300 transform ${
+          isVisible 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 -translate-y-4'
+        }`}
+      >
+        {words[currentIndex]}
+      </span>
+    </span>
+  );
+}
 
 export default function LandingPage() {
   const [activeTheme, setActiveTheme] = useState("y2k");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const availableThemes = [
     { id: "y2k", name: "Y2K" },
@@ -102,7 +141,7 @@ export default function LandingPage() {
           {
             items: [
               { id: "g1", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=200" },
-              { id: "g2", url: "https://res.cloudinary.com/dz3p460iu/image/upload/v1787184411/c4u1bhy0xsboq85v9j4s.png" },
+              { id: "g2", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=200" },
               { id: "g3", url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=200" }
             ]
           }
@@ -122,98 +161,117 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-purple-500 selection:text-white relative overflow-hidden">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-purple-600 selection:text-white relative overflow-x-hidden font-sans text-base">
       
-      {/* Elementos decorativos animados de fondo */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-purple-600/15 rounded-full blur-[130px] pointer-events-none animate-pulse" />
-      <div className="absolute top-1/3 -right-20 w-[450px] h-[450px] bg-indigo-600/15 rounded-full blur-[110px] pointer-events-none" />
+      {/* --- NAVBAR FLOTANTE RESPONSIVE --- */}
+      <header className="fixed top-3 sm:top-4 inset-x-0 z-50 flex justify-center px-4 sm:px-6 pointer-events-none">
+        <div className={`pointer-events-auto transition-all duration-300 w-full max-w-6xl bg-white/90 backdrop-blur-md border border-purple-200/80 shadow-lg shadow-purple-950/5 flex items-center justify-between px-4 sm:px-6 h-18 sm:h-20 rounded-2xl ${
+          isScrolled ? 'py-2' : 'py-3'
+        }`}>
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <img 
+              src="/logo.png" 
+              alt="lightjaus Logo" 
+              className="h-12 sm:h-16 object-contain brightness-0" 
+            />
+          </div>
 
-      {/* --- NAVBAR --- */}
-      <header className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between relative z-10 transition-all">
-        <div className="flex items-center gap-2 group cursor-pointer">
-          <span className="text-xl font-black tracking-wider bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-            AURA
-          </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">
-            MVP
-          </span>
+          <div className="hidden md:flex items-center gap-6">
+            <Link 
+              href="/admin/login" 
+              className="text-base font-semibold text-slate-600 hover:text-purple-700 transition-colors px-4 py-2"
+            >
+              Iniciar sesión
+            </Link>
+            <Link 
+              href="/admin/register" 
+              className="text-base font-semibold px-6 py-3 bg-gradient-to-r from-purple-800 to-indigo-700 text-white rounded-xl shadow-md hover:opacity-95 transition-all shadow-purple-500/20"
+            >
+              Crear mi portfolio
+            </Link>
+          </div>
+
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-slate-700 hover:text-purple-800 focus:outline-none"
+            aria-label="Abrir menú"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/admin/login" 
-            className="text-sm font-medium text-slate-300 hover:text-white transition-colors px-4 py-2"
-          >
-            Iniciar sesión
-          </Link>
-          <Link 
-            href="/admin/register" 
-            className="text-sm font-medium px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl shadow-lg shadow-purple-600/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            Crear mi portfolio
-          </Link>
-        </div>
+        {mobileMenuOpen && (
+          <div className="absolute top-24 inset-x-4 sm:inset-x-6 bg-white/95 backdrop-blur-md border border-purple-200 rounded-2xl shadow-xl p-6 flex flex-col gap-4 pointer-events-auto md:hidden">
+            <Link 
+              href="/admin/login" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-semibold text-slate-700 hover:text-purple-700 py-2 text-center border-b border-purple-50"
+            >
+              Iniciar sesión
+            </Link>
+            <Link 
+              href="/admin/register" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-base font-semibold px-6 py-3 bg-gradient-to-r from-purple-800 to-indigo-700 text-white rounded-xl shadow-md text-center"
+            >
+              Crear mi portfolio
+            </Link>
+          </div>
+        )}
       </header>
 
-      {/* --- HERO SECTION CON ANIMACIÓN --- */}
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-20 text-center relative z-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-purple-300 backdrop-blur-md shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          Tu portfolio autogestionable en minutos
-        </div>
+      {/* --- HERO SECTION --- */}
+      <section className="w-full bg-white pt-36 sm:pt-40 pb-24 sm:pb-32 text-center relative">
+        <div className="max-w-5xl mx-auto px-6">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tight max-w-4xl mx-auto leading-[1.15] text-slate-900">
+            <div>Tu</div>
+            <div><WordRotator /></div>
+            <div>en un solo lugar.</div>
+          </h1>
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight max-w-3xl mx-auto leading-[1.1]">
-          Tu espacio online, <br />
-          <span className="bg-gradient-to-r from-purple-400 via-indigo-300 to-purple-500 bg-clip-text text-transparent">
-            a tu manera y sin código.
-          </span>
-        </h1>
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mt-6 sm:mt-2 font-normal leading-relaxed">
+            Un link para compartir tu trabajo, tu arte y tus proyectos desde tu Instagram, TikTok, YouTube o cualquier otra red social.
+          </p>
 
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mt-6">
-          Diseña una web única con tu propia URL personalizada. Muestra tu trabajo, tus enlaces clave y tus proyectos en un solo lugar.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-          <Link 
-            href="/admin/register" 
-            className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-xl shadow-purple-600/30 hover:scale-105 active:scale-95 transition-all text-center"
-          >
-            Empieza gratis
-          </Link>
-          <a 
-            href="#ejemplos" 
-            className="w-full sm:w-auto px-8 py-4 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 text-slate-300 font-semibold rounded-2xl hover:scale-105 active:scale-95 transition-all text-center backdrop-blur-md"
-          >
-            Ver ejemplos
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 mt-10 sm:mt-12">
+            <Link 
+              href="/admin/register" 
+              className="w-full sm:w-auto px-9 py-4 sm:py-5 bg-purple-900 text-white font-semibold text-base rounded-xl shadow-lg hover:bg-purple-800 transition-all text-center shadow-purple-900/20"
+            >
+              Empieza gratis
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* --- SECCIÓN INTERACTIVA CON TU COMPONENTE PORTFOLIO Y TEMAS REALES --- */}
-      <section className="max-w-6xl mx-auto px-6 pb-28 relative z-10">
-        <div className="p-4 md:p-8 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-2xl transition-all">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      {/* --- SECCIÓN INTERACTIVA --- */}
+      <section className="w-full bg-gradient-to-b from-purple-950 via-purple-900 to-indigo-950 py-20 sm:py-28 text-white relative">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* Panel de control izquierdo (Selector de Themes) */}
-            <div className="lg:col-span-6 space-y-4 text-left">
-              <span className="text-xs font-semibold uppercase tracking-widest text-purple-400">Control Total</span>
-              <h3 className="text-3xl font-bold">Un panel privado para gestionar todo tu contenido</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Modifica textos, alterna tus estilos visuales en tiempo real y organiza tanto tu galería de trabajos como tus enlaces clave tipo Linktree de forma totalmente intuitiva.
+            <div className="lg:col-span-6 space-y-6 text-left">
+              <h3 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">Un espacio digital que muestra quién eres</h3>
+              <p className="text-purple-200/90 text-base sm:text-lg md:text-xl leading-relaxed font-normal">
+                Modifica textos, alterna tus estilos visuales en tiempo real y organiza tanto tu galería de trabajos como tus enlaces de forma totalmente intuitiva.
               </p>
               
-              {/* Selector interactivo de Themes reales */}
-              <div className="pt-3">
-                <span className="text-xs font-medium text-slate-300 block mb-2">Prueba cambiar de theme en tiempo real:</span>
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="pt-4">
+                <span className="text-xs font-semibold text-purple-300 block mb-3">Prueba cambiar de theme en tiempo real:</span>
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   {availableThemes.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setActiveTheme(t.id)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
+                      className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-sm ${
                         activeTheme === t.id 
-                          ? 'bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-600/30 scale-105' 
-                          : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:scale-[1.02]'
+                          ? 'bg-white text-purple-950 font-bold shadow-md' 
+                          : 'bg-purple-900/50 text-purple-200 hover:bg-purple-800/80 border border-purple-700/50'
                       }`}
                     >
                       {t.name}
@@ -223,13 +281,132 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Renderizado de tu Componente Portfolio Real */}
-            <div className="lg:col-span-6 flex justify-center">
-              <div className="transition-all duration-300 hover:scale-[1.01]">
-                <Portfolio 
-                  portfolioData={samplePortfolioData} 
-                  template={activeTheme} 
-                />
+            <div className="lg:col-span-6 flex justify-center p-4 sm:p-8 backdrop-blur-sm overflow-x-auto">
+              <Portfolio 
+                portfolioData={samplePortfolioData} 
+                template={activeTheme} 
+              />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* --- BLOQUE: CUSTOMIZABLE EN MINUTOS --- */}
+      <section className="w-full bg-white py-20 sm:py-28 text-slate-900 border-b border-purple-50">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <UrlTyper />
+
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mt-2 text-slate-900 tracking-tight leading-[1.1]">Configúralo todo en cuestión de minutos</h2>
+          <p className="text-slate-600 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mt-6 font-normal leading-relaxed">
+            Elige tu dirección web única, añade tu imagen de perfil, carga tus enlaces y sube tus fotos de forma rápida. Sin configuraciones de servidores ni código complejo.
+          </p>
+
+          <div className="mt-10">
+            <Link 
+              href="/admin/register" 
+              className="inline-block w-full sm:w-auto px-9 py-4 sm:py-5 bg-purple-900 text-white font-semibold text-base rounded-xl shadow-lg hover:bg-purple-800 transition-all text-center shadow-purple-900/20"
+            >
+              Crear mi link ahora
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* --- BLOQUE: MULTIMEDIA (BENTO GRID REORGANIZADO - DISEÑO DINÁMICO) --- */}
+      <section className="w-full bg-purple-50/50 py-20 sm:py-32 text-slate-900 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            
+            {/* IZQUIERDA: BENTO GRID CON NUEVA DISTRIBUCIÓN ASIMÉTRICA */}
+            <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-4 auto-rows-[120px]">
+              
+              {/* Tarjeta 1: Links Clave (Vertical grande a la izquierda) */}
+              <div className="col-span-1 row-span-2 p-6 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-950 text-white rounded-3xl shadow-xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden group border border-purple-700/30">
+                <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl pointer-events-none" />
+                <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center text-xl font-bold backdrop-blur-md shadow-inner border border-white/10">
+                  🔗
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-base sm:text-lg text-white tracking-tight">Links Clave</h4>
+                  <p className="text-xs text-purple-200 mt-1">Redes y URLs importantes en un solo toque.</p>
+                </div>
+              </div>
+
+              {/* Tarjeta 2: Tienda E-commerce (Horizontal superior) */}
+              <div className="col-span-1 sm:col-span-2 row-span-1 p-5 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 text-white rounded-3xl shadow-lg flex items-center justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden border border-indigo-700/30">
+                <div className="absolute right-0 top-0 w-28 h-28 bg-indigo-500/10 rounded-full blur-xl pointer-events-none" />
+                <div className="relative z-10">
+                  <h4 className="font-bold text-sm sm:text-base text-white">E-commerce / Tienda</h4>
+                  <p className="text-[11px] text-purple-100 mt-0.5">Vende productos y recursos digitales directamente.</p>
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-white/15 text-white flex items-center justify-center text-lg font-bold backdrop-blur-sm border border-white/10 shrink-0 ml-3">
+                  🛍️
+                </div>
+              </div>
+
+              {/* Tarjeta 3: Software / Apps */}
+              <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-indigo-200 transition-all duration-300 group">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-base font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  💻
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900">Software</h4>
+                  <p className="text-[11px] text-slate-500">Apps y código.</p>
+                </div>
+              </div>
+
+              {/* Tarjeta 4: Galerías */}
+              <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-purple-200 transition-all duration-300 group">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-800 flex items-center justify-center text-base font-bold group-hover:bg-purple-900 group-hover:text-white transition-colors">
+                  🖼️
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900">Galerías</h4>
+                  <p className="text-[11px] text-slate-500">Fotos y arte.</p>
+                </div>
+              </div>
+
+              {/* Tarjeta 5: Música */}
+              <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-purple-200 transition-all duration-300 group">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-800 flex items-center justify-center text-base font-bold group-hover:bg-purple-900 group-hover:text-white transition-colors">
+                  🎵
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900">Música</h4>
+                  <p className="text-[11px] text-slate-500">Pistas y audios.</p>
+                </div>
+              </div>
+
+              {/* Tarjeta 6: Videos (Horizontal inferior) */}
+              <div className="col-span-1 sm:col-span-2 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex items-center justify-between hover:scale-[1.01] hover:border-purple-200 transition-all duration-300 group">
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900">Videos & Reels</h4>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Integra tus clips y contenido audiovisual.</p>
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-purple-900 text-white flex items-center justify-center text-base font-bold shadow-inner shrink-0 ml-3">
+                  🎬
+                </div>
+              </div>
+
+            </div>
+
+            {/* DERECHA: TEXTO Y CALL TO ACTION */}
+            <div className="lg:col-span-6 text-left space-y-6">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+                Comparte cualquier tipo de contenido
+              </h2>
+              <p className="text-slate-600 text-lg sm:text-xl leading-relaxed font-normal">
+                Organiza bloques de links clave para tus redes, añade herramientas de software, tu tienda online, galerías visuales o elementos multimedia en un diseño único y profesional.
+              </p>
+              
+              <div className="pt-4">
+                <Link 
+                  href="/admin/register" 
+                  className="inline-block px-9 py-4 sm:py-5 bg-purple-900 text-white font-semibold text-base rounded-xl shadow-lg hover:bg-purple-800 transition-all shadow-purple-900/20 text-center"
+                >
+                  Diseña tu espacio multimedia
+                </Link>
               </div>
             </div>
 
@@ -237,159 +414,110 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- BLOQUE: CUSTOMIZABLE EN MINUTOS (CON ANIMACIÓN DE URL) --- */}
-      <section className="max-w-5xl mx-auto px-6 pb-24 relative z-10">
-        <div className="bg-gradient-to-r from-purple-900/20 via-slate-900/40 to-indigo-900/20 border border-slate-800/80 rounded-3xl p-8 md:p-12 text-center backdrop-blur-md hover:border-purple-500/30 transition-all hover:scale-[1.01]">
-          
-          {/* Componente de tipado seguro */}
-          <UrlTyper />
-
-          <span className="block text-xs font-semibold uppercase tracking-widest text-purple-400">Sin complicaciones</span>
-          <h2 className="text-3xl font-extrabold mt-1">Configúralo todo en cuestión de minutos</h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto mt-3">
-            Elige tu dirección web única, añade tu imagen de perfil, carga tus enlaces y sube tus fotos de forma rápida. Sin configuraciones de servidores ni código complejo.
-          </p>
-        </div>
-      </section>
-
-      {/* --- BLOQUE: MULTIMEDIA --- */}
-      <section className="max-w-6xl mx-auto px-6 pb-28 relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-semibold uppercase tracking-widest text-purple-400">Versatilidad total</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold">Comparte cualquier tipo de contenido</h2>
-          <p className="text-slate-400 text-sm mt-2">No te limites a texto. Muestra tu talento con múltiples formatos multimedia.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="p-6 bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-2xl text-center hover:scale-105 transition-all">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-xl mb-4">
-              🖼️
-            </div>
-            <h4 className="font-bold text-slate-100 mb-1">Imágenes y Galerías</h4>
-            <p className="text-xs text-slate-400">Ideal para fotografía, tatuajes, arte y diseño visual.</p>
-          </div>
-
-          <div className="p-6 bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-2xl text-center hover:scale-105 transition-all">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 text-xl mb-4">
-              🎬
-            </div>
-            <h4 className="font-bold text-slate-100 mb-1">Videos y Reels</h4>
-            <p className="text-xs text-slate-400">Muestra tus clips destacados y proyectos audiovisuales.</p>
-          </div>
-
-          <div className="p-6 bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-2xl text-center hover:scale-105 transition-all">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 text-xl mb-4">
-              🎵
-            </div>
-            <h4 className="font-bold text-slate-100 mb-1">Música y Podcasts</h4>
-            <p className="text-xs text-slate-400">Comparte tus pistas de audio, producciones o episodios.</p>
-          </div>
-
-          <div className="p-6 bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-2xl text-center hover:scale-105 transition-all">
-            <div className="w-12 h-12 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl mb-4">
-              🔗
-            </div>
-            <h4 className="font-bold text-slate-100 mb-1">Enlaces Clave</h4>
-            <p className="text-xs text-slate-400">Redes sociales, tienda online y eventos en un solo lugar.</p>
-          </div>
-        </div>
-      </section>
-
       {/* --- BLOQUE: REDES Y ESTADÍSTICAS --- */}
-      <section className="max-w-6xl mx-auto px-6 pb-28 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="p-8 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl flex flex-col justify-between hover:border-slate-700 transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-purple-400">Difusión masiva</span>
-            <h3 className="text-2xl font-bold mt-2">Comparte en todas tus redes sociales</h3>
-            <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-              Coloca tu enlace único <code className="text-purple-300 font-mono">aura.com/tu-nombre</code> en tu biografía de Instagram, TikTok, Twitter o LinkedIn y redirige a todo tu público a un portfolio profesional.
-            </p>
+      <section className="w-full bg-white py-20 sm:py-28 text-slate-900">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
+          <div className="p-8 sm:p-12 bg-gradient-to-br from-purple-900 to-indigo-950 text-white rounded-3xl flex flex-col justify-between shadow-xl relative overflow-hidden">
+            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-purple-600/20 rounded-full blur-2xl pointer-events-none" />
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 bg-white/10 text-purple-200 rounded-full inline-block mb-6 border border-white/10">Difusión masiva</span>
+              <h3 className="text-3xl md:text-4xl font-bold mt-2 text-white leading-[1.1]">Comparte en todas tus redes sociales</h3>
+              <p className="text-purple-100/90 text-base sm:text-lg md:text-xl mt-6 leading-relaxed font-normal">
+                Coloca tu enlace único <code className="bg-purple-950/80 text-purple-300 px-2 py-0.5 sm:px-3 sm:py-1 rounded-md font-mono text-xs sm:text-sm font-bold border border-purple-700/50">lightjaus.com/tu-nombre</code> en tu biografía de Instagram, TikTok, Twitter o LinkedIn y redirige a todo tu público a un portfolio profesional.
+              </p>
+            </div>
+            <div className="mt-10 pt-6 border-t border-white/10 flex items-center gap-3 text-sm text-purple-300 font-mono font-semibold">
+              <span>#LinkEnBio</span> • <span>#Viral</span> • <span>#Pro</span>
+            </div>
           </div>
-          <div className="mt-6 pt-4 border-t border-slate-800 flex items-center gap-3 text-xs text-purple-300 font-mono">
-            <span>#LinkEnBio</span> • <span>#Viral</span> • <span>#Pro</span>
-          </div>
-        </div>
 
-        <div className="p-8 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl flex flex-col justify-between hover:border-slate-700 transition-all hover:scale-[1.01]">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-indigo-400">Métricas claras</span>
-            <h3 className="text-2xl font-bold mt-2">Visualiza estadísticas de tus visitas</h3>
-            <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-              Monitoreá cuántas personas visitan tu perfil, qué enlaces hacen clic con más frecuencia y descubre qué contenido genera más interacción en tu comunidad.
-            </p>
-          </div>
-          <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>Visitas únicas</span>
-            <span className="text-emerald-400 font-bold">+1,240 este mes</span>
+          <div className="p-8 sm:p-12 bg-gradient-to-br from-slate-900 to-purple-950 text-white rounded-3xl flex flex-col justify-between shadow-xl relative overflow-hidden">
+            <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-indigo-600/20 rounded-full blur-2xl pointer-events-none" />
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest px-3.5 py-1.5 bg-purple-800/60 text-purple-200 rounded-full inline-block mb-6 border border-purple-500/30">Métricas claras</span>
+              <h3 className="text-3xl md:text-4xl font-bold mt-2 text-white leading-[1.1]">Visualiza estadísticas de tus visitas</h3>
+              <p className="text-slate-300 text-base sm:text-lg md:text-xl mt-6 leading-relaxed font-normal">
+                Monitorea cuántas personas visitan tu perfil, qué enlaces hacen clic con más frecuencia y descubre qué contenido genera más interacción en tu comunidad.
+              </p>
+            </div>
+            <div className="mt-10 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-300 font-mono font-semibold">
+              <span>Visitas únicas</span>
+              <span className="bg-purple-900/80 text-purple-200 px-4 py-1.5 rounded-full border border-purple-500/30">+1,240 este mes</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* --- CREADORES QUE CONFIAN --- */}
-      <section id="ejemplos" className="max-w-6xl mx-auto px-6 pb-28 relative z-10 text-center">
-        <span className="text-xs font-semibold uppercase tracking-widest text-purple-400 block mb-3">Inspiración</span>
-        <h2 className="text-3xl md:text-4xl font-extrabold">Creadores que ya confían en Aura</h2>
-        <p className="text-slate-400 text-sm mt-2">Descubre cómo diferentes profesionales muestran su talento.</p>
+      <section id="ejemplos" className="w-full bg-purple-950 py-20 sm:py-28 text-white text-center">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Título actualizado con mayor tamaño de texto */}
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
+            Creadores que ya confían en Lightjaus
+          </h2>
+          <p className="text-purple-200/80 text-base sm:text-lg md:text-xl mt-4 font-normal">Descubre cómo diferentes profesionales muestran su talento.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-left">
-          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition-all hover:scale-105 group">
-            <div className="h-40 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 rounded-xl mb-4 border border-slate-800/60 flex items-center justify-center text-slate-600 font-mono text-xs">
-              [Galería de Tatuajes]
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 text-left">
+            <div className="bg-white text-slate-900 rounded-2xl p-8 shadow-lg border border-purple-900/10">
+              <div className="h-44 bg-purple-50 rounded-xl mb-6 flex items-center justify-center text-purple-400 font-mono text-xs font-semibold border border-purple-100">
+                [Galería de Tatuajes]
+              </div>
+              <span className="text-xs text-purple-700 font-mono font-bold">lightjaus.com/carlos-ink</span>
+              <h4 className="text-lg font-bold mt-2 text-slate-900">Carlos • Tatuador</h4>
+              <p className="text-sm text-slate-600 mt-3 font-normal leading-relaxed">Portfolio visual con estilo único para mostrar piezas de tinta.</p>
             </div>
-            <span className="text-xs text-purple-400 font-mono">aura.com/carlos-ink</span>
-            <h4 className="text-lg font-bold mt-1 text-slate-100 group-hover:text-purple-300 transition-colors">Carlos • Tatuador</h4>
-            <p className="text-xs text-slate-400 mt-2">Portfolio visual con estilo oscuro para mostrar piezas de tinta únicas.</p>
-          </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition-all hover:scale-105 group">
-            <div className="h-40 bg-gradient-to-br from-indigo-900/35 to-blue-900/30 rounded-xl mb-4 border border-slate-800/60 flex items-center justify-center text-slate-600 font-mono text-xs">
-              [Galería de Fotografía]
+            <div className="bg-white text-slate-900 rounded-2xl p-8 shadow-lg border border-purple-900/10">
+              <div className="h-44 bg-purple-50 rounded-xl mb-6 flex items-center justify-center text-purple-400 font-mono text-xs font-semibold border border-purple-100">
+                [Galería de Fotografía]
+              </div>
+              <span className="text-xs text-indigo-700 font-mono font-bold">lightjaus.com/sofia-ph</span>
+              <h4 className="text-lg font-bold mt-2 text-slate-900">Sofía • Fotógrafa</h4>
+              <p className="text-sm text-slate-600 mt-3 font-normal leading-relaxed">Enfoque minimalista para capturar la atención en sesiones de retrato.</p>
             </div>
-            <span className="text-xs text-purple-400 font-mono">aura.com/sofia-ph</span>
-            <h4 className="text-lg font-bold mt-1 text-slate-100 group-hover:text-purple-300 transition-colors">Sofía • Fotógrafa</h4>
-            <p className="text-xs text-slate-400 mt-2">Enfoque minimalista para capturar la atención en sesiones de retrato.</p>
-          </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 transition-all hover:scale-105 group">
-            <div className="h-40 bg-gradient-to-br from-purple-950/40 to-pink-950/30 rounded-xl mb-4 border border-slate-800/60 flex items-center justify-center text-slate-600 font-mono text-xs">
-              [Enlaces y Servicios]
+            <div className="bg-white text-slate-900 rounded-2xl p-8 shadow-lg border border-purple-900/10">
+              <div className="h-44 bg-purple-50 rounded-xl mb-6 flex items-center justify-center text-purple-400 font-mono text-xs font-semibold border border-purple-100">
+                [Enlaces y Servicios]
+              </div>
+              <span className="text-xs text-purple-900 font-mono font-bold bg-purple-100 px-2 py-0.5 rounded">lightjaus.com/lucas-dev</span>
+              <h4 className="text-lg font-bold mt-2 text-slate-900">Lucas • Creador</h4>
+              <p className="text-sm text-slate-600 mt-3 font-normal leading-relaxed">Estructura híbrida combinada con muestras de proyectos.</p>
             </div>
-            <span className="text-xs text-purple-400 font-mono">aura.com/lucas-dev</span>
-            <h4 className="text-lg font-bold mt-1 text-slate-100 group-hover:text-purple-300 transition-colors">Lucas • Creador</h4>
-            <p className="text-xs text-slate-400 mt-2">Estructura híbrida tipo linktree combinada con muestras de proyectos.</p>
           </div>
         </div>
       </section>
 
       {/* --- CALL TO ACTION FINAL --- */}
-      <section className="max-w-4xl mx-auto px-6 pb-28 text-center relative z-10">
-        <div className="p-10 md:p-14 bg-gradient-to-b from-slate-900/80 to-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-purple-600/30 rounded-full blur-3xl pointer-events-none" />
-          
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-            ¿Listo para destacar en internet?
-          </h2>
-          <p className="text-slate-400 text-base max-w-lg mx-auto mb-8">
-            Únete hoy mismo a Aura, elige tu enlace personalizado y crea tu portfolio autogestionable en menos de 2 minutos.
-          </p>
-          
-          <Link 
-            href="/admin/register" 
-            className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-2xl shadow-xl shadow-purple-600/30 hover:scale-105 active:scale-95 transition-all"
-          >
-            Crear mi portfolio ahora
-          </Link>
+      <section className="w-full bg-white py-20 sm:py-28 text-slate-900 text-center border-t border-purple-50">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="p-8 sm:p-14 rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-950 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-6 relative z-10 leading-[1.1]">
+              ¿Listo para destacar en internet?
+            </h2>
+            <p className="text-purple-100 text-base sm:text-lg md:text-xl max-w-2xl mx-auto mb-10 font-normal relative z-10 leading-relaxed">
+              Únete hoy mismo a Lightjaus, elige tu enlace personalizado y crea tu portfolio autogestionable en menos de 2 minutos.
+            </p>
+            
+            <Link 
+              href="/admin/register" 
+              className="inline-block w-full sm:w-auto px-10 py-4 sm:py-5 bg-white text-purple-950 font-bold text-base rounded-xl shadow-lg hover:bg-purple-50 transition-all relative z-10"
+            >
+              Crear mi portfolio ahora
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="border-t border-slate-900 py-12 px-6 text-center text-xs text-slate-500 relative z-10">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-slate-300 tracking-wider">AURA</span>
+      <footer className="w-full bg-slate-950 text-slate-400 py-12 sm:py-14 px-6 text-center text-xs border-t border-purple-950">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-white tracking-wider text-base">Lightjaus</span>
             <span>— Tu portfolio online autogestionable</span>
           </div>
-          <p>© {new Date().getFullYear()} Aura MVP. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Lightjaus. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>

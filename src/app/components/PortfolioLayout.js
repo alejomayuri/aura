@@ -34,8 +34,8 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
   const pages = portfolioData?.pages || [];
 
   return (
-    <main className={`${styles.bgScreen || "min-h-screen bg-slate-950 relative"} pt-0 xl:pt-12 flex flex-col items-center justify-start`}>
-      
+    // <main className={`${styles.bgScreen || "min-h-screen bg-slate-950 relative"} pt-0 xl:pt-12 flex flex-col items-center justify-start`}>
+      <>
       {/* Menú y Overlay: Se oculta visualmente por completo y bloquea interacción si no está abierto */}
       {isPortfolioPage && (
         <div className={`fixed inset-0 z-[100] flex justify-center items-end transition-all duration-300 ${
@@ -110,20 +110,20 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
               {/* Bloque 3: Textos y botones de acción */}
               <div className="flex flex-col gap-1 text-left">
-                <p className="text-lg font-bold text-black">Únete a {portfolioData?.slug || "Aura"} en Aura</p>
+                <p className="text-lg font-bold text-black">Únete a {portfolioData?.slug || "Lightjaus"} en Lightjaus</p>
                 <p className="text-base font-normal text-black">¿Te gustaría tener un portfolio como este?</p>
               </div>
 
               <div className="flex gap-3">
                 <Link 
-                  href="https://aura.so" 
+                  href="https://lightjaus.so" 
                   className="flex-1 py-4 bg-black text-white text-center rounded-full font-bold transition-transform hover:scale-[1.02] cursor-pointer"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Regístrate gratis
                 </Link>
                 <Link 
-                  href="https://aura.so" 
+                  href="https://lightjaus.so" 
                   className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-black text-center rounded-full font-bold transition-transform hover:scale-[1.02] cursor-pointer"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -136,7 +136,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
       )}
 
       {/* Contenedor Principal del Layout con el Fondo Correspondiente */}
-      <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200 rounded-3xl' : ''}`}>
+      <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200' : ''}`}>
         <div className={`relative w-full max-w-xl border p-5 transition-all duration-300 ${styles.container}`}>
           
           {/* Botón Menú Hamburguesa */}
@@ -161,12 +161,12 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
             <>
               <div className="mt-8 flex justify-center">
                 <a 
-                  href="https://aura.so" 
+                  href="https://lightjaus.so" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="px-6 py-2 bg-white text-black font-bold text-[11px] rounded-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 border border-slate-100"
                 >
-                  Únete a {portfolioData?.slug || "Aura"} en Aura
+                  Únete a {portfolioData?.slug || "Lightjaus"} en Lightjaus
                 </a>
               </div>
 
@@ -180,6 +180,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
           )}
         </div>
       </div>
-    </main>
+      </>
   );
 }
