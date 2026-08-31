@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Portfolio from "@/app/components/Portfolio";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 
 function UrlTyper() {
   const urls = ["opal-home", "fromsoftware", "studio-amber", "buenabakery", "maria-dev"];
@@ -102,6 +105,21 @@ export default function LandingPage() {
   const [activeTheme, setActiveTheme] = useState("y2k");
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const router = useRouter();
+
+  // Comprobar autenticación en el home para redirigir si ya hay sesión
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.replace("/admin");
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,6 +133,11 @@ export default function LandingPage() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Pantalla en blanco mientras verifica el estado de autenticación para evitar parpadeos
+  if (checkingAuth) {
+    return <div className="min-h-screen bg-white" />;
+  }
 
   const availableThemes = [
     { id: "y2k", name: "Y2K" },
@@ -187,7 +210,7 @@ export default function LandingPage() {
               href="/admin/register" 
               className="text-base font-semibold px-6 py-3 bg-gradient-to-r from-purple-800 to-indigo-700 text-white rounded-xl shadow-md hover:opacity-95 transition-all shadow-purple-500/20"
             >
-              Crear mi portfolio
+              Regístrate gratis
             </Link>
           </div>
 
@@ -220,7 +243,7 @@ export default function LandingPage() {
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-semibold px-6 py-3 bg-gradient-to-r from-purple-800 to-indigo-700 text-white rounded-xl shadow-md text-center"
             >
-              Crear mi portfolio
+              Regístrate gratis
             </Link>
           </div>
         )}
@@ -313,15 +336,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- BLOQUE: MULTIMEDIA (BENTO GRID REORGANIZADO - DISEÑO DINÁMICO) --- */}
+      {/* --- BLOQUE: MULTIMEDIA --- */}
       <section className="w-full bg-purple-50/50 py-20 sm:py-32 text-slate-900 overflow-hidden">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
-            {/* IZQUIERDA: BENTO GRID CON NUEVA DISTRIBUCIÓN ASIMÉTRICA */}
             <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-4 auto-rows-[120px]">
               
-              {/* Tarjeta 1: Links Clave (Vertical grande a la izquierda) */}
               <div className="col-span-1 row-span-2 p-6 bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-950 text-white rounded-3xl shadow-xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden group border border-purple-700/30">
                 <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl pointer-events-none" />
                 <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center text-xl font-bold backdrop-blur-md shadow-inner border border-white/10">
@@ -333,7 +354,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Tarjeta 2: Tienda E-commerce (Horizontal superior) */}
               <div className="col-span-1 sm:col-span-2 row-span-1 p-5 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-950 text-white rounded-3xl shadow-lg flex items-center justify-between hover:scale-[1.01] transition-all duration-300 relative overflow-hidden border border-indigo-700/30">
                 <div className="absolute right-0 top-0 w-28 h-28 bg-indigo-500/10 rounded-full blur-xl pointer-events-none" />
                 <div className="relative z-10">
@@ -345,7 +365,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Tarjeta 3: Software / Apps */}
               <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-indigo-200 transition-all duration-300 group">
                 <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-base font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                   💻
@@ -356,7 +375,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Tarjeta 4: Galerías */}
               <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-purple-200 transition-all duration-300 group">
                 <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-800 flex items-center justify-center text-base font-bold group-hover:bg-purple-900 group-hover:text-white transition-colors">
                   🖼️
@@ -367,7 +385,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Tarjeta 5: Música */}
               <div className="col-span-1 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex flex-col justify-between hover:scale-[1.02] hover:border-purple-200 transition-all duration-300 group">
                 <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-800 flex items-center justify-center text-base font-bold group-hover:bg-purple-900 group-hover:text-white transition-colors">
                   🎵
@@ -378,7 +395,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Tarjeta 6: Videos (Horizontal inferior) */}
               <div className="col-span-1 sm:col-span-2 row-span-1 p-5 bg-white rounded-3xl shadow-lg shadow-purple-950/5 border border-purple-100/80 flex items-center justify-between hover:scale-[1.01] hover:border-purple-200 transition-all duration-300 group">
                 <div>
                   <h4 className="font-bold text-xs sm:text-sm text-slate-900">Videos & Reels</h4>
@@ -391,7 +407,6 @@ export default function LandingPage() {
 
             </div>
 
-            {/* DERECHA: TEXTO Y CALL TO ACTION */}
             <div className="lg:col-span-6 text-left space-y-6">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
                 Comparte cualquier tipo de contenido
@@ -451,7 +466,6 @@ export default function LandingPage() {
       {/* --- CREADORES QUE CONFIAN --- */}
       <section id="ejemplos" className="w-full bg-purple-950 py-20 sm:py-28 text-white text-center">
         <div className="max-w-6xl mx-auto px-6">
-          {/* Título actualizado con mayor tamaño de texto */}
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-[1.1]">
             Creadores que ya confían en Lightjaus
           </h2>

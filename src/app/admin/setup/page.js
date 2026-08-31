@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SetupPage() {
   const [user, setUser] = useState(null);
@@ -13,6 +14,23 @@ export default function SetupPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  // Lista de palabras reservadas que no se pueden usar como URL
+  const reservedSlugs = [
+    "admin",
+    "login",
+    "register",
+    "signup",
+    "dashboard",
+    "api",
+    "auth",
+    "setup",
+    "settings",
+    "support",
+    "help",
+    "terms",
+    "privacy"
+  ];
 
   // Verificar autenticación
   useEffect(() => {
@@ -42,14 +60,14 @@ export default function SetupPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // Formatear automáticamente el input para que sea un slug válido
+  // Formatear automáticamente el input para que sea un slug válido (incluyendo guion bajo)
   const handleSlugChange = (e) => {
     const rawValue = e.target.value;
     const formattedSlug = rawValue
       .toLowerCase()
       .trim()
       .replace(/\s+/g, "-") // Reemplaza espacios por guiones
-      .replace(/[^a-z0-9-]/g, ""); // Elimina caracteres no alfanuméricos
+      .replace(/[^a-z0-9-_]/g, ""); // Permite letras, números, guion medio y guion bajo
 
     setSlug(formattedSlug);
     if (error) setError("");
@@ -66,6 +84,12 @@ export default function SetupPage() {
 
     if (slug.length < 3) {
       setError("La URL debe tener al menos 3 caracteres.");
+      return;
+    }
+
+    // Validar si la URL está en la lista de palabras reservadas
+    if (reservedSlugs.includes(slug)) {
+      setError("Esta palabra no puede ser utilizada como URL.");
       return;
     }
 
@@ -115,9 +139,9 @@ export default function SetupPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-slate-400">
+      <div className="flex h-screen items-center justify-center bg-white text-slate-400">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-medium">Verificando sesión...</p>
         </div>
       </div>
@@ -125,24 +149,32 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100 relative overflow-hidden px-4">
-      {/* Efectos decorativos de fondo */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/25 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/25 rounded-full blur-3xl pointer-events-none" />
+    <div className="flex min-h-screen items-center justify-center bg-white text-slate-900 relative overflow-hidden px-4">
+      {/* Logo fijo arriba a la izquierda */}
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-10 z-20">
+        <Link href="/">
+          <img 
+            src="/logo.png" 
+            alt="lightjaus Logo" 
+            className="h-12 sm:h-16 object-contain brightness-0" 
+          />
+        </Link>
+      </div>
 
-      <div className="w-full max-w-md p-8 bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl relative z-10">
-        <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-purple-400 uppercase bg-purple-500/10 rounded-full border border-purple-500/20">
-            Paso 2 de 2
-          </span>
-          <h2 className="text-3xl font-extrabold tracking-tight">Elige tu URL</h2>
-          <p className="text-sm text-slate-400 mt-2">
-            Esta será la dirección única con la que tus visitantes accederán a tu portfolio.
+      {/* Efectos decorativos de fondo */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-200/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-2xl p-12 sm:p-16 bg-white text-center relative z-10 mx-auto flex flex-col items-center justify-center">
+        <div className="text-center mb-10 w-full max-w-xl">
+          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">Elige tu username</h2>
+          <p className="text-base sm:text-lg text-slate-600 mt-3 font-normal">
+            Reconocible y que te represente
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl text-sm flex items-center gap-3">
+          <div className="mb-8 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-sm flex items-center gap-3 w-full max-w-xl text-left">
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
             </svg>
@@ -150,14 +182,14 @@ export default function SetupPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+        <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-xl">
+          <div className="text-left">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
               Tu enlace personalizado
             </label>
-            <div className="flex items-center rounded-xl bg-slate-950/70 border border-slate-800 overflow-hidden focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 transition-all">
-              <span className="px-3 py-3 text-slate-500 text-sm font-mono border-r border-slate-800/80 bg-slate-900/50 select-none shrink-0">
-                aura.com/
+            <div className="flex items-center rounded-2xl bg-purple-50/50 border border-purple-200/80 overflow-hidden focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-600/20 transition-all shadow-inner">
+              <span className="px-4 py-4 text-slate-500 text-base font-mono border-r border-purple-200 bg-purple-100/50 select-none shrink-0">
+                lightjaus.com/
               </span>
               <input
                 type="text"
@@ -166,20 +198,20 @@ export default function SetupPage() {
                 placeholder="mi-nombre"
                 required
                 maxLength={30}
-                className="w-full px-3 py-3 bg-transparent text-slate-100 placeholder:text-slate-600 focus:outline-none text-sm font-mono"
+                className="w-full px-4 py-4 bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none text-base font-mono"
               />
             </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              Solo letras minúsculas, números y guiones. Sin espacios.
+            <p className="text-xs text-slate-500 mt-2">
+              Solo letras minúsculas, números, guiones y guiones bajos. Sin espacios.
             </p>
           </div>
 
           {/* Vista previa en vivo */}
           {slug && (
-            <div className="p-3 bg-slate-950/40 border border-slate-800/60 rounded-xl text-center">
-              <span className="text-xs text-slate-400 block mb-1">Tu web estará disponible en:</span>
-              <span className="text-xs font-mono font-semibold text-purple-400 break-all">
-                https://aura.com/{slug}
+            <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl text-center shadow-sm">
+              <span className="text-xs text-slate-600 block mb-1">Tu web estará disponible en:</span>
+              <span className="text-sm font-mono font-bold text-purple-900 break-all">
+                https://lightjaus.com/{slug}
               </span>
             </div>
           )}
@@ -187,9 +219,9 @@ export default function SetupPage() {
           <button
             type="submit"
             disabled={submitting || !slug}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium rounded-xl shadow-lg shadow-purple-600/25 active:scale-[0.99] transition-all disabled:opacity-50"
+            className="w-full py-4 px-6 bg-purple-900 hover:bg-purple-800 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-purple-900/20 active:scale-[0.99] transition-all disabled:opacity-50"
           >
-            {submitting ? "Reservando tu URL..." : "Continuar al Panel"}
+            {submitting ? "Creando..." : "Continuar"}
           </button>
         </form>
       </div>

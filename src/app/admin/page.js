@@ -17,10 +17,11 @@ import PagePreview from "@/app/components/PagePreview";
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(true); // <-- Nuevo estado para evitar el parpadeo en el dashboard
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [activeTab, setActiveTab] = useState("main"); // "main", "design", "pages"
-  const [selectedSubPageId, setSelectedSubPageId] = useState(null); // 👈 NUEVO: Mantiene la subpágina activa de forma persistente
+  const [selectedSubPageId, setSelectedSubPageId] = useState(null); // 👈 Mantiene la subpágina activa de forma persistente
   const router = useRouter();
 
   const [portfolioData, setPortfolioData] = useState({
@@ -33,7 +34,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
-        router.push("/admin/login");
+        router.replace("/admin/login");
       } else {
         setUser(currentUser);
         const data = await getPortfolioData(currentUser.uid);
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
             ...data
           }));
         }
+        setCheckingAuth(false); // Ya verificamos y sí hay usuario, mostramos el panel
       }
       setLoading(false);
     });
@@ -66,7 +68,8 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
+  // Si está comprobando la autenticación o cargando datos iniciales, mostramos una pantalla limpia en tonos oscuros (acorde al panel)
+  if (checkingAuth || loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-950 text-slate-400">
         <div className="flex flex-col items-center gap-3">
