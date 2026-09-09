@@ -23,7 +23,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }
   const isCreateActive = activeTab === "create-page" || activeTab === "pages";
 
   return (
-    <aside style={{ width: "240px", fontFamily: "Montserrat, sans-serif" }} className="bg-white border-r border-purple-100 p-4 flex flex-col justify-between z-25 shrink-0 text-slate-900 shadow-sm relative">
+    <aside style={{ width: "240px", fontFamily: "'Poppins', sans-serif" }} className="bg-white border-r border-purple-100 p-4 flex flex-col justify-between z-25 shrink-0 text-slate-900 shadow-sm relative font-['Poppins']">
       <div>
         {/* Logo integrado en negro */}
         <div className="flex items-center gap-3 mb-4">

@@ -92,9 +92,7 @@ export default function AdminDashboard() {
   const selectedPage = portfolioData.pages.find(p => p.id === selectedSubPageId || p.slug === selectedSubPageId);
 
   return (
-    <div className="h-screen bg-slate-950 text-slate-100 flex overflow-hidden relative">
-      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
-
+    <div className="h-screen bg-white text-slate-900 flex overflow-hidden relative">
       {/* ================= 1. MENÚ LATERAL ================= */}
       <Sidebar 
         user={user}
@@ -103,8 +101,8 @@ export default function AdminDashboard() {
         portfolioData={portfolioData}
       />
 
-      {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO) ================= */}
-      <div className="w-[450px] shrink-0 p-6 overflow-y-auto relative z-10 bg-slate-950/40 space-y-6 border-r border-slate-900">
+      {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO - AMPLIADO) ================= */}
+      <div className="w-[540px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 bg-white space-y-6 border-r border-purple-100">
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
@@ -156,14 +154,14 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* ================= 3. VISTA PREVIA (DERECHA) ================= */}
-      <section className="w-[380px] lg:flex-1 bg-slate-950 p-6 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
+      {/* ================= 3. VISTA PREVIA (DERECHA - MÁS ANGOSTO) ================= */}
+      <section className="w-[340px] bg-slate-50 p-6 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
         <div className="w-full flex justify-between items-center mb-4 max-w-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 
             {selectedPage ? `Vista Previa: ${selectedPage.title}` : "Vista Previa"}
           </span>
-          <span className="text-[11px] text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800/80">Live</span>
+          <span className="text-[11px] text-slate-700 bg-white px-3 py-1 rounded-full border border-purple-100 shadow-sm">Live</span>
         </div>
 
         {selectedPage ? (
