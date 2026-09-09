@@ -17,11 +17,11 @@ import PagePreview from "@/app/components/PagePreview";
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [checkingAuth, setCheckingAuth] = useState(true); // <-- Nuevo estado para evitar el parpadeo en el dashboard
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("main"); // "main", "design", "pages"
-  const [selectedSubPageId, setSelectedSubPageId] = useState(null); // 👈 Mantiene la subpágina activa de forma persistente
+  const [activeTab, setActiveTab] = useState("main");
+  const [selectedSubPageId, setSelectedSubPageId] = useState(null);
   const router = useRouter();
 
   const [portfolioData, setPortfolioData] = useState({
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
             ...data
           }));
         }
-        setCheckingAuth(false); // Ya verificamos y sí hay usuario, mostramos el panel
+        setCheckingAuth(false);
       }
       setLoading(false);
     });
@@ -68,7 +68,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Si está comprobando la autenticación o cargando datos iniciales, mostramos una pantalla limpia en tonos oscuros (acorde al panel)
   if (checkingAuth || loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-950 text-slate-400">
@@ -80,21 +79,16 @@ export default function AdminDashboard() {
     );
   }
 
-  // Si activeTab es una subpágina, actualizamos también el ID persistente
   const handleSelectTab = (tab) => {
     setActiveTab(tab);
-    // Si el tab es una subpágina real (existe en portfolioData.pages), la guardamos como subpágina seleccionada
     const foundPage = portfolioData.pages.find(p => p.id === tab || p.slug === tab);
     if (foundPage) {
       setSelectedSubPageId(tab);
     } else if (tab === "main" || tab === "pages") {
-      // Si va a principal o gestión de páginas general, limpiamos la subpágina seleccionada
       setSelectedSubPageId(null);
     }
-    // OJO: Si hace click en "design", NO limpiamos selectedSubPageId, ¡para que se mantenga en la vista previa!
   };
 
-  // Buscamos la página activa basándonos en el ID persistente de la subpágina
   const selectedPage = portfolioData.pages.find(p => p.id === selectedSubPageId || p.slug === selectedSubPageId);
 
   return (
@@ -105,30 +99,12 @@ export default function AdminDashboard() {
       <Sidebar 
         user={user}
         activeTab={activeTab}
-        setActiveTab={handleSelectTab} // 👈 Usamos nuestra función personalizada
+        setActiveTab={handleSelectTab}
         portfolioData={portfolioData}
       />
 
-      {/* ================= 2. VISTA PREVIA (CENTRO) ================= */}
-      <section className="w-[380px] lg:flex-1 bg-slate-950 p-6 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0 border-r border-slate-900">
-        <div className="w-full flex justify-between items-center mb-4 max-w-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 
-            {selectedPage ? `Vista Previa: ${selectedPage.title}` : "Vista Previa"}
-          </span>
-          <span className="text-[11px] text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800/80">Live</span>
-        </div>
-
-        {/* Condicional de Vista Previa */}
-        {selectedPage ? (
-          <PagePreview page={selectedPage} portfolioData={portfolioData} />
-        ) : (
-          <Portfolio portfolioData={portfolioData} />
-        )}
-      </section>
-
-      {/* ================= 3. FORMULARIO CONDICIONAL (DERECHA) ================= */}
-      <div className="w-[450px] shrink-0 p-6 overflow-y-auto relative z-10 bg-slate-950/40 space-y-6">
+      {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO) ================= */}
+      <div className="w-[450px] shrink-0 p-6 overflow-y-auto relative z-10 bg-slate-950/40 space-y-6 border-r border-slate-900">
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
@@ -159,7 +135,6 @@ export default function AdminDashboard() {
             />
         )}
 
-        {/* Editor para páginas de tipo "image" (usa selectedSubPageId y NO se muestra si activeTab es "design") */}
         {activeTab !== "design" && selectedPage && selectedPage.type === "image" && (
             <ImagePageEditor 
                 portfolioData={portfolioData}
@@ -170,7 +145,6 @@ export default function AdminDashboard() {
             />
         )}
 
-        {/* Editor para páginas de tipo "link" (usa selectedSubPageId y NO se muestra si activeTab es "design") */}
         {activeTab !== "design" && selectedPage && selectedPage.type === "link" && (
             <LinkPageEditor 
                 portfolioData={portfolioData}
@@ -181,6 +155,23 @@ export default function AdminDashboard() {
             />
         )}
       </div>
+
+      {/* ================= 3. VISTA PREVIA (DERECHA) ================= */}
+      <section className="w-[380px] lg:flex-1 bg-slate-950 p-6 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
+        <div className="w-full flex justify-between items-center mb-4 max-w-xs">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 
+            {selectedPage ? `Vista Previa: ${selectedPage.title}` : "Vista Previa"}
+          </span>
+          <span className="text-[11px] text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800/80">Live</span>
+        </div>
+
+        {selectedPage ? (
+          <PagePreview page={selectedPage} portfolioData={portfolioData} />
+        ) : (
+          <Portfolio portfolioData={portfolioData} />
+        )}
+      </section>
     </div>
   );
 }
