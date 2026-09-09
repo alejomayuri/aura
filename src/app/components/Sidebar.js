@@ -16,14 +16,14 @@ export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }
     }
     acc[type].push(page);
     return acc;
-  }, {});
+  }, {},);
 
   const isMyLightjausActive = activeTab === "my-lightjaus";
   const isMainActive = activeTab === "main";
   const isCreateActive = activeTab === "create-page" || activeTab === "pages";
 
   return (
-    <aside style={{ width: "240px", fontFamily: "'Poppins', sans-serif" }} className="bg-white border-r border-purple-100 p-4 flex flex-col justify-between z-25 shrink-0 text-slate-900 shadow-sm relative font-['Poppins']">
+    <aside style={{ width: "240px", fontFamily: "'Poppins', sans-serif", backgroundColor: "#F2F1EF" }} className="border-r border-purple-100 p-4 flex flex-col justify-between z-25 shrink-0 text-slate-900 shadow-sm relative font-['Poppins']">
       <div>
         {/* Logo integrado en negro */}
         <div className="flex items-center gap-3 mb-4">
