@@ -102,7 +102,7 @@ export default function AdminDashboard() {
       />
 
       {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO - AMPLIADO) ================= */}
-      <div className="w-[540px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 bg-white space-y-6 border-r border-purple-100">
+      <div className="w-[540px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 space-y-6 border-r border-purple-100" style={{ backgroundColor: "#FBFAF9" }}>
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
