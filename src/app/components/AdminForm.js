@@ -11,8 +11,9 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   const [openLayoutPageUid, setOpenLayoutPageUid] = useState(null);
   const [openSharePageUid, setOpenSharePageUid] = useState(null);
   
-  // Estado para controlar la edición inline del título principal
+  // Estado para controlar la edición inline del título principal y la biografía
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   // Estado para controlar el modal de la imagen principal
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -21,8 +22,16 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   const [modalTempPreview, setModalTempPreview] = useState(null);
   const [modalRemoveImage, setModalRemoveImage] = useState(false);
 
+  // Estado para confirmar la eliminación de un enlace social
+  const [deleteConfirmUid, setDeleteConfirmUid] = useState(null);
+
+  const [openDeletePageUid, setOpenDeletePageUid] = useState(null);
+
   // Estado para mostrar u ocultar estilos de imagen en la sección de páginas
   const [showImageStyles, setShowImageStyles] = useState(false);
+
+  // Estado para controlar la adición de un nuevo enlace social
+  const [isAddingLink, setIsAddingLink] = useState(false);
 
   const stableLinks = useMemo(() => {
     const links = portfolioData?.socialLinks || [];
@@ -306,245 +315,245 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
       </div>
 
       <div className="space-y-3 pt-2">
-  <div className="w-full bg-transparent p-0 flex justify-start">
-    <div 
-      onClick={() => setIsImageModalOpen(true)}
-      className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 hover:border-purple-500 transition shadow-sm"
-    >
-      {currentImageDisplay ? (
-        <>
-          <img src={currentImageDisplay} alt="Imagen principal actual" className="w-full h-auto object-contain max-h-[300px] group-hover:opacity-75 transition-opacity" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white gap-1">
-            <svg className="w-6 h-6 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            <span className="text-xs font-medium">Cambiar imagen</span>
+        <div className="w-full bg-transparent p-0 flex justify-start">
+          <div 
+            onClick={() => setIsImageModalOpen(true)}
+            className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 hover:border-purple-500 transition shadow-sm"
+          >
+            {currentImageDisplay ? (
+              <>
+                <img src={currentImageDisplay} alt="Imagen principal actual" className="w-full h-auto object-contain max-h-[300px] group-hover:opacity-75 transition-opacity" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white gap-1">
+                  <svg className="w-6 h-6 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  <span className="text-xs font-medium">Cambiar imagen</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 px-4 text-center text-slate-400 group-hover:text-purple-600 transition-colors gap-2">
+                <svg className="w-8 h-8 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-xs italic">Haz clic para subir una imagen principal</span>
+              </div>
+            )}
           </div>
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-10 px-4 text-center text-slate-400 group-hover:text-purple-600 transition-colors gap-2">
-          <svg className="w-8 h-8 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span className="text-xs italic">Haz clic para subir una imagen principal</span>
         </div>
-      )}
-    </div>
-  </div>
 
-  {selectedFile && !uploading && <span className="text-xs text-amber-600 italic block">Imagen lista para guardar...</span>}
-  {uploading && <span className="text-xs text-purple-600 block">Subiendo a Cloudinary...</span>}
+        {selectedFile && !uploading && <span className="text-xs text-amber-600 italic block">Imagen lista para guardar...</span>}
+        {uploading && <span className="text-xs text-purple-600 block">Subiendo a Cloudinary...</span>}
 
-  {/* 🎨 BOTÓN DE DISEÑO DE IMAGEN */}
-  <div className="pt-1">
-    <button
-      type="button"
-      onClick={() => setShowImageStyles(!showImageStyles)}
-      className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors border border-slate-200"
-    >
-      <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <span>Diseño de imagen</span>
-      <svg 
-        className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-300 ${showImageStyles ? 'rotate-180' : ''}`} 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </button>
-
-    {/* 🌀 MENÚ DESPLEGABLE CON PREVIEWS ESTILO MÓVIL */}
-    <div className={`grid transition-all duration-300 ease-in-out ${showImageStyles ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
-      <div className="overflow-hidden">
-        <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2 max-w-2xl">
-          <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">Estilo visual de la imagen</span>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            
-            {/* 1. REDONDA */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'rounded' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                (portfolioData?.imageStyle || 'rounded') === 'rounded'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
+        {/* 🎨 BOTÓN DE DISEÑO DE IMAGEN */}
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => setShowImageStyles(!showImageStyles)}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors border border-slate-200"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Diseño de imagen</span>
+            <svg 
+              className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-300 ${showImageStyles ? 'rotate-180' : ''}`} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
             >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                {currentImageDisplay ? (
-                  <img src={currentImageDisplay} alt="Preview" className="w-14 h-14 rounded-full object-cover shrink-0 mt-1 ring-2 ring-white shadow-sm" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full bg-emerald-300/80 shrink-0 mt-1 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                )}
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* 🌀 MENÚ DESPLEGABLE CON PREVIEWS ESTILO MÓVIL */}
+          <div className={`grid transition-all duration-300 ease-in-out ${showImageStyles ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+            <div className="overflow-hidden">
+              <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2 max-w-2xl">
+                <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">Estilo visual de la imagen</span>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  
+                  {/* 1. REDONDA */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'rounded' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      (portfolioData?.imageStyle || 'rounded') === 'rounded'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
+                      {currentImageDisplay ? (
+                        <img src={currentImageDisplay} alt="Preview" className="w-14 h-14 rounded-full object-cover shrink-0 mt-1 ring-2 ring-white shadow-sm" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-emerald-300/80 shrink-0 mt-1 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                      )}
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Redonda</span>
+                  </button>
+
+                  {/* 2. TODO EL ANCHO */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'full-width' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      portfolioData?.imageStyle === 'full-width'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
+                      {currentImageDisplay ? (
+                        <img src={currentImageDisplay} alt="Preview" className="w-full h-20 object-cover shrink-0" />
+                      ) : (
+                        <div className="w-full h-20 bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                      )}
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Todo el ancho</span>
+                  </button>
+
+                  {/* 3. DIFUMINADO ABAJO */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'fade-bottom' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      portfolioData?.imageStyle === 'fade-bottom'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300 relative">
+                      <div className="relative w-full h-24 shrink-0">
+                        {currentImageDisplay ? (
+                          <img src={currentImageDisplay} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-emerald-200 via-emerald-200/40 to-transparent"></div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center z-10 -mt-5">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90 z-10">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Difuminado</span>
+                  </button>
+
+                  {/* 4. RECTANGULAR HORIZONTAL */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'horizontal' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      portfolioData?.imageStyle === 'horizontal'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
+                      <div className="px-2.5 w-full">
+                        {currentImageDisplay ? (
+                          <img src={currentImageDisplay} alt="Preview" className="w-full h-20 rounded-lg object-cover shrink-0 shadow-xs" />
+                        ) : (
+                          <div className="w-full h-20 rounded-lg bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Horizontal</span>
+                  </button>
+
+                  {/* 5. CUADRADA REDONDEADA */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'square-rounded' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      portfolioData?.imageStyle === 'square-rounded'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
+                      {currentImageDisplay ? (
+                        <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-xl object-cover shrink-0 shadow-xs" />
+                      ) : (
+                        <div className="w-20 h-20 rounded-xl bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                      )}
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Cuadrada redondeada</span>
+                  </button>
+
+                  {/* 6. MARCO ASIMÉTRICO */}
+                  <button
+                    type="button"
+                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'creative-blob' })}
+                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
+                      portfolioData?.imageStyle === 'creative-blob'
+                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
+                      <div className="p-[2px] bg-gradient-to-tr from-teal-500 via-emerald-500 to-amber-400 rounded-2xl rounded-tr-xs shrink-0 shadow-xs">
+                        {currentImageDisplay ? (
+                          <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-2xl rounded-tr-xs object-cover" />
+                        ) : (
+                          <div className="w-20 h-20 rounded-2xl rounded-tr-xs bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
+                        {portfolioData?.title || "Sin título"}
+                      </span>
+                      <div className="w-full space-y-2 px-2.5 opacity-90">
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Marco Asimétrico</span>
+                  </button>
+
                 </div>
               </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Redonda</span>
-            </button>
-
-            {/* 2. TODO EL ANCHO */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'full-width' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                portfolioData?.imageStyle === 'full-width'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
-            >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                {currentImageDisplay ? (
-                  <img src={currentImageDisplay} alt="Preview" className="w-full h-20 object-cover shrink-0" />
-                ) : (
-                  <div className="w-full h-20 bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                )}
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Todo el ancho</span>
-            </button>
-
-            {/* 3. DIFUMINADO ABAJO */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'fade-bottom' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                portfolioData?.imageStyle === 'fade-bottom'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
-            >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300 relative">
-                <div className="relative w-full h-24 shrink-0">
-                  {currentImageDisplay ? (
-                    <img src={currentImageDisplay} alt="Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-200 via-emerald-200/40 to-transparent"></div>
-                </div>
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center z-10 -mt-5">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90 z-10">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Difuminado</span>
-            </button>
-
-            {/* 4. RECTANGULAR HORIZONTAL */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'horizontal' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                portfolioData?.imageStyle === 'horizontal'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
-            >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                <div className="px-2.5 w-full">
-                  {currentImageDisplay ? (
-                    <img src={currentImageDisplay} alt="Preview" className="w-full h-20 rounded-lg object-cover shrink-0 shadow-xs" />
-                  ) : (
-                    <div className="w-full h-20 rounded-lg bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                  )}
-                </div>
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Horizontal</span>
-            </button>
-
-            {/* 5. CUADRADA REDONDEADA */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'square-rounded' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                portfolioData?.imageStyle === 'square-rounded'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
-            >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                {currentImageDisplay ? (
-                  <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-xl object-cover shrink-0 shadow-xs" />
-                ) : (
-                  <div className="w-20 h-20 rounded-xl bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                )}
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Cuadrada redondeada</span>
-            </button>
-
-            {/* 6. MARCO ASIMÉTRICO */}
-            <button
-              type="button"
-              onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'creative-blob' })}
-              className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                portfolioData?.imageStyle === 'creative-blob'
-                  ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-              }`}
-            >
-              <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                <div className="p-[2px] bg-gradient-to-tr from-teal-500 via-emerald-500 to-amber-400 rounded-2xl rounded-tr-xs shrink-0 shadow-xs">
-                  {currentImageDisplay ? (
-                    <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-2xl rounded-tr-xs object-cover" />
-                  ) : (
-                    <div className="w-20 h-20 rounded-2xl rounded-tr-xs bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                  )}
-                </div>
-                <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                  {portfolioData?.title || "Sin título"}
-                </span>
-                <div className="w-full space-y-2 px-2.5 opacity-90">
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                  <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                </div>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700 mt-2">Marco Asimétrico</span>
-            </button>
-
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
       {/* MODAL PARA SUBIR O REMOVER IMAGEN PRINCIPAL */}
       <AnimatePresence>
@@ -650,16 +659,78 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
 
       <div className="space-y-3 pt-2">
         <label className="text-base font-semibold text-slate-900 block">Biografía</label>
-        <textarea
-          rows="3"
-          value={portfolioData?.description || ""}
-          onChange={(e) => setPortfolioData({ ...portfolioData, description: e.target.value })}
-          className="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500 resize-none shadow-sm"
-          placeholder="Escribe una breve bio o descripción para tu portfolio..."
-        />
+        {isEditingBio ? (
+          <div className="space-y-3">
+            <textarea
+              rows="3"
+              autoFocus
+              value={portfolioData?.description || ""}
+              onChange={(e) => setPortfolioData({ ...portfolioData, description: e.target.value })}
+              onBlur={() => setIsEditingBio(false)}
+              className="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500 resize-none shadow-sm text-left"
+              placeholder="Escribe una breve bio o descripción para tu portfolio..."
+            />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setPortfolioData({ ...portfolioData, bioAlign: "left" })}
+                className={`p-2 rounded-xl border transition ${
+                  (!portfolioData?.bioAlign || portfolioData?.bioAlign === "left")
+                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                    : "bg-white text-slate-600 border-purple-100 hover:bg-purple-50"
+                }`}
+                title="Alinear a la izquierda"
+              >
+                <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h10M4 18h14" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setPortfolioData({ ...portfolioData, bioAlign: "center" })}
+                className={`p-2 rounded-xl border transition ${
+                  portfolioData?.bioAlign === "center"
+                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                    : "bg-white text-slate-600 border-purple-100 hover:bg-purple-50"
+                }`}
+                title="Alinear al centro"
+              >
+                <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M7 12h10M5 18h14" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setPortfolioData({ ...portfolioData, bioAlign: "right" })}
+                className={`p-2 rounded-xl border transition ${
+                  portfolioData?.bioAlign === "right"
+                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                    : "bg-white text-slate-600 border-purple-100 hover:bg-purple-50"
+                }`}
+                title="Alinear a la derecha"
+              >
+                <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M10 12h10M6 18h14" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => setIsEditingBio(true)}
+            className="w-full px-1 py-1 text-sm text-slate-900 cursor-pointer transition hover:underline decoration-slate-900 underline-offset-4"
+          >
+            {portfolioData?.description || (
+              <span className="text-slate-400 italic">Escribe una breve bio o descripción para tu portfolio...</span>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="space-y-3 pt-4 pb-4 px-4 bg-slate-50 border border-purple-100 rounded-2xl shadow-sm">
+      <div className="space-y-3 pt-4 pb-4">
         <label className="text-base font-semibold text-slate-900 block">Redes Sociales</label>
 
         {stableLinks.length > 0 ? (
@@ -671,6 +742,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           >
             {stableLinks.map((linkItem) => {
               const iconUrl = getSocialIcon(linkItem.url);
+              const isConfirmingDelete = deleteConfirmUid === linkItem.uid;
 
               return (
                 <Reorder.Item 
@@ -714,14 +786,55 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                     className="w-full bg-transparent border-none text-sm text-slate-900 focus:outline-none"
                   />
 
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveLink(linkItem.uid)}
-                    className="text-slate-400 hover:text-rose-600 text-sm px-3 py-1 transition cursor-pointer"
-                    title="Eliminar link"
-                  >
-                    ✕
-                  </button>
+                  {/* Switch para activar/desactivar */}
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={linkItem.enabled ?? true}
+                      onChange={(e) => {
+                        const updatedLinks = stableLinks.map(l => 
+                          l.uid === linkItem.uid ? { ...l, enabled: e.target.checked } : l
+                        );
+                        setPortfolioData({ ...portfolioData, socialLinks: updatedLinks });
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                  </label>
+
+                  {/* Confirmación integrada en pantalla */}
+                  {isConfirmingDelete ? (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleRemoveLink(linkItem.uid);
+                          setDeleteConfirmUid(null);
+                        }}
+                        className="bg-black hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium cursor-pointer"
+                      >
+                        Remover
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmUid(null)}
+                        className="bg-white hover:bg-slate-50 text-slate-900 border border-slate-900 text-xs px-3 py-1.5 rounded-lg transition font-medium cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmUid(linkItem.uid)}
+                      className="text-slate-400 hover:text-rose-600 p-1.5 transition cursor-pointer shrink-0"
+                      title="Eliminar link"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
                 </Reorder.Item>
               );
             })}
@@ -730,347 +843,433 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           <p className="text-xs text-slate-500 italic pt-1">No hay enlaces agregados todavía.</p>
         )}
 
-        <div className="flex items-center gap-2 pt-2">
-          <input
-            type="text"
-            value={newLinkUrl}
-            onChange={(e) => setNewLinkUrl(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddLink(); } }}
-            className="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500 shadow-sm"
-            placeholder="Ej. https://instagram.com/tu_usuario o cualquier web"
-          />
+        {isAddingLink ? (
+          <div 
+            className="flex items-center gap-2 pt-2"
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                setIsAddingLink(false);
+              }
+            }}
+          >
+            <input
+              type="text"
+              autoFocus
+              value={newLinkUrl}
+              onChange={(e) => setNewLinkUrl(e.target.value)}
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter') { 
+                  e.preventDefault(); 
+                  handleAddLink(); 
+                  setIsAddingLink(false);
+                } 
+              }}
+              className="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500 shadow-sm"
+              placeholder="Ej. https://instagram.com/tu_usuario o cualquier web"
+            />
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                handleAddLink();
+                setIsAddingLink(false);
+              }}
+              className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
+            >
+              Añadir
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            onClick={handleAddLink}
-            className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
+            onClick={() => setIsAddingLink(true)}
+            className="w-full bg-white border border-purple-100 hover:border-purple-200 rounded-xl py-3.5 flex items-center justify-center text-slate-600 hover:text-purple-700 transition shadow-sm cursor-pointer mt-2"
+            title="Añadir red social"
           >
-            Añadir
+            <svg className="w-5 h-5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
           </button>
-        </div>
+        )}
       </div>
 
       {/* SECCIÓN: Páginas */}
-      <div className="space-y-3 pt-4 pb-4 px-4 bg-slate-50 border border-purple-100 rounded-2xl shadow-sm">
-        <label className="text-base font-semibold text-slate-900 block">Páginas</label>
+      <div className="space-y-3 pt-4 pb-4">
+  <label className="text-base font-semibold text-slate-900 block">Páginas</label>
 
-        {stablePages.length > 0 ? (
-          <Reorder.Group 
-            axis="y" 
-            values={stablePages} 
-            onReorder={handleReorderPages}
-            className="space-y-2.5 pt-1 list-none"
+  {stablePages.length > 0 ? (
+    <Reorder.Group 
+      axis="y" 
+      values={stablePages} 
+      onReorder={handleReorderPages}
+      className="space-y-2.5 pt-1 list-none"
+    >
+      {stablePages.map((page) => {
+        const isVisibleOnHome = page.showOnHome !== false; 
+        const pageType = page.type || page.template || "Página";
+        const isImageType = pageType.toLowerCase() === "image" || pageType.toLowerCase() === "imagen";
+        const isLayoutOpen = openLayoutPageUid === page.uid;
+        const isShareOpen = openSharePageUid === page.uid;
+        const isDeleteOpen = openDeletePageUid === page.uid;
+        const currentLayout = page.layout || "grid-3";
+        const pageSlug = page.slug || page.path || "";
+        const absoluteShareUrl = typeof window !== "undefined" ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` : `/${portfolioSlug}/${pageSlug}`;
+
+        return (
+          <Reorder.Item 
+            key={page.uid}
+            value={page}
+            whileDrag={{
+              scale: 1.02,
+              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+              zIndex: 50,
+            }}
+            className="flex flex-col bg-white rounded-xl shadow-sm border border-purple-100 hover:border-purple-200 overflow-hidden relative select-none"
           >
-            {stablePages.map((page) => {
-              const isVisibleOnHome = page.showOnHome !== false; 
-              const pageType = page.type || page.template || "Página";
-              const isImageType = pageType.toLowerCase() === "image" || pageType.toLowerCase() === "imagen";
-              const isLayoutOpen = openLayoutPageUid === page.uid;
-              const isShareOpen = openSharePageUid === page.uid;
-              const currentLayout = page.layout || "grid-3";
-              const pageSlug = page.slug || page.path || "";
-              const absoluteShareUrl = typeof window !== "undefined" ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` : `/${portfolioSlug}/${pageSlug}`;
+            <div className="flex relative w-full">
+              <div 
+                className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-slate-400 hover:text-purple-700 transition-colors cursor-grab active:cursor-grabbing bg-slate-50/50 border-r border-slate-100" 
+                title="Arrastrar para ordenar"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex gap-0.5">
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                  </div>
+                  <div className="flex gap-0.5">
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                  </div>
+                  <div className="flex gap-0.5">
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                    <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                  </div>
+                </div>
+              </div>
 
-              return (
-                <Reorder.Item 
-                  key={page.uid}
-                  value={page}
-                  whileDrag={{
-                    scale: 1.02,
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    zIndex: 50,
-                  }}
-                  className="flex flex-col bg-white rounded-xl shadow-sm border border-purple-100 hover:border-purple-200 overflow-hidden relative select-none"
-                >
-                  <div className="flex relative w-full">
-                    <div 
-                      className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-slate-400 hover:text-purple-700 transition-colors cursor-grab active:cursor-grabbing bg-slate-50/50 border-r border-slate-100" 
-                      title="Arrastrar para ordenar"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex gap-0.5">
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                        <div className="flex gap-0.5">
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                        <div className="flex gap-0.5">
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                      </div>
+              <div className="flex-1 flex flex-col gap-3 pl-12 pr-3.5 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-9 h-9 flex items-center justify-center bg-purple-50 border border-purple-100 rounded-lg shrink-0 pointer-events-none">
+                      <svg className="w-4.5 h-4.5 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
                     </div>
 
-                    <div className="flex-1 flex flex-col gap-3 pl-12 pr-3.5 py-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-9 h-9 flex items-center justify-center bg-purple-50 border border-purple-100 rounded-lg shrink-0 pointer-events-none">
-                            <svg className="w-4.5 h-4.5 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                          </div>
-
-                          <div className="truncate">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-medium text-slate-900 truncate">{page.title || page.name || "Página sin título"}</h4>
-                              <span className="text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md border border-purple-100 shrink-0">
-                                {pageType}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 truncate">/{pageSlug}</p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleTogglePageVisibility(page.uid)}
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer shrink-0 border ${
-                            isVisibleOnHome 
-                              ? "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100" 
-                              : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
-                          }`}
-                          title="Alternar visibilidad en la página principal"
-                        >
-                          {isVisibleOnHome ? "Visible en Home" : "Oculto en Home"}
-                        </button>
+                    <div className="truncate">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-medium text-slate-900 truncate">{page.title || page.name || "Página sin título"}</h4>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md border border-purple-100 shrink-0">
+                          {pageType}
+                        </span>
                       </div>
-
-                      <div className="flex items-center justify-start gap-2 pt-2 border-t border-slate-100">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isImageType) {
-                              setOpenLayoutPageUid(isLayoutOpen ? null : page.uid);
-                              setOpenSharePageUid(null);
-                            }
-                          }}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            isImageType 
-                              ? (isLayoutOpen ? "text-purple-700 bg-purple-100" : "text-slate-500 hover:text-purple-700 hover:bg-purple-50")
-                              : "text-slate-300 cursor-not-allowed"
-                          }`}
-                          title={isImageType ? "Configurar Layout" : "Solo disponible para páginas de tipo image"}
-                        >
-                          <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                          </svg>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenSharePageUid(isShareOpen ? null : page.uid);
-                            setOpenLayoutPageUid(null);
-                          }}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            isShareOpen ? "text-purple-700 bg-purple-100" : "text-slate-500 hover:text-purple-700 hover:bg-purple-50"
-                          }`}
-                          title="Compartir página"
-                        >
-                          <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                          </svg>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const updatedPages = stablePages.filter(p => p.uid !== page.uid);
-                            setPortfolioData({ ...portfolioData, pages: updatedPages });
-                          }}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Eliminar página"
-                        >
-                          <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
+                      <p className="text-xs text-slate-500 truncate">/{pageSlug}</p>
                     </div>
                   </div>
 
-                  {/* Sección desplegable con animación smooth para compartir */}
-                  <AnimatePresence>
-                    {isShareOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
-                      >
-                        {/* Texto descriptivo encima */}
-                        <span className="text-xs font-semibold text-slate-700 block">Comparte el contenido de la página con este link</span>
+                  {/* Switch para alternar visibilidad en Home */}
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0" title="Alternar visibilidad en la página principal">
+                    <input
+                      type="checkbox"
+                      checked={isVisibleOnHome}
+                      onChange={() => handleTogglePageVisibility(page.uid)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                  </label>
+                </div>
 
-                        {/* URL y botón de copiar dentro de un borde */}
-                        <div className="flex items-center justify-between gap-2 bg-white border border-purple-100 rounded-xl px-3.5 py-2.5 shadow-sm">
-                          <span className="text-sm font-medium select-all truncate">
-                            <span className="text-slate-900">lightjaus.com</span>
-                            <span className="text-slate-600">/{portfolioSlug}/{pageSlug}</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigator.clipboard.writeText(`https://lightjaus.com/${portfolioSlug}/${pageSlug}`);
-                            }}
-                            className="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
+                <div className="flex items-center justify-start gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isImageType) {
+                        setOpenLayoutPageUid(isLayoutOpen ? null : page.uid);
+                        setOpenSharePageUid(null);
+                        setOpenDeletePageUid(null);
+                      }
+                    }}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      isImageType 
+                        ? (isLayoutOpen ? "text-purple-700 bg-purple-100" : "text-slate-500 hover:text-purple-700 hover:bg-purple-50")
+                        : "text-slate-300 cursor-not-allowed"
+                    }`}
+                    title={isImageType ? "Configurar Layout" : "Solo disponible para páginas de tipo image"}
+                  >
+                    <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenSharePageUid(isShareOpen ? null : page.uid);
+                      setOpenLayoutPageUid(null);
+                      setOpenDeletePageUid(null);
+                    }}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      isShareOpen ? "text-purple-700 bg-purple-100" : "text-slate-500 hover:text-purple-700 hover:bg-purple-50"
+                    }`}
+                    title="Compartir página"
+                  >
+                    <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDeletePageUid(isDeleteOpen ? null : page.uid);
+                      setOpenSharePageUid(null);
+                      setOpenLayoutPageUid(null);
+                    }}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      isDeleteOpen ? "text-rose-600 bg-rose-100" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                    }`}
+                    title="Eliminar página"
+                  >
+                    <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sección desplegable con animación smooth para confirmación de eliminación */}
+            <AnimatePresence>
+              {isDeleteOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden bg-rose-50/50 border-t border-rose-100 px-4 py-3.5 space-y-3"
+                >
+                  <div className="space-y-1">
+                    <span className="text-xs font-semibold text-rose-900 block">¿Estás seguro de eliminar esta página?</span>
+                    <p className="text-[11px] text-slate-600">Esta acción no se puede deshacer y el contenido se perderá.</p>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDeletePageUid(null);
+                      }}
+                      className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const updatedPages = stablePages.filter(p => p.uid !== page.uid);
+                        setPortfolioData({ ...portfolioData, pages: updatedPages });
+                        setOpenDeletePageUid(null);
+                      }}
+                      className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm cursor-pointer flex items-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Sí, eliminar
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Sección desplegable con animación smooth para compartir */}
+            <AnimatePresence>
+              {isShareOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
+                >
+                  <span className="text-xs font-semibold text-slate-700 block">Comparte el contenido de la página con este link</span>
+
+                  <div className="flex items-center justify-between gap-2 bg-white border border-purple-100 rounded-xl px-3.5 py-2.5 shadow-sm">
+                    <span className="text-sm font-medium select-all truncate">
+                      <span className="text-slate-900">lightjaus.com</span>
+                      <span className="text-slate-600">/{portfolioSlug}/{pageSlug}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(`https://lightjaus.com/${portfolioSlug}/${pageSlug}`);
+                      }}
+                      className="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
+                    >
+                      <svg className="w-3.5 h-3.5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      Copiar
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 pt-1">
+                    <span className="text-xs font-semibold text-purple-900 block">Compartir en redes sociales</span>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {(() => {
+                        const whatsappText = `Mira esta página: ${page.title || ""} ${absoluteShareUrl}`;
+                        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappText)}`;
+                        
+                        return (
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
                           >
-                            <svg className="w-3.5 h-3.5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                            Copiar
-                          </button>
-                        </div>
+                            <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                            <span>WhatsApp</span>
+                          </a>
+                        );
+                      })()}
 
-                        {/* Redes sociales debajo con título */}
-                        <div className="space-y-2 pt-1">
-                          <span className="text-xs font-semibold text-purple-900 block">Compartir en redes sociales</span>
-                          <div className="grid grid-cols-5 gap-1.5">
-                            <a
-                              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Mira esta página: ${page.title || ""} ${absoluteShareUrl}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
-                            >
-                              <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                              <span>WhatsApp</span>
-                            </a>
-                            <a
-                              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(absoluteShareUrl)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
-                            >
-                              <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.37 14.5 5 15.5 5H18V0h-3.808C10.59 0 9 1.588 9 4.7V8z"/></svg>
-                              <span>Facebook</span>
-                            </a>
-                            <a
-                              href={`https://www.facebook.com/dialog/send?link=${encodeURIComponent(absoluteShareUrl)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(absoluteShareUrl)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
-                            >
-                              <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 4.979 0 11.111c0 3.497 1.745 6.616 4.472 8.654V24l4.08-2.242c1.093.303 2.248.464 3.448.464 6.627 0 12-4.979 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26 6.56-6.963 3.13 3.26 5.888-3.26-6.56 6.963z"/></svg>
-                              <span>Messenger</span>
-                            </a>
-                            <a
-                              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mira esta página: ${page.title || ""}`)}&url=${encodeURIComponent(absoluteShareUrl)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
-                            >
-                              <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                              <span>X</span>
-                            </a>
-                            <a
-                              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(absoluteShareUrl)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
-                            >
-                              <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                              <span>LinkedIn</span>
-                            </a>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Sección desplegable con animación smooth para selección de layout (solo para páginas de tipo image) */}
-                  <AnimatePresence>
-                    {isImageType && isLayoutOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5"
+                      <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(absoluteShareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
                       >
-                        <div className="space-y-2.5">
-                          <span className="text-xs font-semibold text-purple-900 block">Seleccionar Layout de Imágenes</span>
-                          <div className="grid grid-cols-3 gap-2.5">
-                            {/* Opción 1: Fila de 3 imágenes */}
-                            <button
-                              type="button"
-                              onClick={() => handleUpdatePageLayout(page.uid, "grid-3")}
-                              className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                currentLayout === "grid-3" || !currentLayout
-                                  ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                  : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                              }`}
-                            >
-                              <svg className={`w-7 h-7 stroke-2 ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <rect x="3" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                                <rect x="9.5" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                                <rect x="16" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-slate-600"}`}>
-                                Fila de 3 imágenes
-                              </span>
-                            </button>
+                        <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8H6v4h3v12h5V12h3.642L18 8h-4V6.333C14 5.37 14.5 5 15.5 5H18V0h-3.808C10.59 0 9 1.588 9 4.7V8z"/></svg>
+                        <span>Facebook</span>
+                      </a>
+                      <a
+                        href={`https://www.facebook.com/dialog/send?link=${encodeURIComponent(absoluteShareUrl)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(absoluteShareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
+                      >
+                        <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 4.979 0 11.111c0 3.497 1.745 6.616 4.472 8.654V24l4.08-2.242c1.093.303 2.248.464 3.448.464 6.627 0 12-4.979 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26 6.56-6.963 3.13 3.26 5.888-3.26-6.56 6.963z"/></svg>
+                        <span>Messenger</span>
+                      </a>
+                      <a
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Mira esta página: ${page.title || ""}`)}&url=${encodeURIComponent(absoluteShareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
+                      >
+                        <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <span>X</span>
+                      </a>
+                      <a
+                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(absoluteShareUrl)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
+                      >
+                        <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        <span>LinkedIn</span>
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                            {/* Opción 2: Imagen grande única */}
-                            <button
-                              type="button"
-                              onClick={() => handleUpdatePageLayout(page.uid, "single-large")}
-                              className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                currentLayout === "single-large"
-                                  ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                  : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                              }`}
-                            >
-                              <svg className={`w-7 h-7 stroke-2 ${currentLayout === "single-large" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "single-large" ? "text-white" : "text-slate-600"}`}>
-                                Imagen grande única
-                              </span>
-                            </button>
+            {/* Sección desplegable con animación smooth para selección de layout (solo para páginas de tipo image) */}
+            <AnimatePresence>
+              {isImageType && isLayoutOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5"
+                >
+                  <div className="space-y-2.5">
+                    <span className="text-xs font-semibold text-purple-900 block">Seleccionar Layout de Imágenes</span>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {/* Opción 1: Fila de 3 imágenes */}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdatePageLayout(page.uid, "grid-3")}
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
+                          currentLayout === "grid-3" || !currentLayout
+                            ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                            : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                        }`}
+                      >
+                        <svg className={`w-7 h-7 stroke-2 ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="9.5" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="16" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-slate-600"}`}>
+                          Fila de 3 imágenes
+                        </span>
+                      </button>
 
-                            {/* Opción 3: Galería Mosaico */}
-                            <button
-                              type="button"
-                              onClick={() => handleUpdatePageLayout(page.uid, "masonry-grid")}
-                              className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                currentLayout === "masonry-grid"
-                                  ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                  : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                              }`}
-                            >
-                              <svg className={`w-7 h-7 stroke-2 ${currentLayout === "masonry-grid" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <rect x="3" y="3" width="10" height="10" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <rect x="14" y="3" width="7" height="6" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <rect x="14" y="10.5" width="7" height="10.5" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <rect x="3" y="14" width="10" height="7" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "masonry-grid" ? "text-white" : "text-slate-600"}`}>
-                                Galería Mosaico
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Reorder.Item>
-              );
-            })}
-          </Reorder.Group>
-        ) : (
-          <p className="text-xs text-slate-500 italic pt-1">No hay páginas creadas todavía.</p>
-        )}
-      </div>
+                      {/* Opción 2: Imagen grande única */}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdatePageLayout(page.uid, "single-large")}
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
+                          currentLayout === "single-large"
+                            ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                            : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                        }`}
+                      >
+                        <svg className={`w-7 h-7 stroke-2 ${currentLayout === "single-large" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "single-large" ? "text-white" : "text-slate-600"}`}>
+                          Imagen grande única
+                        </span>
+                      </button>
+
+                      {/* Opción 3: Galería Mosaico */}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdatePageLayout(page.uid, "masonry-grid")}
+                        className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
+                          currentLayout === "masonry-grid"
+                            ? "bg-purple-700 text-white border-purple-700 shadow-sm"
+                            : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                        }`}
+                      >
+                        <svg className={`w-7 h-7 stroke-2 ${currentLayout === "masonry-grid" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="3" width="10" height="10" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="14" y="3" width="7" height="6" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="14" y="10.5" width="7" height="10.5" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <rect x="3" y="14" width="10" height="7" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "masonry-grid" ? "text-white" : "text-slate-600"}`}>
+                          Galería Mosaico
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Reorder.Item>
+        );
+      })}
+    </Reorder.Group>
+  ) : (
+    <p className="text-xs text-slate-500 italic pt-1">No hay páginas creadas todavía.</p>
+  )}
+</div>
 
       <button
         onClick={handleSaveWithUpload}
