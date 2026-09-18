@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
   const page = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
@@ -13,17 +14,23 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   const [itemTitle, setItemTitle] = useState("");
   const [itemDescription, setItemDescription] = useState("");
   
+  // Estados para la edición de títulos de galerías
+  const [editingGalleryId, setEditingGalleryId] = useState(null);
+  const [editingGalleryTitle, setEditingGalleryTitle] = useState("");
+
+  const [deleteGalleryUid, setDeleteGalleryUid] = useState(null);
+  const [deleteItemTarget, setDeleteItemTarget] = useState({ galleryId: null, itemId: null });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
   if (!page) {
-    return <div className="text-xs text-slate-400">Selecciona una página válida desde el menú lateral.</div>;
+    return <div className="text-sm text-slate-500">Selecciona una página válida desde el menú lateral.</div>;
   }
 
   const galleries = page.galleries || [];
 
-  // 1. Crear una nueva galería para ESTA página
   const handleCreateGallery = async (e) => {
     e.preventDefault();
     if (!newGalleryTitle.trim()) {
@@ -36,12 +43,13 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
 
     setLoading(true);
     setError(null);
+    setSuccessMsg(null);
 
     try {
-      // Usamos crypto.randomUUID() para generar un identificador único puro y seguro
       const newGallery = {
         id: crypto.randomUUID(),
         title: newGalleryTitle.trim(),
+        isActive: true,
         items: []
       };
 
@@ -68,7 +76,92 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  // 2. Subir imagen a Cloudinary y añadirla a la galería seleccionada
+  const handleReorderGalleries = async (newOrderGalleries) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const updatedPages = portfolioData.pages.map((p) => {
+        if ((p.id || p.slug) === selectedPageId) {
+          return { ...p, galleries: newOrderGalleries };
+        }
+        return p;
+      });
+
+      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+
+      onUpdatePortfolio(updatedPages);
+    } catch (err) {
+      console.error("Error al reordenar galerías:", err);
+      setError("No se pudo guardar el nuevo orden de las galerías.");
+    }
+  };
+
+  const handleUpdateGalleryTitle = async (galleryId) => {
+    if (!editingGalleryTitle.trim()) {
+      setEditingGalleryId(null);
+      return;
+    }
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const updatedGalleries = galleries.map((gal) => {
+        if (gal.id === galleryId) {
+          return { ...gal, title: editingGalleryTitle.trim() };
+        }
+        return gal;
+      });
+
+      const updatedPages = portfolioData.pages.map((p) => {
+        if ((p.id || p.slug) === selectedPageId) {
+          return { ...p, galleries: updatedGalleries };
+        }
+        return p;
+      });
+
+      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+
+      onUpdatePortfolio(updatedPages);
+      setEditingGalleryId(null);
+    } catch (err) {
+      console.error("Error al actualizar título:", err);
+      setError("No se pudo actualizar el título de la galería.");
+    }
+  };
+
+  const handleToggleGalleryActive = async (galleryId, currentActiveState) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const updatedGalleries = galleries.map((gal) => {
+        if (gal.id === galleryId) {
+          return { ...gal, isActive: currentActiveState === undefined ? false : !currentActiveState };
+        }
+        return gal;
+      });
+
+      const updatedPages = portfolioData.pages.map((p) => {
+        if ((p.id || p.slug) === selectedPageId) {
+          return { ...p, galleries: updatedGalleries };
+        }
+        return p;
+      });
+
+      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+
+      onUpdatePortfolio(updatedPages);
+    } catch (err) {
+      console.error("Error al cambiar estado de galería:", err);
+      setError("No se pudo actualizar el estado de la galería.");
+    }
+  };
+
   const handleAddImageToGallery = async (e, galleryId) => {
     e.preventDefault();
     if (!mediaFile) {
@@ -106,7 +199,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
 
       const imageUrl = data.secure_url || data.url;
 
-      // Usamos crypto.randomUUID() en lugar de Date.now()
       const newItem = {
         id: crypto.randomUUID(),
         url: imageUrl,
@@ -146,7 +238,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  // 3. Eliminar una imagen de una galería específica
   const handleDeleteItem = async (galleryId, itemId) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -171,13 +262,13 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
 
       onUpdatePortfolio(updatedPages);
       setSuccessMsg("Imagen eliminada correctamente.");
+      setDeleteItemTarget({ galleryId: null, itemId: null });
     } catch (err) {
       console.error("Error al eliminar imagen:", err);
       setError("No se pudo eliminar la imagen.");
     }
   };
 
-  // 4. Eliminar una galería completa de esta página
   const handleDeleteGallery = async (galleryId) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -196,155 +287,336 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
 
       onUpdatePortfolio(updatedPages);
       setSuccessMsg("Galería eliminada correctamente.");
+      setDeleteGalleryUid(null);
     } catch (err) {
       console.error("Error al eliminar galería:", err);
+      setError("No se pudo eliminar la galería.");
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 rounded-2xl space-y-6">
+    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins'] overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div>
-        <span className="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded-md border border-purple-500/20">
-          Gestor de Galerías
-        </span>
-        <h2 className="text-base font-bold text-white tracking-tight mt-1.5">{page.title}</h2>
-        <p className="text-xs text-slate-400">
-          Gestiona las galerías exclusivas para esta página.
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">{page.title}</h2>
+          <button
+            type="button"
+            className="p-1.5 text-slate-500 hover:text-purple-700 hover:bg-purple-100/50 rounded-lg transition-colors cursor-pointer"
+            title="Ocultar formulario y ver solo preview"
+          >
+            <svg className="w-5 h-5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+        <p className="text-sm text-slate-500">
+          Página tipo imagen
         </p>
       </div>
 
-      {error && <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-xl">{error}</div>}
-      {successMsg && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs p-3 rounded-xl">{successMsg}</div>}
+      {error && <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm p-3.5 rounded-xl">{error}</div>}
+      {successMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm p-3.5 rounded-xl">{successMsg}</div>}
 
       {/* Formulario para Crear una Nueva Galería */}
-      <form onSubmit={handleCreateGallery} className="flex gap-2 bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+      <form onSubmit={handleCreateGallery} className="flex items-center gap-2.5 bg-transparent border-none p-0 shadow-none">
         <input
           type="text"
           placeholder="Nombre de la galería (ej. Vestidos, Zapatos...)"
           value={newGalleryTitle}
           onChange={(e) => setNewGalleryTitle(e.target.value)}
-          className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50"
+          className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-purple-600 shadow-sm"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/20 transition-all shrink-0 cursor-pointer"
+          className="px-5 py-2.5 bg-black text-white hover:bg-slate-800 disabled:opacity-50 rounded-xl text-sm font-medium shadow-sm transition-all shrink-0 cursor-pointer"
         >
           Crear Galería
         </button>
       </form>
 
-      {/* Listado de Galerías de ESTA página */}
-      <div className="space-y-4">
+      {/* Listado de Galerías */}
+      <Reorder.Group axis="y" values={galleries} onReorder={handleReorderGalleries} className="space-y-4 relative [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {galleries.length > 0 ? (
-          galleries.map((gal) => (
-            <div key={gal.id} className="bg-slate-950/40 border border-slate-800/80 p-4 rounded-xl space-y-4">
-              
-              <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
-                <div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">{gal.title}</h3>
-                  <p className="text-[11px] text-slate-400">{gal.items.length} imágenes registradas</p>
-                </div>
+          galleries.map((gal) => {
+            const isGalleryDeleteOpen = deleteGalleryUid === gal.id;
+            const isGalleryActive = gal.isActive !== false;
+            const isEditing = editingGalleryId === gal.id;
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveGalleryId(activeGalleryId === gal.id ? null : gal.id)}
-                    className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                  >
-                    {activeGalleryId === gal.id ? "Cancelar" : "+ Añadir Imagen"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteGallery(gal.id)}
-                    className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                  >
-                    Borrar Galería
-                  </button>
-                </div>
-              </div>
+            return (
+              <Reorder.Item key={gal.id} value={gal} className="list-none relative">
+                <div className="bg-white border border-purple-100 rounded-xl shadow-sm overflow-hidden">
+                  <div className="p-4 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 gap-3">
+                      
+                      {/* Ícono de Arrastre personalizado en puntos y Título editable */}
+                      <div className="flex items-center gap-2.5 flex-1 overflow-hidden">
+                        <div 
+                          className="text-slate-400 hover:text-purple-700 flex flex-col gap-0.5 justify-center shrink-0 px-1 transition-colors cursor-grab active:cursor-grabbing"
+                          title="Arrastrar para ordenar"
+                        >
+                          <div className="flex gap-0.5">
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                          </div>
+                          <div className="flex gap-0.5">
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                          </div>
+                          <div className="flex gap-0.5">
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
+                          </div>
+                        </div>
 
-              {activeGalleryId === gal.id && (
-                <form onSubmit={(e) => handleAddImageToGallery(e, gal.id)} className="space-y-3 bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
-                  <h4 className="text-xs font-semibold text-purple-300">Subir imagen a &quot;{gal.title}&quot;</h4>
-                  
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300">Archivo de Imagen</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      required
-                      onChange={(e) => setMediaFile(e.target.files[0])}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300">Título Opcional</label>
-                    <input
-                      type="text"
-                      placeholder="Ej. Vestido de Gala Azul"
-                      value={itemTitle}
-                      onChange={(e) => setItemTitle(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/50"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-slate-300">Descripción Corta</label>
-                    <input
-                      type="text"
-                      placeholder="Ej. Tela satinada con detalles bordados..."
-                      value={itemDescription}
-                      onChange={(e) => setItemDescription(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500/50"
-                    />
-                  </div>
-
-                  <div className="flex justify-end pt-1">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-all cursor-pointer"
-                    >
-                      {loading ? "Subiendo..." : "Guardar Imagen"}
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {gal.items.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  {gal.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between bg-slate-900 border border-slate-800 p-2.5 rounded-xl gap-2.5">
-                      <div className="flex items-center gap-2.5 overflow-hidden">
-                        <img src={item.url} alt={item.title || "Preview"} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-800" />
-                        <div className="overflow-hidden">
-                          <span className="text-xs font-bold text-white truncate block">{item.title || "Sin título"}</span>
-                          <p className="text-[10px] text-slate-400 truncate">{item.description || "Sin descripción"}</p>
+                        <div className="flex-1 overflow-hidden">
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              value={editingGalleryTitle}
+                              onChange={(e) => setEditingGalleryTitle(e.target.value)}
+                              onBlur={() => handleUpdateGalleryTitle(gal.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.target.blur(); // Dispara el onBlur y guarda
+                                }
+                                if (e.key === "Escape") {
+                                  setEditingGalleryId(null);
+                                }
+                              }}
+                              autoFocus
+                              className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 px-0 py-0 text-base font-medium text-slate-900 shadow-none rounded-none"
+                            />
+                          ) : (
+                            <div 
+                              onClick={() => {
+                                setEditingGalleryId(gal.id);
+                                setEditingGalleryTitle(gal.title);
+                              }}
+                              className="group cursor-pointer flex items-center gap-1.5"
+                              title="Haz clic para editar el título"
+                            >
+                              <h3 className="text-base font-medium text-slate-950 tracking-wide group-hover:text-purple-700 transition-colors truncate">
+                                {gal.title}
+                              </h3>
+                              <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-700 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteItem(gal.id, item.id)}
-                        className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-lg text-[10px] font-semibold transition-all shrink-0 cursor-pointer"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-500 italic text-center py-2">No hay imágenes en esta galería todavía.</p>
-              )}
+                      <div className="flex items-center gap-3 shrink-0">
+                        {/* Botón Añadir Imagen */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveGalleryId(activeGalleryId === gal.id ? null : gal.id);
+                            setDeleteGalleryUid(null);
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shadow-sm ${
+                            activeGalleryId === gal.id
+                              ? "bg-slate-800 text-white"
+                              : "bg-black text-white hover:bg-slate-800"
+                          }`}
+                        >
+                          {activeGalleryId === gal.id ? "Cancelar" : "+ Añadir Imagen"}
+                        </button>
 
-            </div>
-          ))
+                        {/* Switch para activar/desactivar galería */}
+                        <label className="relative inline-flex items-center cursor-pointer" title={isGalleryActive ? "Galería activa" : "Galería desactivada"}>
+                          <input
+                            type="checkbox"
+                            checked={isGalleryActive}
+                            onChange={() => handleToggleGalleryActive(gal.id, isGalleryActive)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+
+                        {/* Botón de Borrar Galería con Ícono de Tacho */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteGalleryUid(isGalleryDeleteOpen ? null : gal.id);
+                            setActiveGalleryId(null);
+                          }}
+                          className={`p-2 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
+                            isGalleryDeleteOpen 
+                              ? "bg-rose-600 text-white border border-rose-600" 
+                              : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200"
+                          }`}
+                          title="Borrar Galería"
+                        >
+                          <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Panel de confirmación para borrar galería */}
+                    <AnimatePresence>
+                      {isGalleryDeleteOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="overflow-hidden bg-rose-50/50 border border-rose-100 rounded-xl p-4 space-y-3"
+                        >
+                          <div className="space-y-1">
+                            <span className="text-xs font-semibold text-rose-900 block">¿Estás seguro de eliminar esta galería completa?</span>
+                            <p className="text-xs text-slate-600">Se eliminarán todas las imágenes asociadas a &quot;{gal.title}&quot;.</p>
+                          </div>
+
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDeleteGalleryUid(null)}
+                              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm cursor-pointer"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteGallery(gal.id)}
+                              className="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm cursor-pointer"
+                            >
+                              Sí, eliminar galería
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {activeGalleryId === gal.id && (
+                      <form onSubmit={(e) => handleAddImageToGallery(e, gal.id)} className="space-y-3.5 bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                        <h4 className="text-xs font-semibold text-slate-900">Subir imagen a &quot;{gal.title}&quot;</h4>
+                        
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-slate-700 block">Archivo de Imagen</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            required
+                            onChange={(e) => setMediaFile(e.target.files[0])}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-black file:text-white cursor-pointer shadow-sm"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-slate-700 block">Título Opcional</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Vestido de Gala Azul"
+                            value={itemTitle}
+                            onChange={(e) => setItemTitle(e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-black shadow-sm"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-slate-700 block">Descripción Corta</label>
+                          <input
+                            type="text"
+                            placeholder="Ej. Tela satinada con detalles bordados..."
+                            value={itemDescription}
+                            onChange={(e) => setItemDescription(e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-black shadow-sm"
+                          />
+                        </div>
+
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-4 py-2 bg-black hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-xs font-medium transition-all cursor-pointer shadow-sm"
+                          >
+                            {loading ? "Subiendo..." : "Guardar Imagen"}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {gal.items.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        {gal.items.map((item) => {
+                          const isItemDeleteOpen = deleteItemTarget.galleryId === gal.id && deleteItemTarget.itemId === item.id;
+
+                          return (
+                            <div key={item.id} className="flex flex-col bg-white border border-slate-200 p-3 rounded-xl gap-3 shadow-sm">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                  <img src={item.url} alt={item.title || "Preview"} className="w-12 h-12 rounded-lg object-cover shrink-0 border border-slate-200" />
+                                  <div className="overflow-hidden">
+                                    <span className="text-xs font-semibold text-slate-900 truncate block">{item.title || "Sin título"}</span>
+                                    <p className="text-xs text-slate-500 truncate">{item.description || "Sin descripción"}</p>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleteItemTarget(isItemDeleteOpen ? { galleryId: null, itemId: null } : { galleryId: gal.id, itemId: item.id })}
+                                  className={`p-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                                    isItemDeleteOpen 
+                                      ? "bg-rose-600 text-white" 
+                                      : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200"
+                                  }`}
+                                  title="Eliminar imagen"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              {/* Panel de confirmación anidado para la imagen individual */}
+                              <AnimatePresence>
+                                {isItemDeleteOpen && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                                    className="overflow-hidden bg-rose-50/50 border border-rose-100 rounded-lg p-3 space-y-2.5"
+                                  >
+                                    <span className="text-xs font-semibold text-rose-950 block">¿Eliminar esta imagen?</span>
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setDeleteItemTarget({ galleryId: null, itemId: null })}
+                                        className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer"
+                                      >
+                                        Cancelar
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteItem(gal.id, item.id)}
+                                        className="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer"
+                                      >
+                                        Eliminar
+                                      </button>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic text-center py-3">No hay imágenes en esta galería todavía.</p>
+                    )}
+                  </div>
+                </div>
+              </Reorder.Item>
+            );
+          })
         ) : (
-          <p className="text-xs text-slate-500 italic text-center py-6">No hay galerías creadas para esta página todavía.</p>
+          <p className="text-sm text-slate-400 italic text-center py-6">No hay galerías creadas para esta página todavía.</p>
         )}
-      </div>
+      </Reorder.Group>
     </div>
   );
 }
