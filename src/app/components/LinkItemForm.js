@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function LinkItemForm({ onAddLink, loading }) {
   const [title, setTitle] = useState("");
@@ -8,6 +8,13 @@ export default function LinkItemForm({ onAddLink, loading }) {
   const [icon, setIcon] = useState("website");
   const [isFeatured, setIsFeatured] = useState(false);
   const [error, setError] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Activamos la animación justo después de montarse el componente
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -19,19 +26,17 @@ export default function LinkItemForm({ onAddLink, loading }) {
 
     setError(null);
 
-    // Estructura del nuevo link a guardar dentro del array de items de la página
     const newLinkItem = {
       id: Date.now().toString(),
       title: title.trim(),
       url: url.trim(),
       icon: icon,
-      isFeatured: isFeatured, // Opción booleana solicitada
+      isFeatured: isFeatured,
       createdAt: new Date().toISOString()
     };
 
     onAddLink(newLinkItem);
 
-    // Limpiar formulario tras enviar
     setTitle("");
     setUrl("");
     setIsFeatured(false);
@@ -39,74 +44,58 @@ export default function LinkItemForm({ onAddLink, loading }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl space-y-4 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+    <form 
+      onSubmit={handleSubmit} 
+      className={`bg-white border border-slate-200 p-5 rounded-xl space-y-4 shadow-sm transition-all duration-300 ease-out transform ${
+        isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-3 scale-95"
+      }`}
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider">Añadir Nuevo Enlace (Linktree)</h3>
-          <p className="text-[11px] text-slate-400 mt-0.5">Configura botones de redirección hacia tus redes o webs externas.</p>
+          <h3 className="text-base font-medium text-slate-950 tracking-wide truncate">Añadir nuevo link</h3>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs p-3 rounded-xl">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm p-3 rounded-xl">
           {error}
         </div>
       )}
 
-      {/* Título del Botón */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-medium text-slate-300">Título del Enlace</label>
-        <input 
-          type="text"
-          required
-          placeholder="Ej. Mi Instagram / Agendar Cita / Canal de YouTube"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50"
-        />
-      </div>
-
       {/* URL de Destino */}
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-slate-300">URL de Destino</label>
+        <label className="text-sm font-medium text-slate-700">URL</label>
         <input 
           type="url"
           required
-          placeholder="https://instagram.com/tu_usuario"
+          placeholder="https://"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50"
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500/50 shadow-sm"
         />
       </div>
 
-      {/* Selector de Icono / Red Social */}
+      {/* Título del Botón */}
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-slate-300">Plataforma / Icono</label>
-        <select
-          value={icon}
-          onChange={(e) => setIcon(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-purple-500/50"
-        >
-          <option value="website">Sitio Web / General</option>
-          <option value="instagram">Instagram</option>
-          <option value="tiktok">TikTok</option>
-          <option value="youtube">YouTube</option>
-          <option value="spotify">Spotify</option>
-          <option value="twitter">X (Twitter)</option>
-          <option value="github">GitHub</option>
-          <option value="calendly">Calendly / Citas</option>
-          <option value="whatsapp">WhatsApp</option>
-        </select>
+        <label className="text-sm font-medium text-slate-700">Título</label>
+        <input 
+          type="text"
+          required
+          placeholder="Título del link"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500/50 shadow-sm"
+        />
       </div>
 
       {/* Opción Booleana: Destacar Link */}
-      <div className="flex items-center justify-between bg-slate-900/80 border border-slate-800/80 p-3.5 rounded-xl">
+      <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
         <div className="space-y-0.5">
-          <label htmlFor="featured-toggle" className="text-xs font-medium text-white cursor-pointer block">
+          <label htmlFor="featured-toggle" className="text-sm font-medium text-slate-900 cursor-pointer block">
             Destacar este enlace
           </label>
-          <p className="text-[11px] text-slate-400">
-            Aparecerá con un estilo visual llamativo o animado en la parte superior.
+          <p className="text-xs text-slate-500">
+            Aparecerá en el home.
           </p>
         </div>
         <input
@@ -114,7 +103,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
           type="checkbox"
           checked={isFeatured}
           onChange={(e) => setIsFeatured(e.target.checked)}
-          className="w-4 h-4 accent-purple-600 rounded bg-slate-950 border-slate-700 cursor-pointer"
+          className="w-4 h-4 accent-purple-600 rounded bg-white border-slate-300 cursor-pointer"
         />
       </div>
 
@@ -123,7 +112,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-600/20 transition-all focus:outline-none cursor-pointer"
+          className="px-5 py-2.5 bg-black text-white hover:bg-slate-800 disabled:bg-black disabled:text-white rounded-xl text-sm font-medium shadow-sm transition-all shrink-0 cursor-pointer"
         >
           {loading ? "Añadiendo..." : "Añadir Enlace a la Lista"}
         </button>
