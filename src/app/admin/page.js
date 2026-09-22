@@ -93,6 +93,17 @@ export default function AdminDashboard() {
 
   return (
     <div className="h-screen bg-white text-slate-900 flex overflow-hidden relative">
+      {/* Estilos locales para ocultar la scrollbar manteniendo la funcionalidad de scroll */}
+      <style jsx>{`
+        .hide-scrollbar {
+          -ms-overflow-style: none;  /* IE y Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari y Opera */
+        }
+      `}</style>
+
       {/* ================= 1. MENÚ LATERAL ================= */}
       <Sidebar 
         user={user}
@@ -101,8 +112,8 @@ export default function AdminDashboard() {
         portfolioData={portfolioData}
       />
 
-      {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO - AMPLIADO) ================= */}
-      <div className="w-[540px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 space-y-6 border-r border-purple-100" style={{ backgroundColor: "#FBFAF9" }}>
+      {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO) ================= */}
+      <div className="w-[420px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 space-y-6 border-r border-purple-100" style={{ backgroundColor: "#FBFAF9" }}>
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
@@ -154,9 +165,10 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* ================= 3. VISTA PREVIA (DERECHA - MÁS ANGOSTO) ================= */}
-      <section className="w-[340px] bg-slate-50 p-6 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
-        <div className="w-full flex justify-between items-center mb-4 max-w-xs">
+      {/* ================= 3. VISTA PREVIA (DERECHA - ESTILO TELÉFONO) ================= */}
+      {/* Modificado a pt-20 para desplazarlo aún más abajo */}
+      <section className="w-[680px] bg-slate-50 p-6 pt-20 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
+        <div className="w-[400px] flex justify-between items-center mb-4">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 
             {selectedPage ? `Vista Previa: ${selectedPage.title}` : "Vista Previa"}
@@ -164,11 +176,19 @@ export default function AdminDashboard() {
           <span className="text-[11px] text-slate-700 bg-white px-3 py-1 rounded-full border border-purple-100 shadow-sm">Live</span>
         </div>
 
-        {selectedPage ? (
-          <PagePreview page={selectedPage} portfolioData={portfolioData} />
-        ) : (
-          <Portfolio portfolioData={portfolioData} />
-        )}
+        {/* Marco principal del teléfono */}
+        <div className="w-[400px] h-[750px] bg-white border-[6px] border-slate-900 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col">
+          
+          {/* Contenedor interno con scroll oculto (hide-scrollbar) */}
+          <div className="hide-scrollbar w-full h-full overflow-y-auto flex flex-col">
+            {selectedPage ? (
+              <PagePreview page={selectedPage} portfolioData={portfolioData} />
+            ) : (
+              <Portfolio portfolioData={portfolioData} />
+            )}
+          </div>
+
+        </div>
       </section>
     </div>
   );
