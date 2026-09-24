@@ -13,6 +13,7 @@ import PagesManager from "@/app/components/PagesManager";
 import ImagePageEditor from "@/app/components/ImagePageEditor";
 import LinkPageEditor from "@/app/components/LinkPageEditor";
 import PagePreview from "@/app/components/PagePreview";
+import MyLightjaus from "@/app/components/MyLightjaus"; // <-- Componente importado
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
@@ -84,7 +85,7 @@ export default function AdminDashboard() {
     const foundPage = portfolioData.pages.find(p => p.id === tab || p.slug === tab);
     if (foundPage) {
       setSelectedSubPageId(tab);
-    } else if (tab === "main" || tab === "pages") {
+    } else if (tab === "main" || tab === "pages" || tab === "my-lightjaus") {
       setSelectedSubPageId(null);
     }
   };
@@ -114,6 +115,15 @@ export default function AdminDashboard() {
 
       {/* ================= 2. FORMULARIO CONDICIONAL (CENTRO) ================= */}
       <div className="w-[420px] lg:flex-1 shrink-0 p-6 overflow-y-auto relative z-10 space-y-6 border-r border-purple-100" style={{ backgroundColor: "#FBFAF9" }}>
+        
+        {/* NUEVA VISTA: Mi Lightjaus */}
+        {activeTab === "my-lightjaus" && (
+          <MyLightjaus 
+            portfolioData={portfolioData} 
+            user={user} 
+          />
+        )}
+
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
@@ -166,7 +176,6 @@ export default function AdminDashboard() {
       </div>
 
       {/* ================= 3. VISTA PREVIA (DERECHA - ESTILO TELÉFONO) ================= */}
-      {/* Modificado a pt-20 para desplazarlo aún más abajo */}
       <section className="w-[680px] bg-slate-50 p-6 pt-20 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
         <div className="w-[400px] flex justify-between items-center mb-4">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
