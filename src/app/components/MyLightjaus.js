@@ -2,23 +2,15 @@
 
 import { useState } from "react";
 import { 
-  Globe, 
-  FileText, 
-  Layers, 
-  Eye, 
   Copy, 
   Check, 
   ExternalLink, 
   Share2, 
-  TrendingUp, 
-  Music,
   X,
   MessageCircle,
   Send,
   Share,
-  Globe2,
-  BarChart3,
-  Calendar
+  Globe2
 } from "lucide-react";
 
 export default function MyLightjaus({ portfolioData, user }) {
@@ -99,8 +91,9 @@ export default function MyLightjaus({ portfolioData, user }) {
   const areaString = `${pathString} L ${svgWidth} ${svgHeight} L 0 ${svgHeight} Z`;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-10 font-['Poppins']">
-      {/* Encabezado de la sección */}
+    <div className="space-y-6 max-w-6xl mx-auto pb-10 font-['Poppins']">
+      
+      {/* 1. Encabezado independiente con el @{slug} */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">@{slug}</h2>
@@ -125,187 +118,149 @@ export default function MyLightjaus({ portfolioData, user }) {
         </div>
       </div>
 
-      {/* Tarjetas de Estadísticas / Resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Visitas Totales */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-          <div>
+      {/* 2. ÚNICO BLOQUE CONTENEDOR con estadísticas y gráfico (sin íconos) */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+        
+        {/* Tarjetas de Estadísticas / Resumen */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-slate-50/60 p-5 rounded-2xl border border-slate-100">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Visitas Totales</p>
-            <h4 className="text-2xl font-bold text-slate-900">{totalViews.toLocaleString()}</h4>
+            <h4 className="text-2xl font-bold text-slate-900 mt-1">{totalViews.toLocaleString()}</h4>
           </div>
-        </div>
 
-        {/* Páginas Totales */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <FileText className="w-6 h-6" />
-          </div>
-          <div>
+          <div className="bg-slate-50/60 p-5 rounded-2xl border border-slate-100">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Páginas Totales</p>
-            <h4 className="text-2xl font-bold text-slate-900">{totalPages}</h4>
+            <h4 className="text-2xl font-bold text-slate-900 mt-1">{totalPages}</h4>
           </div>
-        </div>
 
-        {/* Plantilla Activa */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-            <Globe className="w-6 h-6" />
-          </div>
-          <div>
+          <div className="bg-slate-50/60 p-5 rounded-2xl border border-slate-100">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Plantilla</p>
-            <h4 className="text-lg font-bold text-slate-900 capitalize">{activeTemplate}</h4>
+            <h4 className="text-lg font-bold text-slate-900 capitalize mt-1">{activeTemplate}</h4>
           </div>
         </div>
-      </div>
 
-      {/* Desglose por Tipos de Página */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-              <Layers className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium text-slate-700">Enlaces</span>
+        {/* Desglose por Tipos de Página */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Páginas tipo link</span>
+            <span className="text-lg font-bold text-slate-900">{linkPages}</span>
           </div>
-          <span className="text-lg font-bold text-slate-900">{linkPages}</span>
+
+          <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Páginas tipo imagen</span>
+            <span className="text-lg font-bold text-slate-900">{imagePages}</span>
+          </div>
+
+          <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-700">Páginas tipo audio</span>
+            <span className="text-lg font-bold text-slate-900">{audioPages}</span>
+          </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
-              <Eye className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium text-slate-700">Imágenes</span>
-          </div>
-          <span className="text-lg font-bold text-slate-900">{imagePages}</span>
-        </div>
-
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600">
-              <Music className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium text-slate-700">Audio</span>
-          </div>
-          <span className="text-lg font-bold text-slate-900">{audioPages}</span>
-        </div>
-      </div>
-
-      {/* Gráfico Lineal de Visitas con Selectores */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-              <BarChart3 className="w-5 h-5" />
-            </div>
+        {/* Gráfico Lineal de Visitas con Selectores */}
+        <div className="bg-slate-50/50 rounded-2xl border border-slate-100 p-6 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Rendimiento de Visitas</h3>
               <p className="text-xs text-slate-500">Evolución del tráfico en tu portafolio</p>
             </div>
+
+            {/* Selectores de Página e Intervalo de Tiempo */}
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={selectedPageFilter}
+                onChange={(e) => setSelectedPageFilter(e.target.value)}
+                className="bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-2 outline-none focus:border-purple-500 transition"
+              >
+                <option value="all">Todas las páginas (Global)</option>
+                {pagesList.map((page, idx) => (
+                  <option key={page.id || idx} value={page.id || page.title || `page-${idx}`}>
+                    {page.title || `Página ${idx + 1} (${page.type})`}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedTimeRange}
+                onChange={(e) => setSelectedTimeRange(e.target.value)}
+                className="bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-2 outline-none focus:border-purple-500 transition"
+              >
+                <option value="7days">Últimos 7 días</option>
+                <option value="30days">Últimos 30 días</option>
+                <option value="year">Este año</option>
+              </select>
+            </div>
           </div>
 
-          {/* Selectores de Página e Intervalo de Tiempo */}
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={selectedPageFilter}
-              onChange={(e) => setSelectedPageFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-2 outline-none focus:border-purple-500 transition"
-            >
-              <option value="all">Todas las páginas (Global)</option>
-              {pagesList.map((page, idx) => (
-                <option key={page.id || idx} value={page.id || page.title || `page-${idx}`}>
-                  {page.title || `Página ${idx + 1} (${page.type})`}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedTimeRange}
-              onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3 py-2 outline-none focus:border-purple-500 transition"
-            >
-              <option value="7days">Últimos 7 días</option>
-              <option value="30days">Últimos 30 días</option>
-              <option value="year">Este año</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Contenedor del Gráfico Lineal con Eje Vertical */}
-        <div className="pt-4 pb-2 flex gap-4 items-center">
-          {/* Eje Vertical (Y) */}
-          <div className="h-44 flex flex-col justify-between text-[10px] font-medium text-slate-400 text-right pr-2 select-none">
-            <span>{maxViews}</span>
-            <span>{Math.round(maxViews * 0.75)}</span>
-            <span>{Math.round(maxViews * 0.5)}</span>
-            <span>{Math.round(maxViews * 0.25)}</span>
-            <span>0</span>
-          </div>
-
-          {/* Zona Gráfica Línea SVG */}
-          <div className="flex-1 relative h-44 border-b border-l border-slate-100">
-            {/* Líneas de guía horizontales de fondo */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-slate-50 w-full" />
-              <div className="border-b border-slate-50 w-full" />
-              <div className="border-b border-slate-50 w-full" />
-              <div className="border-b border-slate-50 w-full" />
+          {/* Contenedor del Gráfico Lineal con Eje Vertical */}
+          <div className="pt-4 pb-2 flex gap-4 items-center">
+            {/* Eje Vertical (Y) */}
+            <div className="h-44 flex flex-col justify-between text-[10px] font-medium text-slate-400 text-right pr-2 select-none">
+              <span>{maxViews}</span>
+              <span>{Math.round(maxViews * 0.75)}</span>
+              <span>{Math.round(maxViews * 0.5)}</span>
+              <span>{Math.round(maxViews * 0.25)}</span>
+              <span>0</span>
             </div>
 
-            <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full overflow-visible">
-              <defs>
-                <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9333ea" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#9333ea" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
+            {/* Zona Gráfica Línea SVG */}
+            <div className="flex-1 relative h-44 border-b border-l border-slate-200">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                <div className="border-b border-slate-100 w-full" />
+                <div className="border-b border-slate-100 w-full" />
+                <div className="border-b border-slate-100 w-full" />
+                <div className="border-b border-slate-100 w-full" />
+              </div>
 
-              {/* Área bajo la curva */}
-              <path d={areaString} fill="url(#purpleGradient)" />
+              <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="purpleGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#9333ea" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
 
-              {/* Línea principal */}
-              <path 
-                d={pathString} 
-                fill="none" 
-                stroke="#9333ea" 
-                strokeWidth="3" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-              />
+                <path d={areaString} fill="url(#purpleGradient)" />
 
-              {/* Puntos interactivos */}
-              {points.map((p, idx) => (
-                <g key={idx} className="group cursor-pointer">
-                  <circle 
-                    cx={p.x} 
-                    cy={p.y} 
-                    r="5" 
-                    className="fill-white stroke-purple-600 stroke-[3px] transition-transform group-hover:scale-125" 
-                  />
-                  {/* Tooltip flotante superior al pasar el mouse */}
-                  <text 
-                    x={p.x} 
-                    y={p.y - 12} 
-                    textAnchor="middle" 
-                    className="text-[10px] font-bold fill-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {p.views}
-                  </text>
-                </g>
-              ))}
-            </svg>
+                <path 
+                  d={pathString} 
+                  fill="none" 
+                  stroke="#9333ea" 
+                  strokeWidth="3" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                />
+
+                {points.map((p, idx) => (
+                  <g key={idx} className="group cursor-pointer">
+                    <circle 
+                      cx={p.x} 
+                      cy={p.y} 
+                      r="5" 
+                      className="fill-white stroke-purple-600 stroke-[3px] transition-transform group-hover:scale-125" 
+                    />
+                    <text 
+                      x={p.x} 
+                      y={p.y - 12} 
+                      textAnchor="middle" 
+                      className="text-[10px] font-bold fill-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      {p.views}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+          </div>
+
+          {/* Eje Horizontal (X) Etiquetas */}
+          <div className="flex justify-between pl-10 pr-2 text-xs font-medium text-slate-400">
+            {currentChartData.map((item, idx) => (
+              <span key={idx} className="text-center flex-1">{item.label}</span>
+            ))}
           </div>
         </div>
 
-        {/* Eje Horizontal (X) Etiquetas */}
-        <div className="flex justify-between pl-10 pr-2 text-xs font-medium text-slate-400">
-          {currentChartData.map((item, idx) => (
-            <span key={idx} className="text-center flex-1">{item.label}</span>
-          ))}
-        </div>
       </div>
 
       {/* Modal de Compartir */}
@@ -322,7 +277,6 @@ export default function MyLightjaus({ portfolioData, user }) {
               </button>
             </div>
 
-            {/* Input con enlace y botón copiar */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-500">Enlace público</label>
               <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2">
@@ -342,7 +296,6 @@ export default function MyLightjaus({ portfolioData, user }) {
               </div>
             </div>
 
-            {/* Botones de redes sociales */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-500">Compartir directamente en:</label>
               <div className="grid grid-cols-4 gap-3">
