@@ -5,6 +5,7 @@ import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import LinkItemForm from "@/app/components/LinkItemForm";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
+import Title from "./AdminFormsComponents/Title";
 
 export default function LinkPageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
   const [error, setError] = useState(null);
@@ -223,9 +224,11 @@ export default function LinkPageEditor({ portfolioData, selectedPageId, onUpdate
   return (
     <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins'] overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div>
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">{selectedPage.title}</h2>
-        </div>
+        <Title 
+          title={selectedPage?.title}
+          externalRoute={`/${portfolioData.slug}/${selectedPage?.slug}`}
+          openInNewTab={true}
+        />
         <p className="text-sm text-slate-500">Página tipo links</p>
       </div>
 

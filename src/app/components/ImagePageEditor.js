@@ -5,9 +5,10 @@ import { createPortal } from "react-dom";
 import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
+import Title from "./AdminFormsComponents/Title";
 
 export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
-  const page = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
+  const selectedPage = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
 
   const [newGalleryTitle, setNewGalleryTitle] = useState("");
   
@@ -29,11 +30,11 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
-  if (!page) {
+  if (!selectedPage) {
     return <div className="text-sm text-slate-500">Selecciona una página válida desde el menú lateral.</div>;
   }
 
-  const galleries = page.galleries || [];
+  const galleries = selectedPage.galleries || [];
 
   const handleCreateGallery = async (e) => {
     e.preventDefault();
@@ -378,9 +379,11 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   return (
     <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins'] overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div>
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">{page.title}</h2>
-        </div>
+        <Title 
+          title={selectedPage?.title}
+          externalRoute={`/${portfolioData.slug}/${selectedPage?.slug}`}
+          openInNewTab={true}
+        />
         <p className="text-sm text-slate-500">Página tipo imagen</p>
       </div>
 

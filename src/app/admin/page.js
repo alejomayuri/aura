@@ -134,7 +134,6 @@ export default function AdminDashboard() {
             setPortfolioData={setPortfolioData} 
             onSave={handleSave}
             saving={saving}
-            saveMessage={saveMessage}
           />
         )}
 

@@ -46,7 +46,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className={`bg-white border border-slate-200 p-5 rounded-xl space-y-4 shadow-sm transition-all duration-300 ease-out transform ${
+      className={`bg-white border border-slate-200 p-5 rounded-xl space-y-4 transition-all duration-300 ease-out transform ${
         isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-3 scale-95"
       }`}
     >
