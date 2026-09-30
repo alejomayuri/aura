@@ -149,12 +149,16 @@ export default function AdminDashboard() {
 
         {activeTab === "pages" && (
             <PagesManager 
-                portfolioData={portfolioData} 
-                user={user}
-                onUpdatePages={(newPages) => {
-                  setPortfolioData(prev => ({ ...prev, pages: newPages }));
-                }} 
-            />
+        portfolioData={portfolioData} 
+        user={user}
+        onUpdatePages={(newPages) => {
+          setPortfolioData(prev => ({ ...prev, pages: newPages }));
+        }} 
+        onSelectPage={(pageIdOrSlug) => {
+          // Usamos la misma función que usa el Sidebar para abrir la página en el panel central
+          handleSelectTab(pageIdOrSlug);
+        }}
+    />
         )}
 
         {activeTab !== "design" && selectedPage && selectedPage.type === "image" && (

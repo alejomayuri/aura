@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
 import { PageItem } from "./AdminFormsComponents/PageItem";
 
-export default function PagesManager({ portfolioData, onUpdatePages }) {
+export default function PagesManager({ portfolioData, onUpdatePages, onSelectPage }) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [pageType, setPageType] = useState("image");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  
+  // Estado para controlar la visibilidad del formulario de creación
+  const [showForm, setShowForm] = useState(false);
+  // Referencia para detectar clics fuera del formulario
+  const formRef = useRef(null);
 
   const [localPages, setLocalPages] = useState(() => portfolioData?.pages || []);
   const [openLayoutPageUid, setOpenLayoutPageUid] = useState(null);
@@ -65,6 +70,20 @@ export default function PagesManager({ portfolioData, onUpdatePages }) {
       ),
     },
   ];
+
+  // Efecto para cerrar el formulario al hacer clic fuera de él
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (showForm && formRef.current && !formRef.current.contains(event.target)) {
+        setShowForm(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showForm]);
 
   useEffect(() => {
     if (successMsg) {
@@ -134,6 +153,7 @@ export default function PagesManager({ portfolioData, onUpdatePages }) {
       setTitle("");
       setSlug("");
       setPageType("image");
+      setShowForm(false); // Cierra el formulario tras crear la página con éxito
     } catch (err) {
       console.error("Error al guardar en Firestore:", err);
       setError(`Error al guardar: ${err.message}`);
@@ -192,62 +212,93 @@ export default function PagesManager({ portfolioData, onUpdatePages }) {
       {error && <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100">{error}</p>}
       {successMsg && <p className="text-xs text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100">{successMsg}</p>}
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 p-5 rounded-xl space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-slate-700">Nombre</label>
-          <input 
-            type="text"
-            required
-            placeholder="Nombre de la página"
-            value={title}
-            onChange={handleTitleChange}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-purple-500 transition-colors"
-          />
-        </div>
+      {/* Contenedor principal del formulario con la referencia para el click outside */}
+      <div ref={formRef} className="space-y-3">
+        {!showForm && (
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="w-full py-3 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-medium shadow-sm transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 transform active:scale-[0.99]"
+          >
+            <span>+ Crear página</span>
+          </button>
+        )}
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-slate-700">Contenido</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            {contentTypes.map((type) => {
-              const isSelected = pageType === type.id;
-              return (
+        <div 
+          className={`grid transition-all duration-300 ease-in-out ${
+            showForm ? "grid-rows-[1fr] opacity-100 mb-4" : "grid-rows-[0fr] opacity-0 overflow-hidden"
+          }`}
+        >
+          <div className="overflow-hidden space-y-2">
+            <form onSubmit={handleSubmit} className="bg-white border border-slate-200 p-5 rounded-xl space-y-4 shadow-sm">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Nombre</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="Nombre de la página"
+                  value={title}
+                  onChange={handleTitleChange}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Contenido</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  {contentTypes.map((type) => {
+                    const isSelected = pageType === type.id;
+                    return (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setPageType(type.id)}
+                        className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-purple-50/80 border-purple-500 shadow-sm ring-1 ring-purple-500"
+                            : "bg-slate-50/50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-lg shrink-0 ${isSelected ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                          {type.icon}
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className={`text-xs font-semibold ${isSelected ? "text-purple-900" : "text-slate-900"}`}>
+                            {type.title}
+                          </p>
+                          <p className="text-[11px] text-slate-500 leading-snug">
+                            {type.description}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
                 <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setPageType(type.id)}
-                  className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                    isSelected
-                      ? "bg-purple-50/80 border-purple-500 shadow-sm ring-1 ring-purple-500"
-                      : "bg-slate-50/50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
-                  }`}
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2.5 bg-black text-white hover:bg-slate-800 disabled:bg-black disabled:text-white rounded-xl text-sm font-medium shadow-sm transition-all shrink-0 cursor-pointer"
                 >
-                  <div className={`p-2 rounded-lg shrink-0 ${isSelected ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
-                    {type.icon}
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className={`text-xs font-semibold ${isSelected ? "text-purple-900" : "text-slate-900"}`}>
-                      {type.title}
-                    </p>
-                    <p className="text-[11px] text-slate-500 leading-snug">
-                      {type.description}
-                    </p>
-                  </div>
+                  {loading ? "Guardando..." : "Crear página"}
                 </button>
-              );
-            })}
+              </div>
+            </form>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
-
-        <div className="pt-2 flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-5 py-2.5 bg-black text-white hover:bg-slate-800 disabled:bg-black disabled:text-white rounded-xl text-sm font-medium shadow-sm transition-all shrink-0 cursor-pointer"
-          >
-            {loading ? "Guardando..." : "Crear página"}
-          </button>
-        </div>
-      </form>
+      </div>
 
       <div className="space-y-3 pt-2 pb-4">
         <label className="text-base font-semibold text-slate-900 block">
@@ -302,6 +353,7 @@ export default function PagesManager({ portfolioData, onUpdatePages }) {
                       savePagesToFirebase(newData.pages);
                     }
                   }}
+                  onSelectPage={onSelectPage}
                 />
               );
             })}

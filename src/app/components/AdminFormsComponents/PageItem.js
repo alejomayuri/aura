@@ -21,6 +21,7 @@ export const PageItem = ({
   stablePages,
   portfolioData,
   setPortfolioData,
+  onSelectPage
 }) => {
     return (
         <Reorder.Item 
@@ -90,6 +91,23 @@ export const PageItem = ({
 
                     {/* Botones de acción inferior */}
                     <div className="flex items-center justify-start gap-2 pt-2 border-t border-slate-100">
+                        {/* Botón de Editar */}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (onSelectPage) {
+                                    onSelectPage(page.id || page.slug);
+                                }
+                            }}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-purple-700 hover:bg-purple-50 transition-colors cursor-pointer"
+                            title="Editar página"
+                        >
+                            <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+
                         <button
                             type="button"
                             onClick={(e) => {
@@ -290,7 +308,7 @@ export const PageItem = ({
                                 </div>
                             </div>
                         </motion.div>
-                    )}
+                )}
             </AnimatePresence>
 
             {/* Sección desplegable: Selección de layout */}
