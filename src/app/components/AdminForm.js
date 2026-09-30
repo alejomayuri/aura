@@ -6,6 +6,7 @@ import Title from "./AdminFormsComponents/Title";
 import Social from "./AdminFormsComponents/home/Social";
 import { PageItem } from "./AdminFormsComponents/PageItem";
 import { Bio } from "./AdminFormsComponents/home/Bio";
+import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
 export default function AdminForm({ portfolioData, setPortfolioData, onSave, saving, onTogglePreview }) {
   const [uploading, setUploading] = useState(false);
@@ -356,182 +357,59 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                 <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">Estilo visual de la imagen</span>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  
                   {/* 1. REDONDA */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'rounded' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      (portfolioData?.imageStyle || 'rounded') === 'rounded'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                      {currentImageDisplay ? (
-                        <img src={currentImageDisplay} alt="Preview" className="w-14 h-14 rounded-full object-cover shrink-0 mt-1 ring-2 ring-white shadow-sm" />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-emerald-300/80 shrink-0 mt-1 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                      )}
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Redonda</span>
-                  </button>
+                  <ImageStyleOption 
+                    styleValue="rounded"
+                    label="Redonda"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
 
                   {/* 2. TODO EL ANCHO */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'full-width' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      portfolioData?.imageStyle === 'full-width'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                      {currentImageDisplay ? (
-                        <img src={currentImageDisplay} alt="Preview" className="w-full h-20 object-cover shrink-0" />
-                      ) : (
-                        <div className="w-full h-20 bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                      )}
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Todo el ancho</span>
-                  </button>
+                  <ImageStyleOption 
+                    styleValue="full-width"
+                    label="Todo el ancho"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
 
                   {/* 3. DIFUMINADO ABAJO */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'fade-bottom' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      portfolioData?.imageStyle === 'fade-bottom'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300 relative">
-                      <div className="relative w-full h-24 shrink-0">
-                        {currentImageDisplay ? (
-                          <img src={currentImageDisplay} alt="Preview" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-emerald-200 via-emerald-200/40 to-transparent"></div>
-                      </div>
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug text-center z-10 -mt-5">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90 z-10">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Difuminado</span>
-                  </button>
+                  <ImageStyleOption 
+                    styleValue="fade-bottom"
+                    label="Difuminado"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
 
                   {/* 4. RECTANGULAR HORIZONTAL */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'horizontal' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      portfolioData?.imageStyle === 'horizontal'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                      <div className="px-2.5 w-full">
-                        {currentImageDisplay ? (
-                          <img src={currentImageDisplay} alt="Preview" className="w-full h-20 rounded-lg object-cover shrink-0 shadow-xs" />
-                        ) : (
-                          <div className="w-full h-20 rounded-lg bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                        )}
-                      </div>
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Horizontal</span>
-                  </button>
+                  <ImageStyleOption 
+                    styleValue="horizontal"
+                    label="Horizontal"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
 
                   {/* 5. CUADRADA REDONDEADA */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'square-rounded' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      portfolioData?.imageStyle === 'square-rounded'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                      {currentImageDisplay ? (
-                        <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-xl object-cover shrink-0 shadow-xs" />
-                      ) : (
-                        <div className="w-20 h-20 rounded-xl bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                      )}
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Cuadrada redondeada</span>
-                  </button>
+                  <ImageStyleOption 
+                    styleValue="square-rounded"
+                    label="Cuadrada redondeada"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
 
                   {/* 6. MARCO ASIMÉTRICO */}
-                  <button
-                    type="button"
-                    onClick={() => setPortfolioData({ ...portfolioData, imageStyle: 'creative-blob' })}
-                    className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all ${
-                      portfolioData?.imageStyle === 'creative-blob'
-                        ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-                    }`}
-                  >
-                    <div className="w-full h-56 bg-emerald-200/80 rounded-2xl p-0 pt-2 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300">
-                      <div className="p-[2px] bg-gradient-to-tr from-teal-500 via-emerald-500 to-amber-400 rounded-2xl rounded-tr-xs shrink-0 shadow-xs">
-                        {currentImageDisplay ? (
-                          <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-2xl rounded-tr-xs object-cover" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-2xl rounded-tr-xs bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
-                        )}
-                      </div>
-                      <span className="text-[10px] font-semibold text-emerald-950 px-2 line-clamp-2 leading-snug">
-                        {portfolioData?.title || "Sin título"}
-                      </span>
-                      <div className="w-full space-y-2 px-2.5 opacity-90">
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                        <div className="w-full h-5 bg-white rounded-sm shadow-2xs"></div>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-700 mt-2">Marco Asimétrico</span>
-                  </button>
-
+                  <ImageStyleOption 
+                    styleValue="creative-blob"
+                    label="Marco Asimétrico"
+                    currentImageDisplay={currentImageDisplay}
+                    portfolioData={portfolioData}
+                    setPortfolioData={setPortfolioData}
+                  />
                 </div>
               </div>
             </div>
