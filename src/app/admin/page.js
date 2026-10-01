@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("main");
+  const [activeTab, setActiveTab] = useState("my-lightjaus");
   const [selectedSubPageId, setSelectedSubPageId] = useState(null);
   const router = useRouter();
 

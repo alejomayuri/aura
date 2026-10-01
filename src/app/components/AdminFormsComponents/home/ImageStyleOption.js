@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export const ImageStyleOption = ({ 
   styleValue = 'rounded', 
   label = 'Redonda', 
   currentImageDisplay, 
   portfolioData, 
-  setPortfolioData 
+  setPortfolioData,
+  onSave // <--- 1. Recibe la función para guardar en la base de datos (opcional si prefieres hacerlo directo)
 }) => {
+  const [loading, setLoading] = useState(false);
+
   const isSelected = (portfolioData?.imageStyle || 'rounded') === styleValue;
   const isFullWidth = styleValue === 'full-width';
   const isFadeBottom = styleValue === 'fade-bottom';
@@ -29,18 +32,38 @@ export const ImageStyleOption = ({
     return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
   };
 
-  // Obtenemos los links reales
   const socialLinks = portfolioData?.socialLinks || [];
+
+  // 2. Manejador del clic para actualizar el estado y disparar el guardado en BD
+  const handleClick = async () => {
+    const updatedData = { ...portfolioData, imageStyle: styleValue };
+    
+    // Actualizamos el estado local de React
+    setPortfolioData(updatedData);
+
+    // Si pasas una función de guardado (por ejemplo, una API o Server Action), la llamamos
+    if (onSave && loading === false) {
+      try {
+        setLoading(true);
+        await onSave(updatedData); // Aquí enviarías los datos a tu base de datos
+      } catch (error) {
+        console.error("Error al guardar el estilo de imagen en la base de datos:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <button
       type="button"
-      onClick={() => setPortfolioData({ ...portfolioData, imageStyle: styleValue })}
+      onClick={handleClick}
+      disabled={loading}
       className={`flex flex-col items-center p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
         isSelected
           ? 'bg-purple-50 border-purple-500 ring-2 ring-purple-500/20 shadow-sm'
           : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-100/50'
-      }`}
+      } `}
     >
       <div className="w-full h-64 bg-emerald-200/80 rounded-2xl p-0 flex flex-col items-center justify-start gap-2 overflow-hidden shadow-xs border border-emerald-300 relative">
         
@@ -74,7 +97,7 @@ export const ImageStyleOption = ({
         ) : isFadeBottom ? (
           <div className="relative w-full h-24 shrink-0">
             {currentImageDisplay ? (
-              <img src={currentImageDisplay} alt="Preview" className="w-full h-full object-cover" />
+              <img src={currentImageDisplay} alt="Preview" className="w-full h-23 object-cover" />
             ) : (
               <div className="w-full h-full bg-emerald-300/80 flex items-center justify-center text-xs text-emerald-800">📷</div>
             )}
@@ -104,7 +127,7 @@ export const ImageStyleOption = ({
           {portfolioData?.title || "Sin título"}
         </span>
 
-        {/* Hasta 5 redes sociales reales en miniatura */}
+        {/* Redes sociales */}
         <div className="flex items-center justify-center gap-1.5 px-2 z-10 w-full flex-wrap">
           {socialLinks.length > 0 ? (
             socialLinks.slice(0, 5).map((link, idx) => {
@@ -126,7 +149,7 @@ export const ImageStyleOption = ({
           )}
         </div>
 
-        {/* 🌟 Los 3 bloques de contenido con el mismo tamaño y un poco más altos (h-7) */}
+        {/* Bloques de contenido */}
         <div className="w-full space-y-1.5 px-1.5 opacity-90 z-10 pt-1">
           <div className="w-full h-7 bg-white rounded-sm shadow-2xs"></div>
           <div className="w-full h-7 bg-white rounded-sm shadow-2xs"></div>
@@ -134,7 +157,13 @@ export const ImageStyleOption = ({
         </div>
       </div>
 
-      <span className="text-[11px] font-semibold text-slate-700 mt-2">{label}</span>
+      <span className="text-[11px] font-semibold text-slate-700 mt-2">
+        {loading ? (
+          <svg className="w-5 h-5 animate-spin text-purple-600 shrink-0 ml-1" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>) : label}
+      </span>
     </button>
   );
 };

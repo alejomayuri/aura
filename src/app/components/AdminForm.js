@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
 import Social from "./AdminFormsComponents/home/Social";
 import { PageItem } from "./AdminFormsComponents/PageItem";
+import EditableTitleInput from "./AdminFormsComponents/home/EditableTitleInput";
 import { Bio } from "./AdminFormsComponents/home/Bio";
 import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
@@ -29,7 +31,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
 
   // Estado para confirmar la eliminación de un enlace social
   const [deleteConfirmUid, setDeleteConfirmUid] = useState(null);
-
   const [openDeletePageUid, setOpenDeletePageUid] = useState(null);
 
   // Estado para mostrar u ocultar estilos de imagen en la sección de páginas
@@ -77,15 +78,67 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setModalRemoveImage(false);
   };
 
-  const handleConfirmImageSelection = () => {
+  // Subida de imagen y guardado automático al confirmar en el modal
+  const handleConfirmImageSelection = async () => {
+    let updatedData = { 
+      ...portfolioData, 
+      socialLinks: stableLinks, 
+      pages: stablePages 
+    };
+
     if (modalRemoveImage) {
       setSelectedFile(null);
       setLocalPreview("");
-      setPortfolioData({ ...portfolioData, mainImage: "", imagen: "", image: "" });
-    } else if (modalTempFile) {
-      setSelectedFile(modalTempFile);
-      setLocalPreview(modalTempPreview);
+      updatedData.mainImage = "";
+      updatedData.imagen = "";
+      updatedData.image = "";
+      setPortfolioData(updatedData);
+
+      setIsImageModalOpen(false);
+      setModalTempFile(null);
+      setModalTempPreview(null);
+      setModalRemoveImage(false);
+
+      if (typeof onSave === "function") {
+        await onSave(updatedData);
+      }
+      return;
+    } 
+    
+    if (modalTempFile) {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", modalTempFile);
+      formData.append("upload_preset", "pataki_portfolio_upload");
+
+      try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/dz3p460iu/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        
+        if (data.secure_url) {
+          const finalImageUrl = data.secure_url;
+          setSelectedFile(null); // Limpiamos el archivo temporal principal
+          setLocalPreview(finalImageUrl);
+          
+          updatedData.mainImage = finalImageUrl;
+          updatedData.imagen = finalImageUrl;
+          updatedData.image = finalImageUrl;
+          setPortfolioData(updatedData);
+
+          if (typeof onSave === "function") {
+            await onSave(updatedData);
+          }
+        }
+      } catch (error) {
+        console.error("Error al subir la imagen a Cloudinary:", error);
+      } finally {
+        setUploading(false);
+      }
     }
+
     setIsImageModalOpen(false);
     setModalTempFile(null);
     setModalTempPreview(null);
@@ -141,45 +194,28 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setPortfolioData({ ...portfolioData, pages: updatedPages });
   };
 
+  // Guardado general por medio del botón inferior
   const handleSaveWithUpload = async () => {
-    let finalImageUrl = portfolioData.mainImage;
-    let updatedData = { ...portfolioData, socialLinks: stableLinks, pages: stablePages };
+    let updatedData = { 
+      ...portfolioData, 
+      socialLinks: stableLinks, 
+      pages: stablePages 
+    };
 
     if (localPreview === "") {
-      finalImageUrl = "";
       updatedData.mainImage = "";
       updatedData.imagen = "";
       updatedData.image = "";
-    } else if (selectedFile) {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("upload_preset", "pataki_portfolio_upload");
-
-      try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/dz3p460iu/image/upload`, {
-          method: "POST",
-          body: formData,
-        });
-        const data = await response.json();
-        if (data.secure_url) {
-          finalImageUrl = data.secure_url;
-          updatedData.mainImage = finalImageUrl;
-          setPortfolioData(updatedData);
-        }
-      } catch (error) {
-        console.error("Error al subir la imagen a Cloudinary:", error);
-        setUploading(false);
-        return;
-      } finally {
-        setUploading(false);
-      }
+    } else if (localPreview && localPreview.startsWith("http")) {
+      updatedData.mainImage = localPreview;
+      updatedData.imagen = localPreview;
+      updatedData.image = localPreview;
     }
+
+    setPortfolioData(updatedData);
 
     if (typeof onSave === "function") {
       await onSave(updatedData);
-    } else {
-      await onSave();
     }
 
     setSelectedFile(null);
@@ -197,107 +233,16 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         openInNewTab={true}
       />
 
-      <div className="space-y-3">
-        {isEditingTitle ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                autoFocus
-                value={portfolioData?.title || ""}
-                onChange={(e) => setPortfolioData({ ...portfolioData, title: e.target.value })}
-                onBlur={(e) => {
-                  if (!e.currentTarget.parentElement?.parentElement?.contains(e.relatedTarget)) {
-                    setIsEditingTitle(false);
-                  }
-                }}
-                onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingTitle(false); }}
-                className="w-full bg-white border border-slate-900 rounded-xl px-4 py-3 text-lg font-semibold text-slate-900 focus:outline-none shadow-sm"
-                placeholder="Ej. Mi Portfolio Profesional"
-              />
-            </div>
-
-            {/* 📐 OPCIONES DE ALINEACIÓN CON ÍCONOS */}
-            <div className="flex items-center gap-1.5 pt-1">
-              <span className="text-xs font-medium text-slate-500 mr-1">Alineación:</span>
-              
-              {/* Izquierda */}
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setPortfolioData({ ...portfolioData, titleAlign: "left" })}
-                title="Alinear a la izquierda"
-                className={`p-2 rounded-lg border transition-all ${
-                  (portfolioData?.titleAlign || "left") === "left"
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h14" />
-                </svg>
-              </button>
-
-              {/* Centro */}
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setPortfolioData({ ...portfolioData, titleAlign: "center" })}
-                title="Alinear al centro"
-                className={`p-2 rounded-lg border transition-all ${
-                  portfolioData?.titleAlign === "center"
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 12h10M5 18h14" />
-                </svg>
-              </button>
-
-              {/* Derecha */}
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setPortfolioData({ ...portfolioData, titleAlign: "right" })}
-                title="Alinear a la derecha"
-                className={`p-2 rounded-lg border transition-all ${
-                  portfolioData?.titleAlign === "right"
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M10 12h10M6 18h14" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div 
-            onClick={() => setIsEditingTitle(true)}
-            className="w-full bg-transparent border-none px-0 py-2 text-lg font-semibold text-slate-900 flex items-center justify-start gap-2.5 transition group cursor-pointer w-fit"
-          >
-            <span className={portfolioData?.title ? "text-slate-900 font-semibold group-hover:underline decoration-slate-900 underline-offset-4 transition-all" : "text-slate-400 italic font-normal text-base group-hover:underline decoration-slate-400 underline-offset-4 transition-all"}>
-              {portfolioData?.title || "Sin título principal (Haz clic para editar)"}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditingTitle(true);
-              }}
-              className="text-slate-400 group-hover:text-slate-900 p-1 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-0.5 text-xs font-medium shrink-0"
-              title="Editar título"
-            >
-              <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              Editar
-            </button>
-          </div>
-        )}
-      </div>
+      <EditableTitleInput
+        portfolioData={portfolioData}
+        setPortfolioData={setPortfolioData}
+        isEditingTitle={isEditingTitle}
+        setIsEditingTitle={setIsEditingTitle}
+        onSave={onSave}
+        saving={saving}
+        stableLinks={stableLinks}
+        stablePages={stablePages}
+      />
 
       <div className="space-y-3 pt-2">
         <div className="w-full bg-transparent p-0 flex justify-start">
@@ -326,10 +271,9 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           </div>
         </div>
 
-        {selectedFile && !uploading && <span className="text-xs text-amber-600 italic block">Imagen lista para guardar...</span>}
-        {uploading && <span className="text-xs text-purple-600 block">Subiendo a Cloudinary...</span>}
+        {uploading && <span className="text-xs text-purple-600 block">Subiendo imagen y guardando cambios...</span>}
 
-        {/* 🎨 BOTÓN DE DISEÑO DE IMAGEN */}
+        {/* BOTÓN DE DISEÑO DE IMAGEN */}
         <div className="pt-1">
           <button
             type="button"
@@ -350,66 +294,31 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
             </svg>
           </button>
 
-          {/* 🌀 MENÚ DESPLEGABLE CON PREVIEWS ESTILO MÓVIL */}
+          {/* MENÚ DESPLEGABLE CON PREVIEWS */}
           <div className={`grid transition-all duration-300 ease-in-out ${showImageStyles ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
             <div className="overflow-hidden">
               <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2 max-w-2xl">
                 <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">Estilo visual de la imagen</span>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {/* 1. REDONDA */}
-                  <ImageStyleOption 
-                    styleValue="rounded"
-                    label="Redonda"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
-
-                  {/* 2. TODO EL ANCHO */}
-                  <ImageStyleOption 
-                    styleValue="full-width"
-                    label="Todo el ancho"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
-
-                  {/* 3. DIFUMINADO ABAJO */}
-                  <ImageStyleOption 
-                    styleValue="fade-bottom"
-                    label="Difuminado"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
-
-                  {/* 4. RECTANGULAR HORIZONTAL */}
-                  <ImageStyleOption 
-                    styleValue="horizontal"
-                    label="Horizontal"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
-
-                  {/* 5. CUADRADA REDONDEADA */}
-                  <ImageStyleOption 
-                    styleValue="square-rounded"
-                    label="Cuadrada redondeada"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
-
-                  {/* 6. MARCO ASIMÉTRICO */}
-                  <ImageStyleOption 
-                    styleValue="creative-blob"
-                    label="Marco Asimétrico"
-                    currentImageDisplay={currentImageDisplay}
-                    portfolioData={portfolioData}
-                    setPortfolioData={setPortfolioData}
-                  />
+                  {[
+                    { styleValue: "rounded", label: "Redonda" },
+                    { styleValue: "full-width", label: "Todo el ancho" },
+                    { styleValue: "fade-bottom", label: "Difuminado" },
+                    { styleValue: "horizontal", label: "Horizontal" },
+                    { styleValue: "square-rounded", label: "Cuadrada redondeada" },
+                    { styleValue: "creative-blob", label: "Marco Asimétrico" },
+                  ].map(({ styleValue, label }) => (
+                    <ImageStyleOption 
+                      key={styleValue}
+                      styleValue={styleValue}
+                      label={label}
+                      currentImageDisplay={currentImageDisplay}
+                      portfolioData={portfolioData}
+                      onSave={onSave}
+                      setPortfolioData={setPortfolioData}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -418,125 +327,127 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
       </div>
 
       {/* MODAL PARA SUBIR O REMOVER IMAGEN PRINCIPAL */}
-      <AnimatePresence>
-        {isImageModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-white rounded-2xl shadow-xl border border-purple-100 w-full max-w-md overflow-hidden p-6 space-y-5"
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isImageModalOpen && (
+            <div 
+              onClick={handleCancelImageSelection}
+              className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/60 overflow-y-auto cursor-pointer"
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-slate-900">Actualizar Imagen Principal</h3>
-                <button
-                  type="button"
-                  onClick={handleCancelImageSelection}
-                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-2xl border border-purple-100 w-full max-w-md overflow-hidden p-6 space-y-5 my-auto cursor-default"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">Actualizar Imagen Principal</h3>
+                  <button
+                    type="button"
+                    onClick={handleCancelImageSelection}
+                    className="text-slate-400 hover:text-black transition-colors cursor-pointer p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <div className="space-y-4">
-                <div className="flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-500 rounded-2xl p-6 bg-purple-50/30 transition text-center relative group cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleModalFileSelect}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                  />
-                  {modalRemoveImage ? (
-                    <div className="space-y-2 flex flex-col items-center">
-                      <span className="text-sm font-medium text-black">Se eliminará la imagen actual al guardar</span>
-                      <span className="text-xs text-black">Haz clic o arrastra otra si deseas reemplazarla</span>
-                    </div>
-                  ) : modalTempPreview ? (
-                    <div className="space-y-3 flex flex-col items-center">
-                      <img src={modalTempPreview} alt="Preview nueva" className="max-h-48 rounded-xl object-contain shadow-sm" />
-                      <span className="text-xs text-purple-700 font-medium bg-purple-100 px-3 py-1 rounded-full">
-                        Haz clic o arrastra otra para cambiar
-                      </span>
-                    </div>
-                  ) : currentImageDisplay ? (
-                    <div className="space-y-3 flex flex-col items-center">
-                      <img src={currentImageDisplay} alt="Actual" className="max-h-40 rounded-xl object-contain opacity-80" />
-                      <span className="text-xs text-black font-medium">
-                        Haz clic aquí para seleccionar una nueva imagen
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 flex flex-col items-center">
-                      <svg className="w-10 h-10 text-purple-500 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-sm font-medium text-black">Arrastra tu imagen aquí o haz clic</span>
-                      <span className="text-xs text-black">PNG, JPG, WEBP hasta 10MB</span>
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-500 rounded-2xl p-6 bg-purple-50/30 transition text-center relative group cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleModalFileSelect}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                    />
+                    {modalRemoveImage ? (
+                      <div className="space-y-2 flex flex-col items-center">
+                        <span className="text-sm font-medium text-black">Se eliminará la imagen actual al aceptar</span>
+                        <span className="text-xs text-black">Haz clic o arrastra otra si deseas reemplazarla</span>
+                      </div>
+                    ) : modalTempPreview ? (
+                      <div className="space-y-3 flex flex-col items-center">
+                        <img src={modalTempPreview} alt="Preview nueva" className="max-h-48 rounded-xl object-contain shadow-sm" />
+                        <span className="text-xs text-purple-700 font-medium bg-purple-100 px-3 py-1 rounded-full">
+                          Haz clic o arrastra otra para cambiar
+                        </span>
+                      </div>
+                    ) : currentImageDisplay ? (
+                      <div className="space-y-3 flex flex-col items-center">
+                        <img src={currentImageDisplay} alt="Actual" className="max-h-40 rounded-xl object-contain opacity-80" />
+                        <span className="text-xs text-black font-medium">
+                          Haz clic aquí para seleccionar una nueva imagen
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 flex flex-col items-center">
+                        <svg className="w-10 h-10 text-purple-500 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm font-medium text-black">Arrastra tu imagen aquí o haz clic</span>
+                        <span className="text-xs text-black">PNG, JPG, WEBP hasta 10MB</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {currentImageDisplay && !modalRemoveImage && !modalTempFile && (
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModalRemoveImage(true);
+                          setModalTempFile(null);
+                          setModalTempPreview(null);
+                        }}
+                        className="text-black hover:bg-black/5 text-xs font-medium px-4 py-2 rounded-xl border border-black transition flex items-center justify-center gap-1.5 cursor-pointer w-fit"
+                      >
+                        <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remover imagen
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {currentImageDisplay && !modalRemoveImage && !modalTempFile && (
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setModalRemoveImage(true);
-                        setModalTempFile(null);
-                        setModalTempPreview(null);
-                      }}
-                      className="text-black hover:bg-black/5 text-xs font-medium px-4 py-2 rounded-xl border border-black transition flex items-center justify-center gap-1.5 cursor-pointer w-fit"
-                    >
-                      <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Remover imagen
-                    </button>
-                  </div>
-                )}
-              </div>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCancelImageSelection}
+                    className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmImageSelection}
+                    disabled={(!modalTempFile && !modalRemoveImage) || uploading}
+                    className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
+                  >
+                    {uploading ? "Subiendo..." : "Aceptar"}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={handleCancelImageSelection}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmImageSelection}
-                  disabled={!modalTempFile && !modalRemoveImage}
-                  className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
-                >
-                  Aceptar
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <div className="space-y-3 pt-2">
+      <div className="space-y-3">
         <label className="text-base font-semibold text-slate-900 block">Biografía</label>
-        {isEditingBio ? (
           <Bio
             portfolioData={portfolioData} 
             setPortfolioData={setPortfolioData} 
             setIsEditingBio={setIsEditingBio} 
+            isEditingBio={isEditingBio}
+            onSave={onSave}
+            saving={saving}
+            stableLinks={stableLinks}
+            stablePages={stablePages}
           />
-        ) : (
-          <div
-            onClick={() => setIsEditingBio(true)}
-            className="w-full px-1 py-1 text-sm text-slate-900 cursor-pointer transition hover:underline decoration-slate-900 underline-offset-4"
-          >
-            {portfolioData?.description || (
-              <span className="text-slate-400 italic">Escribe una breve bio o descripción para tu portfolio...</span>
-            )}
-          </div>
-        )}
+        
       </div>
 
       <div className="space-y-3 pt-4 pb-4">
@@ -564,6 +475,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                   isConfirmingDelete={isConfirmingDelete}
                   setDeleteConfirmUid={setDeleteConfirmUid}
                   handleRemoveLink={handleRemoveLink}
+                  onDragEndSave={onSave}
                 />
               );
             })}
@@ -659,7 +571,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                   isDeleteOpen={isDeleteOpen}
                   currentLayout={currentLayout}
                   
-                  // Handlers y funciones de estado (asegúrate de que existan en este componente padre)
                   handleTogglePageVisibility={handleTogglePageVisibility}
                   setOpenLayoutPageUid={setOpenLayoutPageUid}
                   setOpenSharePageUid={setOpenSharePageUid}
@@ -679,6 +590,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
       </div>
 
       <button
+        type="button"
         onClick={handleSaveWithUpload}
         disabled={saving || uploading}
         className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition focus:outline-none shadow-md cursor-pointer"

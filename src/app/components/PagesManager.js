@@ -27,7 +27,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
 
   const portfolioSlug = portfolioData?.slug || portfolioData?.username || "mi-portfolio";
 
-  // Definición de los tipos de contenido actualizados (Texto/Artículo cambiado por Tienda)
+  // Definición de los tipos de contenido actualizados con la corchea musical para audio
   const contentTypes = [
     {
       id: "image",
@@ -45,7 +45,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
       description: "Comparte canciones o podcast.",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
         </svg>
       ),
     },
@@ -153,7 +153,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
       setTitle("");
       setSlug("");
       setPageType("image");
-      setShowForm(false); // Cierra el formulario tras crear la página con éxito
+      setShowForm(false);
     } catch (err) {
       console.error("Error al guardar en Firestore:", err);
       setError(`Error al guardar: ${err.message}`);
@@ -212,7 +212,6 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
       {error && <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100">{error}</p>}
       {successMsg && <p className="text-xs text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-100">{successMsg}</p>}
 
-      {/* Contenedor principal del formulario con la referencia para el click outside */}
       <div ref={formRef} className="space-y-3">
         {!showForm && (
           <button
@@ -239,7 +238,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
                   placeholder="Nombre de la página"
                   value={title}
                   onChange={handleTitleChange}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
                 />
               </div>
 
@@ -255,15 +254,15 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
                         onClick={() => setPageType(type.id)}
                         className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-purple-50/80 border-purple-500 shadow-sm ring-1 ring-purple-500"
+                            ? "bg-slate-100 border-black shadow-sm ring-1 ring-black"
                             : "bg-slate-50/50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
                         }`}
                       >
-                        <div className={`p-2 rounded-lg shrink-0 ${isSelected ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
+                        <div className={`p-2 rounded-lg shrink-0 ${isSelected ? "bg-black text-white" : "bg-white text-slate-600 border border-slate-200"}`}>
                           {type.icon}
                         </div>
                         <div className="space-y-0.5">
-                          <p className={`text-xs font-semibold ${isSelected ? "text-purple-900" : "text-slate-900"}`}>
+                          <p className={`text-xs font-semibold ${isSelected ? "text-slate-900" : "text-slate-900"}`}>
                             {type.title}
                           </p>
                           <p className="text-[11px] text-slate-500 leading-snug">
