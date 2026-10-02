@@ -1,4 +1,5 @@
 // components/Social.jsx
+import { useState, useRef, useEffect } from "react";
 import { Reorder } from "framer-motion";
 
 export default function Social({
@@ -9,9 +10,71 @@ export default function Social({
   setPortfolioData,
   isConfirmingDelete,
   setDeleteConfirmUid,
-  handleRemoveLink,
   onDragEndSave, 
+  onSave,
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef(null);
+
+  // Enfocar el input y colocar el cursor justo al final del texto
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      const length = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(length, length);
+    }
+  }, [isEditing]);
+
+  // Manejador para guardar al finalizar la edición de la URL
+  const handleFinishEditing = async () => {
+    setIsEditing(false);
+
+    if (onSave) {
+      try {
+        await onSave(portfolioData);
+      } catch (error) {
+        console.error("Error al guardar la URL en la base de datos:", error);
+      }
+    }
+  };
+
+  const handleToggleEnable = async (e) => {
+    const isChecked = e.target.checked;
+
+    const updatedLinks = stableLinks.map((l) =>
+      l.uid === linkItem.uid ? { ...l, enabled: isChecked } : l
+    );
+
+    const updatedData = { ...portfolioData, socialLinks: updatedLinks };
+
+    setPortfolioData(updatedData);
+
+    if (onSave) {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al guardar el estado del switch en la base de datos:", error);
+      }
+    }
+  };
+
+  const ConfirmAndRemove = async () => {
+    const updatedLinks = stableLinks.filter((l) => l.uid !== linkItem.uid);
+    const updatedData = { ...portfolioData, socialLinks: updatedLinks };
+    setPortfolioData(updatedData);
+    
+    if (onSave) {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al eliminar el enlace en la base de datos:", error);
+      }
+    }
+    setDeleteConfirmUid(null);
+  };
+
+  const sharedClasses = "w-full bg-transparent border-none text-sm text-slate-900 focus:outline-none py-1 truncate";
+
   return (
     <Reorder.Item
       key={linkItem.uid}
@@ -52,30 +115,42 @@ export default function Social({
         <img src={iconUrl} alt="Ícono red social" className="w-4.5 h-4.5 text-slate-900" />
       </div>
       
-      {/* Input de la URL */}
-      <input
-        type="text"
-        value={linkItem.url}
-        onChange={(e) => {
-          const updatedLinks = stableLinks.map(l => 
-            l.uid === linkItem.uid ? { ...l, url: e.target.value } : l
-          );
-          setPortfolioData({ ...portfolioData, socialLinks: updatedLinks });
-        }}
-        className="w-full bg-transparent border-none text-sm text-slate-900 focus:outline-none"
-      />
+      {/* Edición interactiva de la URL */}
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={linkItem.url}
+          onChange={(e) => {
+            const updatedLinks = stableLinks.map(l => 
+              l.uid === linkItem.uid ? { ...l, url: e.target.value } : l
+            );
+            setPortfolioData({ ...portfolioData, socialLinks: updatedLinks });
+          }}
+          onBlur={handleFinishEditing}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleFinishEditing();
+            }
+          }}
+          className={`${sharedClasses} cursor-pointer rounded px-1 transition-colors`}
+        />
+      ) : (
+        <p
+          onClick={() => setIsEditing(true)}
+          className={`${sharedClasses} cursor-pointer rounded px-1 transition-colors`}
+          title="Haz clic para editar"
+        >
+          {linkItem.url || <span className="text-slate-400 italic">Escribe una URL...</span>}
+        </p>
+      )}
 
       {/* Switch para activar/desactivar */}
       <label className="relative inline-flex items-center cursor-pointer shrink-0">
         <input
           type="checkbox"
           checked={linkItem.enabled ?? true}
-          onChange={(e) => {
-            const updatedLinks = stableLinks.map(l => 
-              l.uid === linkItem.uid ? { ...l, enabled: e.target.checked } : l
-            );
-            setPortfolioData({ ...portfolioData, socialLinks: updatedLinks });
-          }}
+          onChange={handleToggleEnable}
           className="sr-only peer"
         />
         <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
@@ -86,10 +161,7 @@ export default function Social({
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
-            onClick={() => {
-              handleRemoveLink(linkItem.uid);
-              setDeleteConfirmUid(null);
-            }}
+            onClick={ConfirmAndRemove}
             className="bg-black hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium cursor-pointer"
           >
             Remover

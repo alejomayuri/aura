@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Reorder, motion, AnimatePresence } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
@@ -10,35 +10,45 @@ import EditableTitleInput from "./AdminFormsComponents/home/EditableTitleInput";
 import { Bio } from "./AdminFormsComponents/home/Bio";
 import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
+/**
+ * Componente principal de administración de formulario (AdminForm)
+ * Permite gestionar en tiempo real la información principal del portafolio:
+ * título, biografía, imagen principal, redes sociales y páginas creadas.
+ */
 export default function AdminForm({ portfolioData, setPortfolioData, onSave, saving, onTogglePreview }) {
+  // ==========================================
+  // ESTADOS LOCALES Y CONTROLES DE INTERFAZ
+  // ==========================================
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [localPreview, setLocalPreview] = useState(null);
   const [newLinkUrl, setNewLinkUrl] = useState("");
+  
+  // Control de menús desplegables en páginas
   const [openLayoutPageUid, setOpenLayoutPageUid] = useState(null);
   const [openSharePageUid, setOpenSharePageUid] = useState(null);
-  
-  // Estado para controlar la edición inline del título principal y la biografía
+  const [openDeletePageUid, setOpenDeletePageUid] = useState(null);
+
+  // Control de edición en línea (Inline Edit)
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
 
-  // Estado para controlar el modal de la imagen principal
+  // Estado del Modal de Imagen Principal
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  // Estado temporal dentro del modal para previsualizar antes de confirmar
   const [modalTempFile, setModalTempFile] = useState(null);
   const [modalTempPreview, setModalTempPreview] = useState(null);
   const [modalRemoveImage, setModalRemoveImage] = useState(false);
 
-  // Estado para confirmar la eliminación de un enlace social
+  // Estados de confirmación y visibilidad
   const [deleteConfirmUid, setDeleteConfirmUid] = useState(null);
-  const [openDeletePageUid, setOpenDeletePageUid] = useState(null);
-
-  // Estado para mostrar u ocultar estilos de imagen en la sección de páginas
   const [showImageStyles, setShowImageStyles] = useState(false);
-
-  // Estado para controlar la adición de un nuevo enlace social
   const [isAddingLink, setIsAddingLink] = useState(false);
 
+  // ==========================================
+  // MEMORIZACIÓN Y REFERENCIAS ESTABLES
+  // ==========================================
+
+  /** Garantiza un identificador único (uid) estable para cada red social */
   const stableLinks = useMemo(() => {
     const links = portfolioData?.socialLinks || [];
     return links.map(link => ({
@@ -47,7 +57,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }));
   }, [portfolioData?.socialLinks]);
 
-  // Manejo estable de páginas con uid para el drag and drop con Framer Motion
+  /** Garantiza un identificador único (uid) estable para cada página */
   const stablePages = useMemo(() => {
     const pages = portfolioData?.pages || [];
     return pages.map(page => ({
@@ -56,20 +66,190 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }));
   }, [portfolioData?.pages]);
 
-  const handleTogglePageVisibility = (pageUid) => {
-    const updatedPages = stablePages.map(page => {
+  /** Referencia para capturar la última versión de las páginas durante gestos de arrastre */
+  const latestPagesRef = useRef(stablePages);
+
+  useEffect(() => {
+    latestPagesRef.current = stablePages;
+  }, [stablePages]);
+
+  // ==========================================
+  // 1. MANEJADORES DE PÁGINAS (AUTO-SAVE)
+  // ==========================================
+
+  /**
+   * Alterna la visibilidad de una página en la vista de inicio.
+   * @param {string} pageUid - Identificador único de la página.
+   */
+  const handleTogglePageVisibility = async (pageUid) => {
+    const updatedPages = stablePages.map((page) => {
       if (page.uid === pageUid) {
-        return { ...page, showOnHome: page.showOnHome === false ? true : false };
+        return { 
+          ...page, 
+          showOnHome: page.showOnHome === false ? true : false 
+        };
       }
       return page;
     });
-    setPortfolioData({ ...portfolioData, pages: updatedPages });
+
+    const updatedData = {
+      ...portfolioData,
+      socialLinks: stableLinks,
+      pages: updatedPages,
+    };
+
+    setPortfolioData(updatedData);
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al guardar la visibilidad de la página:", error);
+      }
+    }
   };
 
+  /**
+   * Elimina una página del portafolio y persiste los cambios en la BD.
+   * @param {string} pageUid - Identificador único de la página a eliminar.
+   */
+  const handleDeletePage = async (pageUid) => {
+    const updatedPages = stablePages.filter((page) => page.uid !== pageUid);
+
+    const updatedData = {
+      ...portfolioData,
+      pages: updatedPages,
+    };
+
+    setPortfolioData(updatedData);
+    setOpenDeletePageUid(null);
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al eliminar la página:", error);
+      }
+    }
+  };
+
+  /**
+   * Actualiza la disposición visual (layout) de una página específica sin cerrar el selector.
+   * @param {string} pageUid - Identificador único de la página.
+   * @param {string} layoutType - Tipo de layout elegido ('grid-3', 'single-large', 'masonry-grid').
+   */
+  const handleUpdatePageLayout = async (pageUid, layoutType) => {
+    const updatedPages = stablePages.map((page) => {
+      if ((page.uid || page.id) === pageUid) {
+        return { ...page, layout: layoutType };
+      }
+      return page;
+    });
+
+    const updatedData = {
+      ...portfolioData,
+      socialLinks: stableLinks,
+      pages: updatedPages,
+    };
+
+    setPortfolioData(updatedData);
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al actualizar el layout de la página:", error);
+      }
+    }
+  };
+
+  /**
+   * Actualiza la secuencia de páginas localmente durante el arrastre con Framer Motion.
+   * @param {Array} newPages - Arreglo con la nueva secuencia de páginas.
+   */
   const handleReorderPages = (newPages) => {
     setPortfolioData({ ...portfolioData, pages: newPages });
   };
 
+  /**
+   * Persiste el nuevo orden de las páginas al finalizar el gesto de arrastre.
+   */
+  const handlePageDragEnd = async () => {
+    const updatedData = {
+      ...portfolioData,
+      socialLinks: stableLinks,
+      pages: latestPagesRef.current,
+    };
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al guardar el reordenamiento de páginas:", error);
+      }
+    }
+  };
+
+  // ==========================================
+  // 2. MANEJADORES DE REDES SOCIALES
+  // ==========================================
+
+  /**
+   * Devuelve la URL del icono SVG correspondiente al dominio introducido.
+   * @param {string} url - Dirección web de la red social.
+   * @returns {string} URL del recurso SVG.
+   */
+  const getSocialIcon = (url) => {
+    if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes("instagram.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg";
+    if (lowerUrl.includes("whatsapp.com") || lowerUrl.includes("wa.me")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg";
+    if (lowerUrl.includes("linkedin.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg";
+    if (lowerUrl.includes("github.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg";
+    if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg";
+    if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg";
+    if (lowerUrl.includes("facebook.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg";
+    if (lowerUrl.includes("tiktok.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/tiktok.svg";
+    return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
+  };
+
+  /**
+   * Registra una nueva red social y guarda de forma automática los datos.
+   */
+  const handleAddLink = async () => {
+    if (!newLinkUrl.trim()) return;
+    
+    const newLink = { uid: Date.now().toString(), url: newLinkUrl.trim(), enabled: true };
+    const updatedLinks = [...stableLinks, newLink];
+    const updatedData = { ...portfolioData, socialLinks: updatedLinks };
+
+    setPortfolioData(updatedData);
+    setNewLinkUrl("");
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al guardar la nueva red social:", error);
+      }
+    }
+  };
+
+  /**
+   * Reordena los enlaces de redes sociales.
+   * @param {Array} newSocialLinks - Nueva lista ordenada de enlaces.
+   */
+  const handleReorder = (newSocialLinks) => {
+    setPortfolioData({ ...portfolioData, socialLinks: newSocialLinks });
+  };
+
+  // ==========================================
+  // 3. MANEJADORES DE IMAGEN PRINCIPAL
+  // ==========================================
+
+  /**
+   * Captura el archivo seleccionado en el selector de archivos del modal.
+   */
   const handleModalFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -78,7 +258,9 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setModalRemoveImage(false);
   };
 
-  // Subida de imagen y guardado automático al confirmar en el modal
+  /**
+   * Procesa la subida a Cloudinary o la remoción de la imagen principal.
+   */
   const handleConfirmImageSelection = async () => {
     let updatedData = { 
       ...portfolioData, 
@@ -120,7 +302,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         
         if (data.secure_url) {
           const finalImageUrl = data.secure_url;
-          setSelectedFile(null); // Limpiamos el archivo temporal principal
+          setSelectedFile(null);
           setLocalPreview(finalImageUrl);
           
           updatedData.mainImage = finalImageUrl;
@@ -145,81 +327,14 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setModalRemoveImage(false);
   };
 
+  /**
+   * Cancela la selección de imagen y limpia los datos temporales del modal.
+   */
   const handleCancelImageSelection = () => {
     setIsImageModalOpen(false);
     setModalTempFile(null);
     setModalTempPreview(null);
     setModalRemoveImage(false);
-  };
-
-  const getSocialIcon = (url) => {
-    if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
-    const lowerUrl = url.toLowerCase();
-    if (lowerUrl.includes("instagram.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/instagram.svg";
-    if (lowerUrl.includes("whatsapp.com") || lowerUrl.includes("wa.me")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/whatsapp.svg";
-    if (lowerUrl.includes("linkedin.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/linkedin.svg";
-    if (lowerUrl.includes("github.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/github.svg";
-    if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/x.svg";
-    if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/youtube.svg";
-    if (lowerUrl.includes("facebook.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/facebook.svg";
-    if (lowerUrl.includes("tiktok.com")) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/tiktok.svg";
-    return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
-  };
-
-  const handleAddLink = () => {
-    if (!newLinkUrl.trim()) return;
-    const newLink = { uid: Date.now().toString(), url: newLinkUrl.trim() };
-    setPortfolioData({ ...portfolioData, socialLinks: [...stableLinks, newLink] });
-    setNewLinkUrl("");
-  };
-
-  const handleRemoveLink = (uidToRemove) => {
-    setPortfolioData({
-      ...portfolioData,
-      socialLinks: stableLinks.filter((link) => link.uid !== uidToRemove),
-    });
-  };
-
-  const handleReorder = (newSocialLinks) => {
-    setPortfolioData({ ...portfolioData, socialLinks: newSocialLinks });
-  };
-
-  const handleUpdatePageLayout = (pageUid, layoutType) => {
-    const updatedPages = stablePages.map(page => {
-      if (page.uid === pageUid) {
-        return { ...page, layout: layoutType };
-      }
-      return page;
-    });
-    setPortfolioData({ ...portfolioData, pages: updatedPages });
-  };
-
-  // Guardado general por medio del botón inferior
-  const handleSaveWithUpload = async () => {
-    let updatedData = { 
-      ...portfolioData, 
-      socialLinks: stableLinks, 
-      pages: stablePages 
-    };
-
-    if (localPreview === "") {
-      updatedData.mainImage = "";
-      updatedData.imagen = "";
-      updatedData.image = "";
-    } else if (localPreview && localPreview.startsWith("http")) {
-      updatedData.mainImage = localPreview;
-      updatedData.imagen = localPreview;
-      updatedData.image = localPreview;
-    }
-
-    setPortfolioData(updatedData);
-
-    if (typeof onSave === "function") {
-      await onSave(updatedData);
-    }
-
-    setSelectedFile(null);
-    setLocalPreview(null);
   };
 
   const currentImageDisplay = localPreview !== null ? localPreview : (portfolioData?.mainImage || portfolioData?.imagen || portfolioData?.image);
@@ -244,6 +359,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         stablePages={stablePages}
       />
 
+      {/* SECCIÓN: Imagen Principal */}
       <div className="space-y-3 pt-2">
         <div className="w-full bg-transparent p-0 flex justify-start">
           <div 
@@ -273,7 +389,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
 
         {uploading && <span className="text-xs text-purple-600 block">Subiendo imagen y guardando cambios...</span>}
 
-        {/* BOTÓN DE DISEÑO DE IMAGEN */}
+        {/* Desplegable: Opciones de estilo visual de la imagen */}
         <div className="pt-1">
           <button
             type="button"
@@ -294,7 +410,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
             </svg>
           </button>
 
-          {/* MENÚ DESPLEGABLE CON PREVIEWS */}
           <div className={`grid transition-all duration-300 ease-in-out ${showImageStyles ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
             <div className="overflow-hidden">
               <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2 max-w-2xl">
@@ -326,7 +441,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         </div>
       </div>
 
-      {/* MODAL PARA SUBIR O REMOVER IMAGEN PRINCIPAL */}
+      {/* MODAL DE IMAGEN PRINCIPAL */}
       {typeof window !== "undefined" && createPortal(
         <AnimatePresence>
           {isImageModalOpen && (
@@ -435,21 +550,22 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         document.body
       )}
 
+      {/* SECCIÓN: Biografía */}
       <div className="space-y-3">
         <label className="text-base font-semibold text-slate-900 block">Biografía</label>
-          <Bio
-            portfolioData={portfolioData} 
-            setPortfolioData={setPortfolioData} 
-            setIsEditingBio={setIsEditingBio} 
-            isEditingBio={isEditingBio}
-            onSave={onSave}
-            saving={saving}
-            stableLinks={stableLinks}
-            stablePages={stablePages}
-          />
-        
+        <Bio
+          portfolioData={portfolioData} 
+          setPortfolioData={setPortfolioData} 
+          setIsEditingBio={setIsEditingBio} 
+          isEditingBio={isEditingBio}
+          onSave={onSave}
+          saving={saving}
+          stableLinks={stableLinks}
+          stablePages={stablePages}
+        />
       </div>
 
+      {/* SECCIÓN: Redes Sociales */}
       <div className="space-y-3 pt-4 pb-4">
         <label className="text-base font-semibold text-slate-900 block">Redes Sociales</label>
 
@@ -474,8 +590,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                   setPortfolioData={setPortfolioData}
                   isConfirmingDelete={isConfirmingDelete}
                   setDeleteConfirmUid={setDeleteConfirmUid}
-                  handleRemoveLink={handleRemoveLink}
-                  onDragEndSave={onSave}
+                  onSave={onSave}
                 />
               );
             })}
@@ -543,6 +658,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
             axis="y" 
             values={stablePages} 
             onReorder={handleReorderPages}
+            onPanEnd={handlePageDragEnd}
             className="space-y-2.5 pt-1 list-none"
           >
             {stablePages.map((page) => {
@@ -579,7 +695,8 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                   
                   stablePages={stablePages}
                   portfolioData={portfolioData}
-                  setPortfolioData={setPortfolioData}
+                  setPortfolioData={() => handleDeletePage(page.uid)}
+                  onDragEnd={handlePageDragEnd}
                 />
               );
             })}
@@ -588,15 +705,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           <p className="text-xs text-slate-500 italic pt-1">No hay páginas creadas todavía.</p>
         )}
       </div>
-
-      <button
-        type="button"
-        onClick={handleSaveWithUpload}
-        disabled={saving || uploading}
-        className="w-full bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm transition focus:outline-none shadow-md cursor-pointer"
-      >
-        {uploading ? "Subiendo imagen..." : saving ? "Guardando..." : "Guardar Cambios en Firestore"}
-      </button>
     </div>
   );
 }
