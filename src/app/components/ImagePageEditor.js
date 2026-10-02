@@ -6,6 +6,7 @@ import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
+import { GalleryItem } from "./AdminFormsComponents/typeImage/GalleryItem";
 
 export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
   const selectedPage = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
@@ -171,6 +172,47 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     } catch (err) {
       console.error("Error al actualizar título:", err);
       setError("No se pudo actualizar el título de la galería.");
+    }
+  };
+
+  /**
+   * Actualiza el título de una imagen/elemento individual y persiste los cambios en Firestore
+   */
+  const handleUpdateItemTitle = async (galleryId, itemId, newTitle) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    setSavingItemId(itemId);
+
+    try {
+      const updatedGalleries = galleries.map((gal) => {
+        if (gal.id === galleryId) {
+          const updatedItems = (gal.items || []).map((item) => {
+            if (item.id === itemId) {
+              return { ...item, title: newTitle };
+            }
+            return item;
+          });
+          return { ...gal, items: updatedItems };
+        }
+        return gal;
+      });
+
+      const updatedPages = portfolioData.pages.map((p) => {
+        if ((p.id || p.slug) === selectedPageId) {
+          return { ...p, galleries: updatedGalleries };
+        }
+        return p;
+      });
+
+      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+
+      onUpdatePortfolio(updatedPages);
+      setSavingItemId(null);
+    } catch (err) {
+      console.error("Error al actualizar el título de la imagen:", err);
+      setError("No se pudo actualizar el título de la imagen.");
+      setSavingItemId(null);
     }
   };
 
@@ -567,98 +609,19 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
                           const isThisItemSaving = savingItemId === item.id;
 
                           return (
-                            <Reorder.Item 
-                              key={item.id} 
-                              value={item} 
-                              onDragEnd={() => handleSaveItemsOrder(item)}
-                              className="list-none bg-white border border-slate-200 p-3 rounded-xl shadow-sm"
-                            >
-                              <div className="flex flex-col gap-3">
-                                <div className="flex items-center justify-between gap-3">
-                                  
-                                  <div className="flex items-center gap-3 overflow-hidden">
-                                    <div 
-                                      className="text-slate-400 hover:text-purple-700 flex flex-col gap-0.5 justify-center shrink-0 px-1 transition-colors cursor-grab active:cursor-grabbing"
-                                    >
-                                      <div className="flex gap-0.5">
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                      </div>
-                                      <div className="flex gap-0.5">
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                      </div>
-                                      <div className="flex gap-0.5">
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                        <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                                      </div>
-                                    </div>
-
-                                    <img src={item.url} alt="Preview" className="w-16 h-16 rounded-lg object-cover shrink-0 border border-slate-200 shadow-sm" />
-                                    
-                                    {isThisItemSaving && (
-                                      <svg className="w-5 h-5 animate-spin text-purple-600 shrink-0 ml-1" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                      </svg>
-                                    )}
-                                  </div>
-
-                                  <div className="flex items-center gap-3 shrink-0">
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        checked={isItemActive}
-                                        onChange={() => handleToggleItemActive(gal.id, item.id, isItemActive)}
-                                        className="sr-only peer"
-                                      />
-                                      <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                                    </label>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => setDeleteItemTarget(isItemDeleteOpen ? { galleryId: null, itemId: null } : { galleryId: gal.id, itemId: item.id })}
-                                      className={`p-2 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
-                                        isItemDeleteOpen ? "bg-rose-600 text-white" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200"
-                                      }`}
-                                    >
-                                      <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </div>
-
-                                <AnimatePresence>
-                                  {isItemDeleteOpen && (
-                                    <motion.div
-                                      initial={{ opacity: 0, height: 0 }}
-                                      animate={{ opacity: 1, height: "auto" }}
-                                      exit={{ opacity: 0, height: 0 }}
-                                      className="overflow-hidden bg-rose-50/50 border border-rose-100 rounded-lg p-3 space-y-2.5"
-                                    >
-                                      <span className="text-xs font-semibold text-rose-950 block">¿Eliminar esta imagen?</span>
-                                      <div className="flex items-center justify-end gap-2">
-                                        <button
-                                          type="button"
-                                          onClick={() => setDeleteItemTarget({ galleryId: null, itemId: null })}
-                                          className="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer"
-                                        >
-                                          Cancelar
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeleteItem(gal.id, item.id)}
-                                          className="bg-rose-600 text-white px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer"
-                                        >
-                                          Eliminar
-                                        </button>
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            </Reorder.Item>
+                            <GalleryItem
+                              key={item.id}
+                              item={item}
+                              galleryId={gal.id}
+                              isItemActive={isItemActive}
+                              isItemDeleteOpen={isItemDeleteOpen}
+                              isThisItemSaving={isThisItemSaving}
+                              handleSaveItemsOrder={handleSaveItemsOrder}
+                              handleToggleItemActive={handleToggleItemActive}
+                              setDeleteItemTarget={setDeleteItemTarget}
+                              handleDeleteItem={handleDeleteItem}
+                              handleUpdateItemTitle={handleUpdateItemTitle}
+                            />
                           );
                         })}
                       </Reorder.Group>
