@@ -46,7 +46,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className={`bg-white border border-slate-200 p-5 rounded-xl space-y-4 transition-all duration-300 ease-out transform ${
+      className={`bg-white border border-slate-300 shadow-sm p-5 rounded-xl space-y-4 transition-all duration-300 ease-out transform ${
         isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-3 scale-95"
       }`}
     >
@@ -71,7 +71,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
           placeholder="https://"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500/50 shadow-sm"
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
         />
       </div>
 
@@ -84,7 +84,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
           placeholder="Título del link"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500/50 shadow-sm"
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
         />
       </div>
 
@@ -103,7 +103,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
           type="checkbox"
           checked={isFeatured}
           onChange={(e) => setIsFeatured(e.target.checked)}
-          className="w-4 h-4 accent-purple-600 rounded bg-white border-slate-300 cursor-pointer"
+          className="w-4 h-4 accent-gray-900 rounded bg-white border-slate-300 cursor-pointer"
         />
       </div>
 

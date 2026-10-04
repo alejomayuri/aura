@@ -229,7 +229,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
           }`}
         >
           <div className="overflow-hidden space-y-2">
-            <form onSubmit={handleSubmit} className="bg-white border border-slate-200 p-5 rounded-xl space-y-4 shadow-sm">
+            <form onSubmit={handleSubmit} className="bg-white border border-slate-300 p-5 rounded-xl space-y-4 shadow-sm">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-slate-700">Nombre</label>
                 <input 
@@ -300,9 +300,9 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
       </div>
 
       <div className="space-y-3 pt-2 pb-4">
-        <label className="text-base font-semibold text-slate-900 block">
+        {/* <label className="text-base font-semibold text-slate-900 block">
           Páginas Registradas ({localPages.length})
-        </label>
+        </label> */}
 
         {localPages.length > 0 ? (
           <Reorder.Group 

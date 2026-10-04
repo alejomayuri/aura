@@ -1,6 +1,7 @@
 // components/Social.jsx
 import { useState, useRef, useEffect } from "react";
 import { Reorder } from "framer-motion";
+import DragIcon from "@/app/components/AdminFormsComponents/ui/DragIcon"; // Ajusta la ruta según tu proyecto
 
 export default function Social({
   linkItem,
@@ -89,26 +90,10 @@ export default function Social({
         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
         zIndex: 50,
       }}
-      className="flex items-center gap-3 bg-white rounded-xl px-3.5 py-3 shadow-sm border border-purple-100 hover:border-purple-200 cursor-grab active:cursor-grabbing relative select-none"
+      className="flex items-center gap-3 bg-white rounded-xl px-3.5 py-3 shadow-sm border border-slate-300 cursor-grab active:cursor-grabbing relative select-none"
     >
       {/* Indicador de arrastre */}
-      <div 
-        className="text-slate-600 hover:text-purple-700 flex flex-col gap-0.5 justify-center shrink-0 px-1 transition-colors cursor-grab active:cursor-grabbing" 
-        title="Arrastrar para ordenar"
-      >
-        <div className="flex gap-0.5">
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-        </div>
-        <div className="flex gap-0.5">
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-        </div>
-        <div className="flex gap-0.5">
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-          <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-        </div>
-      </div>
+      <DragIcon />
 
       {/* Ícono de la red social */}
       <div className="w-9 h-9 flex items-center justify-center bg-purple-50 border border-purple-100 rounded-lg shrink-0 pointer-events-none">

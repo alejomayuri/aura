@@ -114,12 +114,12 @@ export default function AdminDashboard() {
 
       {/* ================= 2. FORMULARIO O CONTENIDO CENTRAL ================= */}
       <div 
-        className={`p-6 overflow-y-auto relative z-10 space-y-6 border-r border-purple-100 transition-all duration-300 ${
+        className={`p-6 overflow-y-auto relative z-10 space-y-6 border-r border-slate-300 transition-all duration-300 ${
           activeTab === "my-lightjaus" 
             ? "flex-1 max-w-full" 
             : "w-[420px] lg:flex-1 shrink-0"
         }`} 
-        style={{ backgroundColor: "#FBFAF9" }}
+        style={{ backgroundColor: "#fff" }}
       >
         {activeTab === "my-lightjaus" && (
           <MyLightjaus 

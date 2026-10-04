@@ -1,5 +1,7 @@
 import React from 'react';
 import { Reorder, AnimatePresence, motion } from 'framer-motion';
+import DeleteButton from '@/app/components/AdminFormsComponents/ui/DeleteButton'; // Ajusta la ruta según tu proyecto
+import DragIcon from '@/app/components/AdminFormsComponents/ui/DragIcon'; // Ajusta la ruta según tu proyecto
 
 export const PageItem = ({
   page,
@@ -32,7 +34,7 @@ export const PageItem = ({
                 boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                 zIndex: 50,
             }}
-            className="flex flex-col bg-white rounded-xl shadow-sm border border-purple-100 hover:border-purple-200 overflow-hidden relative select-none"
+            className="flex flex-col bg-white border border-slate-300 rounded-xl shadow-sm cursor-grab active:cursor-grabbing transition-colors overflow-hidden select-none"
         >
             <div className="flex relative w-full">
                 {/* Ícono de arrastre */}
@@ -40,20 +42,7 @@ export const PageItem = ({
                     className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-slate-400 hover:text-purple-700 transition-colors cursor-grab active:cursor-grabbing bg-slate-50/50 border-r border-slate-100" 
                     title="Arrastrar para ordenar"
                 >
-                    <div className="flex flex-col gap-0.5">
-                        <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                        <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                        <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                        </div>
-                    </div>
+                    <DragIcon />
                 </div>
 
                 {/* Contenido principal */}
@@ -148,23 +137,16 @@ export const PageItem = ({
                             </svg>
                         </button>
 
-                        <button
-                            type="button"
+                        {/* Componente DeleteButton reutilizado para eliminar la página */}
+                        <DeleteButton
+                            isOpen={isDeleteOpen}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setOpenDeletePageUid(isDeleteOpen ? null : page.uid);
                                 setOpenSharePageUid(null);
                                 setOpenLayoutPageUid(null);
                             }}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                isDeleteOpen ? "text-rose-600 bg-rose-100" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                            }`}
-                            title="Eliminar página"
-                        >
-                            <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
+                        />
                     </div>
                 </div>
             </div>

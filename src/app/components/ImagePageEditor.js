@@ -6,7 +6,7 @@ import { db, auth } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
-import { GalleryItem } from "./AdminFormsComponents/typeImage/GalleryItem";
+import GalleryCard from "./AdminFormsComponents/typeImage/GalleryCard";
 
 export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
   const selectedPage = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
@@ -53,6 +53,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         id: crypto.randomUUID(),
         title: newGalleryTitle.trim(),
         isActive: true,
+        layout: "grid", // Layout predeterminado
         items: []
       };
 
@@ -75,6 +76,38 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
       setError("No se pudo crear la galería.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Cambia la opción de layout de una galería y guarda en Firestore
+   */
+  const handleSelectLayout = async (galleryId, newLayout) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const updatedGalleries = galleries.map((gal) => {
+        if (gal.id === galleryId) {
+          return { ...gal, layout: newLayout };
+        }
+        return gal;
+      });
+
+      const updatedPages = portfolioData.pages.map((p) => {
+        if ((p.id || p.slug) === selectedPageId) {
+          return { ...p, galleries: updatedGalleries };
+        }
+        return p;
+      });
+
+      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+
+      onUpdatePortfolio(updatedPages);
+    } catch (err) {
+      console.error("Error al guardar el layout:", err);
+      setError("No se pudo guardar la opción de layout.");
     }
   };
 
@@ -175,9 +208,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  /**
-   * Actualiza el título de una imagen/elemento individual y persiste los cambios en Firestore
-   */
   const handleUpdateItemTitle = async (galleryId, itemId, newTitle) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -438,7 +468,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
           placeholder="Nombre de la galería (ej. Vestidos, Zapatos...)"
           value={newGalleryTitle}
           onChange={(e) => setNewGalleryTitle(e.target.value)}
-          className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-purple-600 shadow-sm"
+          className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-slate-900 shadow-sm"
         />
         <button
           type="submit"
@@ -457,180 +487,29 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
       >
         {galleries.length > 0 ? (
           galleries.map((gal) => {
-            const isGalleryDeleteOpen = deleteGalleryUid === gal.id;
-            const isGalleryActive = gal.isActive !== false;
-            const isEditing = editingGalleryId === gal.id;
-            const isHovered = hoveredGalleryId === gal.id;
-
             return (
-              <Reorder.Item 
-                key={gal.id} 
-                value={gal} 
-                onDragEnd={handleSaveGalleriesOrder}
-                className="list-none relative"
-              >
-                <div 
-                  onMouseEnter={() => setHoveredGalleryId(gal.id)}
-                  onMouseLeave={() => setHoveredGalleryId(null)}
-                  className="bg-white border border-purple-100 rounded-xl shadow-sm overflow-hidden"
-                >
-                  <div className="p-4 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 gap-3">
-                      
-                      <div className="flex items-center gap-2.5 flex-1 overflow-hidden">
-                        <div 
-                          className="text-slate-400 hover:text-purple-700 flex flex-col gap-0.5 justify-center shrink-0 px-1 transition-colors cursor-grab active:cursor-grabbing"
-                          title="Arrastrar para ordenar"
-                        >
-                          <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          </div>
-                          <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          </div>
-                          <div className="flex gap-0.5">
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                            <span className="w-0.5 h-0.5 bg-current rounded-full"></span>
-                          </div>
-                        </div>
-
-                        <div className="flex-1 overflow-hidden">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={editingGalleryTitle}
-                              onChange={(e) => setEditingGalleryTitle(e.target.value)}
-                              onBlur={() => handleUpdateGalleryTitle(gal.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") e.target.blur();
-                                if (e.key === "Escape") setEditingGalleryId(null);
-                              }}
-                              autoFocus
-                              className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 px-0 py-0 text-base font-medium text-slate-900 shadow-none rounded-none"
-                            />
-                          ) : (
-                            <div 
-                              onClick={() => {
-                                setEditingGalleryId(gal.id);
-                                setEditingGalleryTitle(gal.title);
-                              }}
-                              className="group cursor-pointer flex items-center gap-1.5"
-                            >
-                              <h3 className="text-base font-medium text-slate-950 tracking-wide group-hover:text-purple-700 transition-colors truncate">
-                                {gal.title}
-                              </h3>
-                              <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-700 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={`flex items-center gap-3 shrink-0 transition-opacity duration-200 ${isHovered || isGalleryDeleteOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setModalGalleryId(gal.id);
-                            setModalTempFile(null);
-                            setModalTempPreview(null);
-                            setDeleteGalleryUid(null);
-                          }}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shadow-sm bg-black text-white hover:bg-slate-800"
-                        >
-                          + Añadir Imagen
-                        </button>
-
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={isGalleryActive}
-                            onChange={() => handleToggleGalleryActive(gal.id, isGalleryActive)}
-                            className="sr-only peer"
-                          />
-                          <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                        </label>
-
-                        <button
-                          type="button"
-                          onClick={() => setDeleteGalleryUid(isGalleryDeleteOpen ? null : gal.id)}
-                          className={`p-2 rounded-lg transition-all cursor-pointer flex items-center justify-center ${
-                            isGalleryDeleteOpen ? "bg-rose-600 text-white" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200"
-                          }`}
-                        >
-                          <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <AnimatePresence>
-                      {isGalleryDeleteOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden bg-rose-50/50 border border-rose-100 rounded-xl p-4 space-y-3"
-                        >
-                          <span className="text-xs font-semibold text-rose-900 block">¿Eliminar esta galería completa?</span>
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setDeleteGalleryUid(null)}
-                              className="bg-white text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
-                            >
-                              Cancelar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteGallery(gal.id)}
-                              className="bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer"
-                            >
-                              Sí, eliminar
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {gal.items.length > 0 ? (
-                      <Reorder.Group 
-                        axis="y" 
-                        values={gal.items} 
-                        onReorder={(newOrder) => handleReorderItems(gal.id, newOrder)}
-                        className="space-y-2 pt-1"
-                      >
-                        {gal.items.map((item) => {
-                          const isItemDeleteOpen = deleteItemTarget.galleryId === gal.id && deleteItemTarget.itemId === item.id;
-                          const isItemActive = item.isActive !== false;
-                          const isThisItemSaving = savingItemId === item.id;
-
-                          return (
-                            <GalleryItem
-                              key={item.id}
-                              item={item}
-                              galleryId={gal.id}
-                              isItemActive={isItemActive}
-                              isItemDeleteOpen={isItemDeleteOpen}
-                              isThisItemSaving={isThisItemSaving}
-                              handleSaveItemsOrder={handleSaveItemsOrder}
-                              handleToggleItemActive={handleToggleItemActive}
-                              setDeleteItemTarget={setDeleteItemTarget}
-                              handleDeleteItem={handleDeleteItem}
-                              handleUpdateItemTitle={handleUpdateItemTitle}
-                            />
-                          );
-                        })}
-                      </Reorder.Group>
-                    ) : (
-                      <p className="text-xs text-slate-400 italic text-center py-3">No hay imágenes en esta galería todavía.</p>
-                    )}
-                  </div>
-                </div>
-              </Reorder.Item>
+              <GalleryCard
+                key={gal.id}
+                gal={gal}
+                handleSaveGalleriesOrder={handleSaveGalleriesOrder}
+                handleUpdateGalleryTitle={handleUpdateGalleryTitle}
+                handleToggleGalleryActive={handleToggleGalleryActive}
+                handleDeleteGallery={handleDeleteGallery}
+                handleReorderItems={handleReorderItems}
+                handleSaveItemsOrder={handleSaveItemsOrder}
+                handleToggleItemActive={handleToggleItemActive}
+                handleDeleteItem={handleDeleteItem}
+                handleUpdateItemTitle={handleUpdateItemTitle}
+                handleSelectLayout={handleSelectLayout}
+                setModalGalleryId={setModalGalleryId}
+                setModalTempFile={setModalTempFile}
+                setModalTempPreview={setModalTempPreview}
+                deleteGalleryUid={deleteGalleryUid}
+                setDeleteGalleryUid={setDeleteGalleryUid}
+                deleteItemTarget={deleteItemTarget}
+                setDeleteItemTarget={setDeleteItemTarget}
+                savingItemId={savingItemId}
+              />
             );
           })
         ) : (
