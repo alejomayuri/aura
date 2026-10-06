@@ -71,7 +71,7 @@ export default function LinkItemForm({ onAddLink, loading }) {
           placeholder="https://"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
+          className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
         />
       </div>
 
@@ -84,12 +84,12 @@ export default function LinkItemForm({ onAddLink, loading }) {
           placeholder="Título del link"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
+          className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-black transition-colors"
         />
       </div>
 
       {/* Opción Booleana: Destacar Link */}
-      <div className="flex items-center justify-between bg-slate-50 border border-slate-200 p-3.5 rounded-xl">
+      <div className="flex items-center justify-between bg-slate-50 border border-slate-300 p-3.5 rounded-xl">
         <div className="space-y-0.5">
           <label htmlFor="featured-toggle" className="text-sm font-medium text-slate-900 cursor-pointer block">
             Destacar este enlace
