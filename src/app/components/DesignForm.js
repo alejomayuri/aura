@@ -7,67 +7,6 @@ import { Check } from "lucide-react";
 import Title from "./AdminFormsComponents/Title";
 import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
-// Subcomponente de Opciones de Estilo de Imagen
-// function ImageStyleOption({ styleValue, label, currentImageDisplay, portfolioData, setPortfolioData, onSave }) {
-//   const isSelected = portfolioData.imageStyle === styleValue || (!portfolioData.imageStyle && styleValue === "rounded");
-
-//   const handleSelectStyle = async () => {
-//     const updatedData = {
-//       ...portfolioData,
-//       imageStyle: styleValue,
-//     };
-//     setPortfolioData(updatedData);
-
-//     if (typeof onSave === "function") {
-//       try {
-//         await onSave(updatedData);
-//       } catch (error) {
-//         console.error("Error al guardar el estilo de imagen:", error);
-//       }
-//     }
-//   };
-
-//   const getStyleClasses = () => {
-//     switch (styleValue) {
-//       case "rounded":
-//         return "rounded-full aspect-square object-cover w-12 h-12";
-//       case "full-width":
-//         return "rounded-none w-full h-12 object-cover";
-//       case "fade-bottom":
-//         return "rounded-t-lg w-full h-12 object-cover [mask-image:linear-gradient(to_bottom,black_60%,transparent_100%)]";
-//       case "horizontal":
-//         return "rounded-lg w-full h-10 object-cover";
-//       case "square-rounded":
-//         return "rounded-xl aspect-square object-cover w-12 h-12";
-//       case "creative-blob":
-//         return "rounded-[30%_70%_70%_30%/30%_30%_70%_70%] aspect-square object-cover w-12 h-12";
-//       default:
-//         return "rounded-xl aspect-square object-cover w-12 h-12";
-//     }
-//   };
-
-//   return (
-//     <button
-//       type="button"
-//       onClick={handleSelectStyle}
-//       className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-//         isSelected
-//           ? "border-purple-600 bg-purple-50/50 text-purple-900 font-semibold ring-2 ring-purple-500/20"
-//           : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-//       }`}
-//     >
-//       <div className="w-full h-14 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden p-1">
-//         {currentImageDisplay ? (
-//           <img src={currentImageDisplay} alt={label} className={getStyleClasses()} />
-//         ) : (
-//           <div className={`bg-slate-300 ${getStyleClasses()}`} />
-//         )}
-//       </div>
-//       <span className="text-[11px] text-center leading-tight">{label}</span>
-//     </button>
-//   );
-// }
-
 export default function DesignForm({ portfolioData, setPortfolioData, onSave, saving, saveMessage }) {
   // Estados para manejo del modal y la subida de imagen principal
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -77,6 +16,9 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
   const [modalTempFile, setModalTempFile] = useState(null);
   const [modalTempPreview, setModalTempPreview] = useState(null);
   const [modalRemoveImage, setModalRemoveImage] = useState(false);
+
+  // Referencia temporal para manejar el temporizador de guardado automático de colores (debounce)
+  const [colorTimeout, setColorTimeout] = useState(null);
 
   const currentImageDisplay = portfolioData?.mainImage || portfolioData?.profileImage || portfolioData?.imagen || portfolioData?.image || null;
 
@@ -180,6 +122,44 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     }
   };
 
+  // Manejador de cambios de color con debounce (espera a que el usuario termine de seleccionar)
+  const handleColorChange = (colorKey, value) => {
+    const updatedColors = {
+      primaryColor: "#ffffff",
+      secondaryColor: "#f8fafc",
+      socialColor: "#0f172a",
+      titleColor: "#0f172a",
+      ...(portfolioData?.colors || {}),
+      [colorKey]: value,
+    };
+
+    const latestData = {
+      ...portfolioData,
+      colors: updatedColors,
+    };
+
+    // 1. Actualiza la UI inmediatamente
+    setPortfolioData(latestData);
+
+    // 2. Limpia temporizador previo
+    if (colorTimeout) {
+      clearTimeout(colorTimeout);
+    }
+
+    // 3. Dispara la llamada a onSave() 400ms después de que se detenga la selección
+    const newTimeout = setTimeout(async () => {
+      if (typeof onSave === "function") {
+        try {
+          await onSave(latestData);
+        } catch (error) {
+          console.error("Error al guardar colores automáticamente:", error);
+        }
+      }
+    }, 400);
+
+    setColorTimeout(newTimeout);
+  };
+
   // Funciones de control del Modal de Imagen
   const handleModalFileSelect = (e) => {
     const file = e.target.files?.[0];
@@ -197,12 +177,6 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     setModalRemoveImage(false);
   };
 
-  /**
-   * Réplica exacta de AdminForm:
-   * 1. Sube la imagen a Cloudinary (o remueve los campos).
-   * 2. Guarda el objeto con la URL final llamando a onSave(updatedData).
-   * 3. Setea el estado local y cierra el modal al terminar.
-   */
   const handleConfirmImageSelection = async () => {
     let updatedData = { ...portfolioData };
 
@@ -264,6 +238,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     setModalTempPreview(null);
     setModalRemoveImage(false);
   };
+
+  const primaryColor = portfolioData?.colors?.primaryColor || "#ffffff";
+  const secondaryColor = portfolioData?.colors?.secondaryColor || "#f8fafc";
+  const socialColor = portfolioData?.colors?.socialColor || portfolioData?.colors?.textColor || "#0f172a";
+  const titleColor = portfolioData?.colors?.titleColor || "#0f172a";
 
   return (
     <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins']">
@@ -463,77 +442,117 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       )}
 
       {/* SECCIÓN: Plantillas */}
-      <div className="flex items-center justify-between font-['Poppins'] pt-2">
-        <h3 className="text-base font-semibold text-slate-900">Plantilla</h3>
+      <div className="font-['Poppins'] pt-2">
+        <h3 className="text-base font-semibold text-slate-900 mb-1">Plantilla</h3>
+      
+        {/* Lista de Plantillas */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 max-h-[540px] overflow-y-auto p-2">
+          {templates.map((t) => {
+            const isSelected = portfolioData.template === t.id || (!portfolioData.template && t.id === "minimal");
+
+            return (
+              <div
+                key={t.id}
+                onClick={() => handleSelectTemplate(t.id)}
+                className={`relative cursor-pointer rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between h-45 overflow-hidden ${t.cardBg} ${
+                  isSelected
+                    ? "ring-2 ring-slate-900 ring-offset-2 ring-offset-slate-50 scale-[1.01]"
+                    : "hover:opacity-95 hover:scale-[0.99]"
+                }`}
+              >
+                {/* Encabezado del Template */}
+                <div className="flex items-center justify-between w-full z-10">
+                  <span className={`text-base font-semibold ${t.fontFamily}`}>
+                    {t.name}
+                  </span>
+                </div>
+
+                {/* Vista previa de componentes del Template */}
+                <div className="mt-auto w-full space-y-2.5 z-10">
+                  <div className="flex items-center justify-left gap-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-center text-[10px] transition-all ${t.socialShape}`}
+                      ></div>
+                    ))}
+                  </div>
+
+                  <div className={`w-full px-4 flex items-center justify-between transition-all ${t.previewCard}`}>
+                    <span className={`text-xs ${t.fontFamily}`}>{t.previewBtnText}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Lista de Plantillas */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 max-h-[540px] overflow-y-auto p-2">
-        {templates.map((t) => {
-          const isSelected = portfolioData.template === t.id || (!portfolioData.template && t.id === "minimal");
-
-          return (
-            <div
-              key={t.id}
-              onClick={() => handleSelectTemplate(t.id)}
-              className={`relative cursor-pointer rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between h-45 overflow-hidden ${t.cardBg} ${
-                isSelected
-                  ? "ring-2 ring-slate-900 ring-offset-2 ring-offset-slate-50 scale-[1.01]"
-                  : "hover:opacity-95 hover:scale-[0.99]"
-              }`}
-            >
-              {/* Encabezado del Template */}
-              <div className="flex items-center justify-between w-full z-10">
-                <span className={`text-base font-semibold ${t.fontFamily}`}>
-                  {t.name}
-                </span>
-              </div>
-
-              {/* Vista previa de componentes del Template */}
-              <div className="mt-auto w-full space-y-2.5 z-10">
-                <div className="flex items-center justify-left gap-2">
-                  {[...Array(3)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center justify-center text-[10px] transition-all ${t.socialShape}`}
-                    ></div>
-                  ))}
-                </div>
-
-                <div className={`w-full px-4 flex items-center justify-between transition-all ${t.previewCard}`}>
-                  <span className={`text-xs ${t.fontFamily}`}>{t.previewBtnText}</span>
-                </div>
-              </div>
+      {/* SECCIÓN: Colores */}
+      <div className="space-y-3 pt-4 font-['Poppins']">
+        <h3 className="text-base font-semibold text-slate-900">Colores</h3>
+        <div className="flex flex-col gap-3 w-full">
+          {/* Color Principal */}
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full">
+            <div>
+              <span className="text-sm font-semibold text-slate-900 block">Principal</span>
             </div>
-          );
-        })}
+            <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => handleColorChange("primaryColor", e.target.value)}
+                className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-focus-inner]:p-0 [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Color Secundario */}
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full">
+            <div>
+              <span className="text-sm font-semibold text-slate-900 block">Bloques</span>
+            </div>
+            <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+              <input
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => handleColorChange("secondaryColor", e.target.value)}
+                className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-focus-inner]:p-0 [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Tercer Color - Redes Sociales */}
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full">
+            <div>
+              <span className="text-sm font-semibold text-slate-900 block">Redes sociales</span>
+            </div>
+            <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+              <input
+                type="color"
+                value={socialColor}
+                onChange={(e) => handleColorChange("socialColor", e.target.value)}
+                className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-focus-inner]:p-0 [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full"
+              />
+            </div>
+          </div>
+
+          {/* Cuarto Color - Título */}
+          <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full">
+            <div>
+              <span className="text-sm font-semibold text-slate-900 block">Títulos</span>
+            </div>
+            <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+              <input
+                type="color"
+                value={titleColor}
+                onChange={(e) => handleColorChange("titleColor", e.target.value)}
+                className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-focus-inner]:p-0 [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Mensaje de notificación / estado */}
-      {/* {saveMessage && (
-        <p className="text-xs text-center font-medium text-purple-600 bg-purple-50 p-2 rounded-lg">
-          {saveMessage}
-        </p>
-      )} */}
-
-      {/* Botón de Guardar */}
-      {/* <button
-        onClick={() => {
-          if (typeof onSave === "function") {
-            onSave(portfolioData);
-          }
-        }}
-        disabled={saving}
-        className="font-['Poppins'] w-full bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-medium py-3 rounded-xl text-xs transition shadow-md shadow-purple-600/20 focus:outline-none flex items-center justify-center gap-2 cursor-pointer"
-      >
-        {saving ? (
-          "Guardando cambios..."
-        ) : (
-          <>
-            <Check className="w-4 h-4" /> Guardar Cambios en Firestore
-          </>
-        )}
-      </button> */}
     </div>
   );
 }
