@@ -11,7 +11,7 @@ export default function Title({
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between font-['Poppins']">
       <div className="flex items-center gap-2">
         <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">{title}</h2>
         {externalRoute && (

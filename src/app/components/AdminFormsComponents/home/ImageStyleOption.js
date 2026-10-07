@@ -71,9 +71,7 @@ export const ImageStyleOption = ({
         {isCreativeBlob ? (
           <>
             {currentImageDisplay ? (
-              <div className="p-[2px] bg-gradient-to-tr from-teal-500 via-emerald-500 to-amber-400 rounded-2xl rounded-tr-xs shrink-0 shadow-xs mt-3">
-                <img src={currentImageDisplay} alt="Preview" className="w-20 h-20 rounded-2xl rounded-tr-xs object-cover" />
-              </div>
+                <img src={currentImageDisplay} alt="Preview" className="rounded-[30%_70%_70%_30%/30%_30%_70%_70%] aspect-square object-cover w-20 h-20 mt-3" />
             ) : (
               <div className="w-20 h-20 rounded-2xl rounded-tr-xs bg-emerald-300/80 shrink-0 flex items-center justify-center text-xs text-emerald-800 mt-3">📷</div>
             )}
@@ -114,10 +112,10 @@ export const ImageStyleOption = ({
             <img 
               src={currentImageDisplay} 
               alt="Preview" 
-              className="w-14 h-14 object-cover shrink-0 mt-3 ring-2 ring-white shadow-sm rounded-full" 
+              className="w-18 h-18 object-cover mt-3 shadow-sm rounded-full" 
             />
           ) : (
-            <div className="w-14 h-14 bg-emerald-300/80 shrink-0 mt-3 flex items-center justify-center text-xs text-emerald-800 rounded-full">
+            <div className="w-18 h-18 bg-emerald-300/80 shrink-0 mt-3 flex items-center justify-center text-xs text-emerald-800 rounded-full">
               📷
             </div>
           )
