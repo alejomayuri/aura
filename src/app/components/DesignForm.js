@@ -7,7 +7,7 @@ import { HexAlphaColorPicker } from "react-colorful";
 import Title from "./AdminFormsComponents/Title";
 import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
-// Helper para convertir cualquier color (HEX6, HEX8, RGB, RGBA) a HEX8 de 8 dígitos (#RRGGBBAA)
+// Helper para convertir cualquier color a HEX8 de 8 dígitos (#RRGGBBAA)
 function toHex8(color) {
   if (!color || color === "transparent") return "#00000000";
 
@@ -35,7 +35,7 @@ function toHex8(color) {
   return "#ffffff99";
 }
 
-// Componente respetando la estructura del bloque original
+// ColorPicker individual
 function ColorPickerItem({ label, colorValue, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef(null);
@@ -103,6 +103,100 @@ function ColorPickerItem({ label, colorValue, onChange }) {
   );
 }
 
+// Selector doble para gradientes (Color Inicial + Color Final)
+function GradientColorPickerItem({ label, colorStart, colorEnd, onChangeStart, onChangeEnd }) {
+  const [openPicker, setOpenPicker] = useState(null); // 'start' | 'end' | null
+  const popoverRef = useRef(null);
+
+  const hex8Start = toHex8(colorStart);
+  const hex8End = toHex8(colorEnd);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+        setOpenPicker(null);
+      }
+    }
+    if (openPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openPicker]);
+
+  return (
+    <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full" ref={popoverRef}>
+      <div>
+        <span className="text-sm font-semibold text-slate-900 block">{label}</span>
+      </div>
+
+      <div className="flex items-center gap-3 relative">
+        {/* Selector 1 */}
+        <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => setOpenPicker(openPicker === "start" ? null : "start")}
+            className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden relative flex items-center justify-center"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)",
+              backgroundSize: "8px 8px",
+              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
+            }}
+          >
+            <div
+              className="w-full h-full rounded-full transition-colors"
+              style={{ backgroundColor: hex8Start }}
+            />
+          </button>
+        </div>
+
+        {/* Selector 2 */}
+        <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => setOpenPicker(openPicker === "end" ? null : "end")}
+            className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden relative flex items-center justify-center"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)",
+              backgroundSize: "8px 8px",
+              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
+            }}
+          >
+            <div
+              className="w-full h-full rounded-full transition-colors"
+              style={{ backgroundColor: hex8End }}
+            />
+          </button>
+        </div>
+
+        {/* Popover del color picker */}
+        {openPicker && (
+          <div className="absolute right-0 top-14 z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-xl flex flex-col items-center gap-3 w-[220px]">
+            <HexAlphaColorPicker
+              color={openPicker === "start" ? hex8Start : hex8End}
+              onChange={openPicker === "start" ? onChangeStart : onChangeEnd}
+              className="!w-full !h-40"
+            />
+            <div className="w-full flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+              <input
+                type="text"
+                value={openPicker === "start" ? hex8Start : hex8End}
+                onChange={(e) =>
+                  openPicker === "start" ? onChangeStart(e.target.value) : onChangeEnd(e.target.value)
+                }
+                className="w-full text-xs font-mono uppercase bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center text-slate-700 outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function DesignForm({ portfolioData, setPortfolioData, onSave, saving, saveMessage }) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -124,10 +218,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 rounded-full bg-transparent",
       previewCard: "bg-slate-800/30 border border-slate-700 rounded-2xl text-slate-200 shadow-sm py-3.5 font-medium",
       previewBtnText: "Minimal UI",
+      hasGradient: false,
       colors: {
         primaryColor: "#0f172aff",
         secondaryColor: "#1e293bff",
-        socialColor: "#334155ff",
+        socialColor: null,
         textColor: "#f8fafcff",
         iconsColor: "#ffffffff",
         titleColor: "#ffffffff",
@@ -141,10 +236,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 bg-transparent",
       previewCard: "bg-purple-950/40 border border-purple-500/40 text-purple-300 py-3.5 font-semibold uppercase",
       previewBtnText: "Glow",
+      hasGradient: false,
       colors: {
         primaryColor: "#020617ff",
         secondaryColor: "#2e1065ff",
-        socialColor: "#3b0764ff",
+        socialColor: null,
         textColor: "#c084fcff",
         iconsColor: "#a855f7ff",
         titleColor: "#e9d5ffff",
@@ -158,10 +254,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 bg-transparent",
       previewCard: "bg-zinc-800/80 border border-zinc-700 rounded-sm text-zinc-200 py-3.5 font-semibold",
       previewBtnText: "Editorial",
+      hasGradient: false,
       colors: {
         primaryColor: "#18181bff",
         secondaryColor: "#27272aff",
-        socialColor: "#3f3f46ff",
+        socialColor: null,
         textColor: "#f4f4f5ff",
         iconsColor: "#e4e4e7ff",
         titleColor: "#ffffffff",
@@ -175,6 +272,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 rounded-none bg-white border-2 border-black text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]",
       previewCard: "font-semibold bg-white border-2 border-black rounded-none text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] py-3.5",
       previewBtnText: "NEO-BRUTAL",
+      hasGradient: false,
       colors: {
         primaryColor: "#facc15ff",
         secondaryColor: "#ffffffff",
@@ -192,8 +290,10 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 rounded-[.75rem] bg-white/30 backdrop-blur-sm border border-white/50 text-slate-700 shadow-sm",
       previewCard: "font-semibold bg-white/20 backdrop-blur-md border border-white/40 rounded-[1.1rem] text-slate-700 shadow-sm py-3.5",
       previewBtnText: "Blur Effect",
+      hasGradient: true,
       colors: {
-        primaryColor: "#e0e7ffcc",
+        primaryColor: "#fbcfe8ff",
+        primaryColorEnd: "#c7d2feff",
         secondaryColor: "#ffffff80",
         socialColor: "#f3e8ffb3",
         textColor: "#334155ff",
@@ -209,10 +309,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 bg-transparent",
       previewCard: "font-semibold bg-black border border-green-500 rounded-none text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.3)] py-3.5",
       previewBtnText: ">_ bash",
+      hasGradient: false,
       colors: {
         primaryColor: "#000000ff",
         secondaryColor: "#052e16ff",
-        socialColor: "#000000ff",
+        socialColor: null,
         textColor: "#22c55eff",
         iconsColor: "#4ade80ff",
         titleColor: "#22c55eff",
@@ -226,6 +327,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 rounded-none bg-lime-300 border-2 border-fuchsia-950 text-fuchsia-950 shadow-[2px_2px_0px_0px_#000]",
       previewCard: "font-mono font-black bg-cyan-300 border-2 border-fuchsia-950 text-fuchsia-950 shadow-[3px_3px_0px_0px_#581c87] rounded-none py-3.5 uppercase",
       previewBtnText: "Cyber",
+      hasGradient: false,
       colors: {
         primaryColor: "#c026d3ff",
         secondaryColor: "#67e8f9ff",
@@ -243,10 +345,12 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 bg-transparent",
       previewCard: "font-bold bg-white/15 backdrop-blur-md border border-white/40 rounded-2xl text-white shadow-lg py-3.5 tracking-wider",
       previewBtnText: "Holo Glow",
+      hasGradient: true,
       colors: {
-        primaryColor: "#9333eae6",
+        primaryColor: "#ec4899ff",
+        primaryColorEnd: "#6366f1ff",
         secondaryColor: "#a855f7cc",
-        socialColor: "#c084fcb3",
+        socialColor: null,
         textColor: "#ffffffff",
         iconsColor: "#ffffffff",
         titleColor: "#ffffffff",
@@ -260,6 +364,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       socialShape: "w-7 h-7 rounded-[0.5rem] bg-cyan-400 border-2 border-black text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
       previewCard: "font-black bg-white border-3 border-black rounded-xl text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] py-3.5 uppercase",
       previewBtnText: "POW!",
+      hasGradient: false,
       colors: {
         primaryColor: "#fef08aff",
         secondaryColor: "#ffffffff",
@@ -271,13 +376,18 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     }
   ];
 
+  // Plantilla activa actualmente
+  const currentTemplateId = portfolioData?.template || "minimal";
+  const activeTemplate = templates.find((t) => t.id === currentTemplateId) || templates[0];
+  const isSocialTransparent = activeTemplate?.socialShape?.includes("bg-transparent");
+  const isGradientTemplate = Boolean(activeTemplate?.hasGradient);
+
   const handleSelectTemplate = async (templateId) => {
     const selectedTemplate = templates.find((t) => t.id === templateId);
     let templateColors = selectedTemplate?.colors ? { ...selectedTemplate.colors } : {};
 
-    // Si la plantilla tiene "bg-transparent" en su socialShape, asignamos transparencia total (#00000000)
     if (selectedTemplate?.socialShape?.includes("bg-transparent")) {
-      templateColors.socialColor = "#00000000";
+      templateColors.socialColor = null;
     }
 
     const updatedData = {
@@ -302,8 +412,9 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
   const handleColorChange = (colorKey, value) => {
     const updatedColors = {
       primaryColor: "#ffffff",
+      primaryColorEnd: "#f8fafc",
       secondaryColor: "#f8fafc",
-      socialColor: "#0f172a",
+      socialColor: isSocialTransparent ? null : "#0f172a",
       textColor: "#0f172a",
       iconsColor: "#0f172a",
       titleColor: "#0f172a",
@@ -413,9 +524,10 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     setModalRemoveImage(false);
   };
 
-  const primaryColor = portfolioData?.colors?.primaryColor || "#ffffff";
+  const primaryColor = portfolioData?.colors?.primaryColor || activeTemplate.colors.primaryColor || "#ffffff";
+  const primaryColorEnd = portfolioData?.colors?.primaryColorEnd || activeTemplate.colors.primaryColorEnd || "#6366f1ff";
   const secondaryColor = portfolioData?.colors?.secondaryColor || "#f8fafc";
-  const socialColor = portfolioData?.colors?.socialColor || "#0f172a";
+  const socialColor = portfolioData?.colors?.socialColor ?? null;
   const textColor = portfolioData?.colors?.textColor || "#0f172a";
   const iconsColor = portfolioData?.colors?.iconsColor || "#0f172a";
   const titleColor = portfolioData?.colors?.titleColor || "#0f172a";
@@ -650,11 +762,22 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
         <h3 className="text-base font-semibold text-slate-900">Colores</h3>
         <div className="flex flex-col gap-3 w-full">
           
-          <ColorPickerItem
-            label="Principal"
-            colorValue={primaryColor}
-            onChange={(val) => handleColorChange("primaryColor", val)}
-          />
+          {/* Si la plantilla usa gradientes, renderizamos el selector doble */}
+          {isGradientTemplate ? (
+            <GradientColorPickerItem
+              label="Principal"
+              colorStart={primaryColor}
+              colorEnd={primaryColorEnd}
+              onChangeStart={(val) => handleColorChange("primaryColor", val)}
+              onChangeEnd={(val) => handleColorChange("primaryColorEnd", val)}
+            />
+          ) : (
+            <ColorPickerItem
+              label="Principal"
+              colorValue={primaryColor}
+              onChange={(val) => handleColorChange("primaryColor", val)}
+            />
+          )}
 
           <ColorPickerItem
             label="Bloques"
@@ -662,11 +785,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
             onChange={(val) => handleColorChange("secondaryColor", val)}
           />
 
-          <ColorPickerItem
-            label="Redes sociales"
-            colorValue={socialColor}
-            onChange={(val) => handleColorChange("socialColor", val)}
-          />
+          {!isSocialTransparent && (
+            <ColorPickerItem
+              label="Redes sociales"
+              colorValue={socialColor}
+              onChange={(val) => handleColorChange("socialColor", val)}
+            />
+          )}
 
           <ColorPickerItem
             label="Textos"

@@ -12,8 +12,6 @@ import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
 /**
  * Componente principal de administración de formulario (AdminForm)
- * Permite gestionar en tiempo real la información principal del portafolio:
- * título, biografía, imagen principal, redes sociales y páginas creadas.
  */
 export default function AdminForm({ portfolioData, setPortfolioData, onSave, saving, onTogglePreview }) {
   // ==========================================
@@ -24,6 +22,9 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   const [localPreview, setLocalPreview] = useState(null);
   const [newLinkUrl, setNewLinkUrl] = useState("");
   
+  // Control para mostrar/ocultar el formulario de nueva red dentro del modal
+  const [showAddSocialForm, setShowAddSocialForm] = useState(false);
+
   // Control de menús desplegables en páginas
   const [openLayoutPageUid, setOpenLayoutPageUid] = useState(null);
   const [openSharePageUid, setOpenSharePageUid] = useState(null);
@@ -39,16 +40,20 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   const [modalTempPreview, setModalTempPreview] = useState(null);
   const [modalRemoveImage, setModalRemoveImage] = useState(false);
 
+  // Estado del Modal de Redes Sociales
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+
   // Estados de confirmación y visibilidad
   const [deleteConfirmUid, setDeleteConfirmUid] = useState(null);
   const [showImageStyles, setShowImageStyles] = useState(false);
-  const [isAddingLink, setIsAddingLink] = useState(false);
+
+  // Posición de redes sociales (por defecto 'bottom' o 'top')
+  const socialPosition = portfolioData?.socialPosition || "bottom";
 
   // ==========================================
   // MEMORIZACIÓN Y REFERENCIAS ESTABLES
   // ==========================================
 
-  /** Garantiza un identificador único (uid) estable para cada red social */
   const stableLinks = useMemo(() => {
     const links = portfolioData?.socialLinks || [];
     return links.map(link => ({
@@ -57,7 +62,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }));
   }, [portfolioData?.socialLinks]);
 
-  /** Garantiza un identificador único (uid) estable para cada página */
   const stablePages = useMemo(() => {
     const pages = portfolioData?.pages || [];
     return pages.map(page => ({
@@ -66,7 +70,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }));
   }, [portfolioData?.pages]);
 
-  /** Referencia para capturar la última versión de las páginas durante gestos de arrastre */
   const latestPagesRef = useRef(stablePages);
 
   useEffect(() => {
@@ -77,10 +80,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   // 1. MANEJADORES DE PÁGINAS (AUTO-SAVE)
   // ==========================================
 
-  /**
-   * Alterna la visibilidad de una página en la vista de inicio.
-   * @param {string} pageUid - Identificador único de la página.
-   */
   const handleTogglePageVisibility = async (pageUid) => {
     const updatedPages = stablePages.map((page) => {
       if (page.uid === pageUid) {
@@ -109,10 +108,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }
   };
 
-  /**
-   * Elimina una página del portafolio y persiste los cambios en la BD.
-   * @param {string} pageUid - Identificador único de la página a eliminar.
-   */
   const handleDeletePage = async (pageUid) => {
     const updatedPages = stablePages.filter((page) => page.uid !== pageUid);
 
@@ -133,11 +128,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }
   };
 
-  /**
-   * Actualiza la disposición visual (layout) de una página específica sin cerrar el selector.
-   * @param {string} pageUid - Identificador único de la página.
-   * @param {string} layoutType - Tipo de layout elegido ('grid-3', 'single-large', 'masonry-grid').
-   */
   const handleUpdatePageLayout = async (pageUid, layoutType) => {
     const updatedPages = stablePages.map((page) => {
       if ((page.uid || page.id) === pageUid) {
@@ -163,17 +153,10 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }
   };
 
-  /**
-   * Actualiza la secuencia de páginas localmente durante el arrastre con Framer Motion.
-   * @param {Array} newPages - Arreglo con la nueva secuencia de páginas.
-   */
   const handleReorderPages = (newPages) => {
     setPortfolioData({ ...portfolioData, pages: newPages });
   };
 
-  /**
-   * Persiste el nuevo orden de las páginas al finalizar el gesto de arrastre.
-   */
   const handlePageDragEnd = async () => {
     const updatedData = {
       ...portfolioData,
@@ -194,11 +177,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   // 2. MANEJADORES DE REDES SOCIALES
   // ==========================================
 
-  /**
-   * Devuelve la URL del icono SVG correspondiente al dominio introducido.
-   * @param {string} url - Dirección web de la red social.
-   * @returns {string} URL del recurso SVG.
-   */
   const getSocialIcon = (url) => {
     if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
     const lowerUrl = url.toLowerCase();
@@ -213,9 +191,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
   };
 
-  /**
-   * Registra una nueva red social y guarda de forma automática los datos.
-   */
   const handleAddLink = async () => {
     if (!newLinkUrl.trim()) return;
     
@@ -225,6 +200,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
 
     setPortfolioData(updatedData);
     setNewLinkUrl("");
+    setShowAddSocialForm(false);
 
     if (typeof onSave === "function") {
       try {
@@ -235,21 +211,38 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }
   };
 
-  /**
-   * Reordena los enlaces de redes sociales.
-   * @param {Array} newSocialLinks - Nueva lista ordenada de enlaces.
-   */
   const handleReorder = (newSocialLinks) => {
     setPortfolioData({ ...portfolioData, socialLinks: newSocialLinks });
+  };
+
+  const handleChangeSocialPosition = async (position) => {
+    const updatedData = {
+      ...portfolioData,
+      socialLinks: stableLinks,
+      socialPosition: position,
+    };
+
+    setPortfolioData(updatedData);
+
+    if (typeof onSave === "function") {
+      try {
+        await onSave(updatedData);
+      } catch (error) {
+        console.error("Error al guardar la posición de las redes sociales:", error);
+      }
+    }
+  };
+
+  const handleCloseSocialModal = () => {
+    setIsSocialModalOpen(false);
+    setShowAddSocialForm(false);
+    setNewLinkUrl("");
   };
 
   // ==========================================
   // 3. MANEJADORES DE IMAGEN PRINCIPAL
   // ==========================================
 
-  /**
-   * Captura el archivo seleccionado en el selector de archivos del modal.
-   */
   const handleModalFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -258,9 +251,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setModalRemoveImage(false);
   };
 
-  /**
-   * Procesa la subida a Cloudinary o la remoción de la imagen principal.
-   */
   const handleConfirmImageSelection = async () => {
     let updatedData = { 
       ...portfolioData, 
@@ -327,9 +317,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     setModalRemoveImage(false);
   };
 
-  /**
-   * Cancela la selección de imagen y limpia los datos temporales del modal.
-   */
   const handleCancelImageSelection = () => {
     setIsImageModalOpen(false);
     setModalTempFile(null);
@@ -347,8 +334,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         externalRoute={`/${portfolioSlug}`} 
         openInNewTab={true}
       />
-
-      
 
       {/* SECCIÓN: Imagen Principal */}
       <div className="space-y-3 pt-2">
@@ -379,57 +364,6 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         </div>
 
         {uploading && <span className="text-xs text-purple-600 block">Subiendo imagen y guardando cambios...</span>}
-
-        {/* Desplegable: Opciones de estilo visual de la imagen */}
-        {/* <div className="pt-1">
-          <button
-            type="button"
-            onClick={() => setShowImageStyles(!showImageStyles)}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors border border-slate-200"
-          >
-            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>Diseño de imagen</span>
-            <svg 
-              className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-300 ${showImageStyles ? 'rotate-180' : ''}`} 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          <div className={`grid transition-all duration-300 ease-in-out ${showImageStyles ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
-            <div className="overflow-hidden">
-              <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-2 max-w-2xl">
-                <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">Estilo visual de la imagen</span>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {[
-                    { styleValue: "rounded", label: "Redonda" },
-                    { styleValue: "full-width", label: "Todo el ancho" },
-                    { styleValue: "fade-bottom", label: "Difuminado" },
-                    { styleValue: "horizontal", label: "Horizontal" },
-                    { styleValue: "square-rounded", label: "Cuadrada redondeada" },
-                    { styleValue: "creative-blob", label: "Marco Asimétrico" },
-                  ].map(({ styleValue, label }) => (
-                    <ImageStyleOption 
-                      key={styleValue}
-                      styleValue={styleValue}
-                      label={label}
-                      currentImageDisplay={currentImageDisplay}
-                      portfolioData={portfolioData}
-                      onSave={onSave}
-                      setPortfolioData={setPortfolioData}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* MODAL DE IMAGEN PRINCIPAL */}
@@ -568,88 +502,219 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
       </div>
 
       {/* SECCIÓN: Redes Sociales */}
-      <div className="space-y-3 pt-4 pb-4">
+      <div className="space-y-3 pt-4 pb-2">
         <label className="text-base font-semibold text-slate-900 block">Redes Sociales</label>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          {stableLinks.map((linkItem) => {
+            const iconUrl = getSocialIcon(linkItem.url);
+            const isEnabled = linkItem.enabled !== false;
 
-        {stableLinks.length > 0 ? (
-          <Reorder.Group 
-            axis="y" 
-            values={stableLinks} 
-            onReorder={handleReorder}
-            className="space-y-2.5 pt-1 list-none"
-          >
-            {stableLinks.map((linkItem) => {
-              const iconUrl = getSocialIcon(linkItem.url);
-              const isConfirmingDelete = deleteConfirmUid === linkItem.uid;
+            return (
+              <button
+                key={linkItem.uid}
+                type="button"
+                onClick={() => setIsSocialModalOpen(true)}
+                className={`w-11 h-11 rounded-xl border flex items-center justify-center p-2.5 transition-all shadow-sm ${
+                  isEnabled 
+                    ? "bg-white border-slate-200 hover:border-purple-400 opacity-100" 
+                    : "bg-slate-50 border-slate-200 opacity-40 hover:opacity-75"
+                }`}
+                title={linkItem.url}
+              >
+                <img src={iconUrl} alt="Red social" className="w-full h-full object-contain" />
+              </button>
+            );
+          })}
 
-              return (
-                <Social
-                  key={linkItem.uid}
-                  linkItem={linkItem}
-                  iconUrl={iconUrl}
-                  stableLinks={stableLinks}
-                  portfolioData={portfolioData}
-                  setPortfolioData={setPortfolioData}
-                  isConfirmingDelete={isConfirmingDelete}
-                  setDeleteConfirmUid={setDeleteConfirmUid}
-                  onSave={onSave}
-                />
-              );
-            })}
-          </Reorder.Group>
-        ) : (
-          <p className="text-xs text-slate-500 italic pt-1">No hay enlaces agregados todavía.</p>
-        )}
-
-        {isAddingLink ? (
-          <div 
-            className="flex items-center gap-2 pt-2"
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget)) {
-                setIsAddingLink(false);
-              }
-            }}
-          >
-            <input
-              type="text"
-              autoFocus
-              value={newLinkUrl}
-              onChange={(e) => setNewLinkUrl(e.target.value)}
-              onKeyDown={(e) => { 
-                if (e.key === 'Enter') { 
-                  e.preventDefault(); 
-                  handleAddLink(); 
-                  setIsAddingLink(false);
-                } 
-              }}
-              className="w-full bg-white border border-purple-100 rounded-xl px-4 py-3 text-sm text-slate-900 focus:outline-none focus:border-purple-500 shadow-sm"
-              placeholder="Ej. https://instagram.com/tu_usuario o cualquier web"
-            />
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                handleAddLink();
-                setIsAddingLink(false);
-              }}
-              className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-3 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
-            >
-              Añadir
-            </button>
-          </div>
-        ) : (
           <button
             type="button"
-            onClick={() => setIsAddingLink(true)}
-            className="w-full bg-white border border-purple-100 hover:border-purple-200 rounded-xl py-3.5 flex items-center justify-center text-slate-600 hover:text-purple-700 transition shadow-sm cursor-pointer mt-2"
+            onClick={() => setIsSocialModalOpen(true)}
+            className="w-11 h-11 rounded-xl border border-dashed border-purple-300 bg-purple-50/50 hover:bg-purple-100/70 text-purple-700 flex items-center justify-center transition shadow-sm cursor-pointer"
             title="Añadir red social"
           >
             <svg className="w-5 h-5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
           </button>
-        )}
+        </div>
       </div>
+
+      {/* MODAL DE REDES SOCIALES */}
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isSocialModalOpen && (
+            <div 
+              onClick={handleCloseSocialModal}
+              className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 bg-black/60 overflow-y-auto cursor-pointer"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-2xl border border-purple-100 w-full max-w-lg overflow-hidden p-6 space-y-5 my-auto cursor-default max-h-[90vh] flex flex-col"
+              >
+                <div className="flex items-center justify-between shrink-0">
+                  <h3 className="text-lg font-semibold text-slate-900">Configurar Redes Sociales</h3>
+                  <button
+                    type="button"
+                    onClick={handleCloseSocialModal}
+                    className="text-slate-400 hover:text-black transition-colors cursor-pointer p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Botón o Formulario de creación */}
+                <div className="shrink-0 pt-1">
+                  {!showAddSocialForm ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddSocialForm(true)}
+                      className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Añadir red social
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        autoFocus
+                        value={newLinkUrl}
+                        onChange={(e) => setNewLinkUrl(e.target.value)}
+                        onKeyDown={(e) => { 
+                          if (e.key === 'Enter') { 
+                            e.preventDefault(); 
+                            handleAddLink(); 
+                          } 
+                        }}
+                        className="w-full bg-white border border-purple-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-purple-500 shadow-sm"
+                        placeholder="Ej. https://instagram.com/tu_usuario"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddLink}
+                        className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
+                      >
+                        Añadir
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAddSocialForm(false);
+                          setNewLinkUrl("");
+                        }}
+                        className="p-2.5 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                        title="Cancelar"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista reordenable */}
+                <div className="overflow-y-auto pr-1 space-y-2 flex-1 min-h-0">
+                  {stableLinks.length > 0 ? (
+                    <Reorder.Group 
+                      axis="y" 
+                      values={stableLinks} 
+                      onReorder={handleReorder}
+                      className="space-y-2.5 list-none"
+                    >
+                      {stableLinks.map((linkItem) => {
+                        const iconUrl = getSocialIcon(linkItem.url);
+                        const isConfirmingDelete = deleteConfirmUid === linkItem.uid;
+
+                        return (
+                          <Social
+                            key={linkItem.uid}
+                            linkItem={linkItem}
+                            iconUrl={iconUrl}
+                            stableLinks={stableLinks}
+                            portfolioData={portfolioData}
+                            setPortfolioData={setPortfolioData}
+                            isConfirmingDelete={isConfirmingDelete}
+                            setDeleteConfirmUid={setDeleteConfirmUid}
+                            onSave={onSave}
+                          />
+                        );
+                      })}
+                    </Reorder.Group>
+                  ) : (
+                    <p className="text-xs text-slate-500 italic text-center py-6">
+                      No hay enlaces agregados todavía. Pulsa el botón superior para agregar uno.
+                    </p>
+                  )}
+                </div>
+
+                {/* SECCIÓN: Selección de Ubicación con Radio Buttons Apilados */}
+                <div className="shrink-0 border-t border-slate-100 pt-3 space-y-2.5">
+                  <span className="text-xs font-semibold text-slate-700 block">
+                    Ubicación en el portfolio:
+                  </span>
+                  
+                  <div className="flex flex-col space-y-2">
+                    {/* Opción ARRIBA */}
+                    <label 
+                      onClick={() => handleChangeSocialPosition("top")}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        socialPosition === "top"
+                          ? "bg-purple-50/60 border-purple-400 text-slate-900"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                        socialPosition === "top" ? "border-purple-600" : "border-slate-300"
+                      }`}>
+                        {socialPosition === "top" && (
+                          <div className="w-2 h-2 rounded-full bg-purple-600" />
+                        )}
+                      </div>
+                      <span className="text-xs font-medium">Arriba</span>
+                    </label>
+
+                    {/* Opción ABAJO */}
+                    <label 
+                      onClick={() => handleChangeSocialPosition("bottom")}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        socialPosition === "bottom"
+                          ? "bg-purple-50/60 border-purple-400 text-slate-900"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                        socialPosition === "bottom" ? "border-purple-600" : "border-slate-300"
+                      }`}>
+                        {socialPosition === "bottom" && (
+                          <div className="w-2 h-2 rounded-full bg-purple-600" />
+                        )}
+                      </div>
+                      <span className="text-xs font-medium">Abajo</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2 shrink-0 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={handleCloseSocialModal}
+                    className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
+                  >
+                    Listo
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* SECCIÓN: Páginas */}
       <div className="space-y-3 pt-4 pb-4">
