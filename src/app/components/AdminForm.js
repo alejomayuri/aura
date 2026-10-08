@@ -348,16 +348,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         openInNewTab={true}
       />
 
-      <EditableTitleInput
-        portfolioData={portfolioData}
-        setPortfolioData={setPortfolioData}
-        isEditingTitle={isEditingTitle}
-        setIsEditingTitle={setIsEditingTitle}
-        onSave={onSave}
-        saving={saving}
-        stableLinks={stableLinks}
-        stablePages={stablePages}
-      />
+      
 
       {/* SECCIÓN: Imagen Principal */}
       <div className="space-y-3 pt-2">
@@ -390,7 +381,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         {uploading && <span className="text-xs text-purple-600 block">Subiendo imagen y guardando cambios...</span>}
 
         {/* Desplegable: Opciones de estilo visual de la imagen */}
-        <div className="pt-1">
+        {/* <div className="pt-1">
           <button
             type="button"
             onClick={() => setShowImageStyles(!showImageStyles)}
@@ -438,7 +429,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* MODAL DE IMAGEN PRINCIPAL */}
@@ -549,6 +540,17 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         </AnimatePresence>,
         document.body
       )}
+
+      <EditableTitleInput
+        portfolioData={portfolioData}
+        setPortfolioData={setPortfolioData}
+        isEditingTitle={isEditingTitle}
+        setIsEditingTitle={setIsEditingTitle}
+        onSave={onSave}
+        saving={saving}
+        stableLinks={stableLinks}
+        stablePages={stablePages}
+      />
 
       {/* SECCIÓN: Biografía */}
       <div className="space-y-3">
