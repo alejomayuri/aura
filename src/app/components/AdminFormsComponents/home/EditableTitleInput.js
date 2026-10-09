@@ -43,9 +43,9 @@ export default function EditableTitleInput({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="mb-1.5">
       {isEditingTitle ? (
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
             <input
               type="text"

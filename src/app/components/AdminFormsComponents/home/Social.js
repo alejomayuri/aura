@@ -86,7 +86,6 @@ export default function Social({
         }
       }}
       whileDrag={{
-        scale: 1.02,
         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
         zIndex: 50,
       }}
@@ -96,8 +95,8 @@ export default function Social({
       <DragIcon />
 
       {/* Ícono de la red social */}
-      <div className="w-9 h-9 flex items-center justify-center bg-purple-50 border border-purple-100 rounded-lg shrink-0 pointer-events-none">
-        <img src={iconUrl} alt="Ícono red social" className="w-4.5 h-4.5 text-slate-900" />
+      <div className="w-9 h-9 flex items-center justify-center pointer-events-none">
+        <img src={iconUrl} alt="Ícono red social" className="w-5 h-5 text-slate-900" />
       </div>
       
       {/* Edición interactiva de la URL */}

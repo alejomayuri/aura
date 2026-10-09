@@ -486,25 +486,8 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         stablePages={stablePages}
       />
 
-      {/* SECCIÓN: Biografía */}
-      <div className="space-y-3">
-        <label className="text-base font-semibold text-slate-900 block">Biografía</label>
-        <Bio
-          portfolioData={portfolioData} 
-          setPortfolioData={setPortfolioData} 
-          setIsEditingBio={setIsEditingBio} 
-          isEditingBio={isEditingBio}
-          onSave={onSave}
-          saving={saving}
-          stableLinks={stableLinks}
-          stablePages={stablePages}
-        />
-      </div>
-
       {/* SECCIÓN: Redes Sociales */}
-      <div className="space-y-3 pt-4 pb-2">
-        <label className="text-base font-semibold text-slate-900 block">Redes Sociales</label>
-        
+      <div className="pb-2">
         <div className="flex flex-wrap items-center gap-2">
           {stableLinks.map((linkItem) => {
             const iconUrl = getSocialIcon(linkItem.url);
@@ -515,11 +498,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                 key={linkItem.uid}
                 type="button"
                 onClick={() => setIsSocialModalOpen(true)}
-                className={`w-11 h-11 rounded-xl border flex items-center justify-center p-2.5 transition-all shadow-sm ${
-                  isEnabled 
-                    ? "bg-white border-slate-200 hover:border-purple-400 opacity-100" 
-                    : "bg-slate-50 border-slate-200 opacity-40 hover:opacity-75"
-                }`}
+                className={`w-6 h-6 flex items-center mr-2 justify-center transition-all cursor-pointer`}
                 title={linkItem.url}
               >
                 <img src={iconUrl} alt="Red social" className="w-full h-full object-contain" />
@@ -530,7 +509,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           <button
             type="button"
             onClick={() => setIsSocialModalOpen(true)}
-            className="w-11 h-11 rounded-xl border border-dashed border-purple-300 bg-purple-50/50 hover:bg-purple-100/70 text-purple-700 flex items-center justify-center transition shadow-sm cursor-pointer"
+            className="w-7 h-7 rounded-full border border-slate-700 bg-slate-100/50 hover:bg-slate-100/70 text-slate-700 flex items-center justify-center transition shadow-sm cursor-pointer"
             title="Añadir red social"
           >
             <svg className="w-5 h-5 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -556,8 +535,8 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white rounded-2xl shadow-2xl border border-purple-100 w-full max-w-lg overflow-hidden p-6 space-y-5 my-auto cursor-default max-h-[90vh] flex flex-col"
               >
-                <div className="flex items-center justify-between shrink-0">
-                  <h3 className="text-lg font-semibold text-slate-900">Configurar Redes Sociales</h3>
+                <div className="flex items-center justify-between shrink-0 mb-1">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-0">Configurar Redes Sociales</h3>
                   <button
                     type="button"
                     onClick={handleCloseSocialModal}
@@ -566,6 +545,9 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                     ✕
                   </button>
                 </div>
+                <span className="text-sm text-slate-600">
+                  Añade tus perfiles, emails o redes sociales a tu página.
+                </span>
 
                 {/* Botón o Formulario de creación */}
                 <div className="shrink-0 pt-1">
@@ -573,7 +555,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                     <button
                       type="button"
                       onClick={() => setShowAddSocialForm(true)}
-                      className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full bg-black text-white border border-black py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -593,26 +575,15 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                             handleAddLink(); 
                           } 
                         }}
-                        className="w-full bg-white border border-purple-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-purple-500 shadow-sm"
+                        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-black shadow-sm"
                         placeholder="Ej. https://instagram.com/tu_usuario"
                       />
                       <button
                         type="button"
                         onClick={handleAddLink}
-                        className="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
+                        className="bg-black text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm shrink-0 cursor-pointer"
                       >
                         Añadir
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAddSocialForm(false);
-                          setNewLinkUrl("");
-                        }}
-                        className="p-2.5 text-slate-400 hover:text-slate-600 transition cursor-pointer"
-                        title="Cancelar"
-                      >
-                        ✕
                       </button>
                     </div>
                   )}
@@ -654,60 +625,45 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                 </div>
 
                 {/* SECCIÓN: Selección de Ubicación con Radio Buttons Apilados */}
-                <div className="shrink-0 border-t border-slate-100 pt-3 space-y-2.5">
-                  <span className="text-xs font-semibold text-slate-700 block">
-                    Ubicación en el portfolio:
+                <div className="shrink-0 pt-3 space-y-2.5">
+                  <h3 className="text-lg font-semibold mb-1 text-slate-900">
+                    Ubicación
+                  </h3>
+                  <span className="text-sm text-slate-600">
+                    Selecciona la ubicación de las redes sociales en tu página.
                   </span>
                   
                   <div className="flex flex-col space-y-2">
                     {/* Opción ARRIBA */}
                     <label 
                       onClick={() => handleChangeSocialPosition("top")}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        socialPosition === "top"
-                          ? "bg-purple-50/60 border-purple-400 text-slate-900"
-                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                      className={`flex items-center text-slate-900 gap-3 py-6 rounded-xl mb-0 cursor-pointer transition-all`}
                     >
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                        socialPosition === "top" ? "border-purple-600" : "border-slate-300"
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                        socialPosition === "top" ? "border-black" : "border-slate-300"
                       }`}>
                         {socialPosition === "top" && (
-                          <div className="w-2 h-2 rounded-full bg-purple-600" />
+                          <div className="w-3 h-3 rounded-full bg-black" />
                         )}
                       </div>
-                      <span className="text-xs font-medium">Arriba</span>
+                      <span className="text-md font-medium">Arriba</span>
                     </label>
 
                     {/* Opción ABAJO */}
                     <label 
                       onClick={() => handleChangeSocialPosition("bottom")}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        socialPosition === "bottom"
-                          ? "bg-purple-50/60 border-purple-400 text-slate-900"
-                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                      className={`flex items-center text-slate-900 gap-3 rounded-xl cursor-pointer transition-all`}
                     >
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                        socialPosition === "bottom" ? "border-purple-600" : "border-slate-300"
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                        socialPosition === "bottom" ? "border-black" : "border-slate-300"
                       }`}>
                         {socialPosition === "bottom" && (
-                          <div className="w-2 h-2 rounded-full bg-purple-600" />
+                          <div className="w-3 h-3 rounded-full bg-black" />
                         )}
                       </div>
-                      <span className="text-xs font-medium">Abajo</span>
+                      <span className="text-md font-medium">Abajo</span>
                     </label>
                   </div>
-                </div>
-
-                <div className="flex justify-end pt-2 shrink-0 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={handleCloseSocialModal}
-                    className="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
-                  >
-                    Listo
-                  </button>
                 </div>
               </motion.div>
             </div>
@@ -715,6 +671,23 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         </AnimatePresence>,
         document.body
       )}
+
+      {/* SECCIÓN: Biografía */}
+      <div className="space-y-3">
+        <label className="text-base font-semibold text-slate-900 block">Biografía</label>
+        <Bio
+          portfolioData={portfolioData} 
+          setPortfolioData={setPortfolioData} 
+          setIsEditingBio={setIsEditingBio} 
+          isEditingBio={isEditingBio}
+          onSave={onSave}
+          saving={saving}
+          stableLinks={stableLinks}
+          stablePages={stablePages}
+        />
+      </div>
+
+      
 
       {/* SECCIÓN: Páginas */}
       <div className="space-y-3 pt-4 pb-4">
