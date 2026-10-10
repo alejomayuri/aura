@@ -552,7 +552,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
         <div className="w-full bg-transparent p-0 flex justify-start">
           <div 
             onClick={() => setIsImageModalOpen(true)}
-            className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 hover:border-purple-500 transition shadow-sm"
+            className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 transition shadow-sm"
           >
             {currentImageDisplay ? (
               <>
@@ -765,7 +765,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
           {/* Si la plantilla usa gradientes, renderizamos el selector doble */}
           {isGradientTemplate ? (
             <GradientColorPickerItem
-              label="Principal"
+              label="Fondo"
               colorStart={primaryColor}
               colorEnd={primaryColorEnd}
               onChangeStart={(val) => handleColorChange("primaryColor", val)}
@@ -773,25 +773,31 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
             />
           ) : (
             <ColorPickerItem
-              label="Principal"
+              label="Fondo"
               colorValue={primaryColor}
               onChange={(val) => handleColorChange("primaryColor", val)}
             />
           )}
 
           <ColorPickerItem
-            label="Bloques"
+            label="Bloques de contenido"
             colorValue={secondaryColor}
             onChange={(val) => handleColorChange("secondaryColor", val)}
           />
 
           {!isSocialTransparent && (
             <ColorPickerItem
-              label="Redes sociales"
+              label="Bloques de redes sociales"
               colorValue={socialColor}
               onChange={(val) => handleColorChange("socialColor", val)}
             />
           )}
+          
+          <ColorPickerItem
+            label="Títulos"
+            colorValue={titleColor}
+            onChange={(val) => handleColorChange("titleColor", val)}
+          />
 
           <ColorPickerItem
             label="Textos"
@@ -803,12 +809,6 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
             label="Íconos"
             colorValue={iconsColor}
             onChange={(val) => handleColorChange("iconsColor", val)}
-          />
-
-          <ColorPickerItem
-            label="Títulos"
-            colorValue={titleColor}
-            onChange={(val) => handleColorChange("titleColor", val)}
           />
 
         </div>

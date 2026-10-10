@@ -134,6 +134,9 @@ export default function AdminDashboard() {
             setPortfolioData={setPortfolioData} 
             onSave={handleSave}
             saving={saving}
+            onSelectPage={(pageIdOrSlug) => {
+                handleSelectTab(pageIdOrSlug);
+              }}
           />
         )}
 
@@ -155,7 +158,6 @@ export default function AdminDashboard() {
                 setPortfolioData(prev => ({ ...prev, pages: newPages }));
               }} 
               onSelectPage={(pageIdOrSlug) => {
-                // Usamos la misma función que usa el Sidebar para abrir la página en el panel central
                 handleSelectTab(pageIdOrSlug);
               }}
           />

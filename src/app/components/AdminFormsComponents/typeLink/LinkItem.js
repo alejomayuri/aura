@@ -231,59 +231,49 @@ export default function LinkItem({
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
           >
-            <span className="text-xs font-semibold text-purple-900 block">
-              Seleccionar estilo del enlace
-            </span>
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="flex justify-start flex-start gap-3">
+              {/* Clásico */}
               <button
                 type="button"
                 onClick={() => handleUpdateLinkLayout(link.id, "classic")}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition cursor-pointer gap-2 ${
+                className={`border-2 rounded-xl p-3 flex flex-col items-center gap-2.5 cursor-pointer transition-all text-center group max-w-[140px] w-full ${
                   currentLayout === "classic"
-                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                    : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                    ? "border-black text-black"
+                    : "border-slate-200 text-slate-500"
                 }`}
               >
-                <svg className={`w-6 h-6 stroke-2 ${currentLayout === "classic" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <rect x="3" y="8" width="18" height="8" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "classic" ? "text-white" : "text-slate-600"}`}>
+                <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                  <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="1" y="2.5" width="22" height="5" rx="1" strokeWidth="1" />
+                    <rect x="1" y="9.5" width="22" height="5" rx="1" strokeWidth="1" />
+                    <rect x="1" y="16.5" width="22" height="5" rx="1" strokeWidth="1" />
+                  </svg>
+                </div>
+                <span className={`text-xs font-medium ${
+                  currentLayout === "classic" ? "text-black font-semibold" : "text-slate-800 "
+                }`}>
                   Clásico
                 </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => handleUpdateLinkLayout(link.id, "card")}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition cursor-pointer gap-2 ${
-                  currentLayout === "card"
-                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                    : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                }`}
-              >
-                <svg className={`w-6 h-6 stroke-2 ${currentLayout === "card" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <rect x="4" y="4" width="16" height="16" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 12h16" />
-                </svg>
-                <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "card" ? "text-white" : "text-slate-600"}`}>
-                  Tarjeta
-                </span>
-              </button>
-
+              {/* Banner / Featured */}
               <button
                 type="button"
                 onClick={() => handleUpdateLinkLayout(link.id, "featured")}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl border transition cursor-pointer gap-2 ${
+                className={`border-2 rounded-xl p-3 flex flex-col items-center gap-2.5 cursor-pointer transition-all text-center group max-w-[140px] w-full ${
                   currentLayout === "featured"
-                    ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                    : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                    ? "border-black text-black"
+                    : "border-slate-200 text-slate-500"
                 }`}
               >
-                <svg className={`w-6 h-6 stroke-2 ${currentLayout === "featured" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-                <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "featured" ? "text-white" : "text-slate-600"}`}>
+                <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                  <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="0.5" y="3" width="23" height="18" rx="1.5" strokeWidth="1" />
+                  </svg>
+                </div>
+                <span className={`text-xs font-medium ${
+                  currentLayout === "featured" ? "text-black font-semibold" : "text-slate-800"
+                }`}>
                   Banner
                 </span>
               </button>

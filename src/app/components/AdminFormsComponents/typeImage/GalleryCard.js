@@ -46,14 +46,54 @@ export default function GalleryCard({
   const tabButtonClasses = (tabName) => `
     px-3 py-1.5 text-xs font-medium rounded-t-lg transition-colors cursor-pointer
     ${activeTab === tabName 
-      ? "bg-purple-50 text-purple-700 border-b-2 border-purple-600" 
-      : "text-slate-600 hover:text-purple-600 hover:bg-slate-50"}
+      ? "bg-[#ededed] text-black border-b-2 border-black" 
+      : "text-slate-600"}
   `;
 
   const layoutOptions = [
-    { id: "column", name: "Columna" },
-    { id: "carousel", name: "Carrusel" },
-    { id: "grid", name: "Grid" },
+    { 
+      id: "column", 
+      name: "Columna", 
+      icon: (
+        <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <rect x="3" y="1" width="18" height="10" rx="1" strokeWidth="1" />
+          <rect x="3" y="13" width="18" height="10" rx="1" strokeWidth="1" />
+        </svg>
+      )
+    },
+    { 
+      id: "row", 
+      name: "Fila", 
+      icon: (
+        <svg className="w-16 h-9" fill="none" viewBox="0 0 44 24" stroke="currentColor">
+          <rect x="1.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+          <rect x="16" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+          <rect x="30.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+        </svg>
+      )
+    },
+    { 
+      id: "carousel", 
+      name: "Carrusel", 
+      icon: (
+        <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <rect x="3" y="1" width="18" height="15" rx="1" strokeWidth="1" />
+          <line x1="2" y1="21" x2="22" y2="21" strokeWidth="1" strokeLinecap="round" />
+        </svg>
+      )
+    },
+    { 
+      id: "grid", 
+      name: "Grid", 
+      icon: (
+        <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <rect x="3" y="3" width="10" height="10" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="14" y="3" width="7" height="6" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="14" y="10.5" width="7" height="10.5" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="3" y="14" width="10" height="7" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )
+    },
   ];
 
   return (
@@ -271,7 +311,7 @@ export default function GalleryCard({
                 transition={{ duration: 0.2 }}
                 className="pt-2"
               >
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-3">
                   {layoutOptions.map((option) => {
                     const isSelected = currentLayout === option.id;
 
@@ -279,21 +319,17 @@ export default function GalleryCard({
                       <div 
                         key={option.id}
                         onClick={() => handleSelectLayout && handleSelectLayout(gal.id, option.id)}
-                        className={`border-2 rounded-xl p-4 flex flex-col items-center gap-3 cursor-pointer transition-all text-center group ${
+                        className={`border-2 rounded-xl p-3 flex flex-col items-center gap-2.5 cursor-pointer transition-all text-center group ${
                           isSelected 
-                            ? "border-purple-600 bg-purple-50/60 shadow-sm" 
-                            : "border-slate-200 hover:border-purple-300 hover:bg-purple-50/30"
+                            ? "border-black text-black" 
+                            : "border-slate-200 text-slate-500"
                         }`}
                       >
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center transition-colors ${
-                          isSelected 
-                            ? "bg-purple-600 text-white" 
-                            : "bg-slate-100 group-hover:bg-purple-100 text-slate-400 group-hover:text-purple-600"
-                        }`}>
-                          <span className="text-xs font-mono">{option.id.substring(0,3).toUpperCase()}</span>
+                        <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                          {option.icon}
                         </div>
-                        <span className={`text-sm font-medium ${
-                          isSelected ? "text-purple-900 font-semibold" : "text-slate-800 group-hover:text-purple-900"
+                        <span className={`text-xs font-medium ${
+                          isSelected ? "text-black font-semibold" : "text-slate-800 group-hover:text-black"
                         }`}>
                           {option.name}
                         </span>

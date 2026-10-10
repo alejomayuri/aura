@@ -13,7 +13,7 @@ import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 /**
  * Componente principal de administración de formulario (AdminForm)
  */
-export default function AdminForm({ portfolioData, setPortfolioData, onSave, saving, onTogglePreview }) {
+export default function AdminForm({ portfolioData, setPortfolioData, onSave, saving, onSelectPage }) {
   // ==========================================
   // ESTADOS LOCALES Y CONTROLES DE INTERFAZ
   // ==========================================
@@ -340,7 +340,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         <div className="w-full bg-transparent p-0 flex justify-start">
           <div 
             onClick={() => setIsImageModalOpen(true)}
-            className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 hover:border-purple-500 transition shadow-sm"
+            className="relative w-full max-w-[240px] rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center cursor-pointer group border border-slate-200 transition shadow-sm"
           >
             {currentImageDisplay ? (
               <>
@@ -737,6 +737,8 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
                   portfolioData={portfolioData}
                   setPortfolioData={() => handleDeletePage(page.uid)}
                   onDragEnd={handlePageDragEnd}
+
+                  onSelectPage={onSelectPage}
                 />
               );
             })}
