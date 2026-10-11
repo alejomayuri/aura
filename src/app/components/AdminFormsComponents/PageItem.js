@@ -1,7 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Reorder, AnimatePresence, motion } from 'framer-motion';
-import DeleteButton from '@/app/components/AdminFormsComponents/ui/DeleteButton'; // Ajusta la ruta según tu proyecto
-import DragIcon from '@/app/components/AdminFormsComponents/ui/DragIcon'; // Ajusta la ruta según tu proyecto
+import DeleteButton from '@/app/components/AdminFormsComponents/ui/DeleteButton';
+import DragIcon from '@/app/components/AdminFormsComponents/ui/DragIcon';
+
+// Función auxiliar para convertir el título en un slug limpio y URL-friendly
+const generateSlug = (str) => {
+    if (!str) return '';
+    return str
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
+        .replace(/[^a-z0-9 -]/g, '')     // Elimina caracteres especiales
+        .replace(/\s+/g, '-')             // Reemplaza espacios por guiones
+        .replace(/-+/g, '-');             // Elimina guiones múltiples
+};
 
 export const PageItem = ({
   page,
@@ -25,6 +38,80 @@ export const PageItem = ({
   setPortfolioData,
   onSelectPage
 }) => {
+    // Estados locales para la edición del título de la página
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [tempTitle, setTempTitle] = useState(page.title || page.name || "");
+
+    const handleSaveTitle = () => {
+        if (!tempTitle.trim()) {
+            setTempTitle(page.title || page.name || "");
+            setIsEditingTitle(false);
+            return;
+        }
+
+        const newSlug = generateSlug(tempTitle);
+
+        const updatedPages = stablePages.map(p => {
+            if (p.uid === page.uid) {
+                return { 
+                    ...p, 
+                    title: tempTitle, 
+                    name: tempTitle, 
+                    slug: newSlug 
+                };
+            }
+            return p;
+        });
+
+        setPortfolioData({ ...portfolioData, pages: updatedPages });
+        setIsEditingTitle(false);
+    };
+
+    const layoutOptions = [
+        { 
+            id: "row", 
+            name: "Fila", 
+            icon: (
+                <svg className="w-16 h-9" fill="none" viewBox="0 0 44 24" stroke="currentColor">
+                <rect x="1.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                <rect x="16" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                <rect x="30.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                </svg>
+            )
+        },
+        { 
+            id: "single", 
+            name: "Imagen sola", 
+            icon: (
+                <svg className={`w-9 h-9 stroke-1`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            )
+        },
+        { 
+            id: "carousel", 
+            name: "Carrusel", 
+            icon: (
+                <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="1" width="18" height="15" rx="1" strokeWidth="1" />
+                    <line x1="2" y1="21" x2="22" y2="21" strokeWidth="1" strokeLinecap="round" />
+                </svg>
+            )
+        },
+        { 
+            id: "grid", 
+            name: "Grid", 
+            icon: (
+                <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="3" width="10" height="10" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                    <rect x="14" y="3" width="7" height="6" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                    <rect x="14" y="10.5" width="7" height="10.5" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                    <rect x="3" y="14" width="10" height="7" rx="1.5" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            )
+        },
+    ];
+
     return (
         <Reorder.Item 
             key={page.uid}
@@ -48,7 +135,7 @@ export const PageItem = ({
                 {/* Contenido principal */}
                 <div className="flex-1 flex flex-col gap-3 pl-12 pr-3.5 py-3">
                     <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="flex items-center gap-3 overflow-hidden w-full">
                             <div className={`p-2 rounded-lg shrink-0 bg-white text-slate-600 border border-slate-200`}>
                                 {pageType === "image" && (
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -62,12 +149,43 @@ export const PageItem = ({
                                 )}
                             </div>
 
-                            <div className="truncate">
+                            <div className="truncate w-full">
                                 <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-medium text-slate-900 truncate">{page.title || page.name || "Página sin título"}</h4>
-                                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md border border-purple-100 shrink-0">
-                                        {pageType}
-                                    </span>
+                                    {isEditingTitle ? (
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            value={tempTitle}
+                                            onChange={(e) => setTempTitle(e.target.value)}
+                                            onBlur={handleSaveTitle}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") handleSaveTitle();
+                                                if (e.key === "Escape") {
+                                                    setTempTitle(page.title || page.name || "");
+                                                    setIsEditingTitle(false);
+                                                }
+                                            }}
+                                            className="text-sm font-medium text-slate-900 outline-none w-full"
+                                        />
+                                    ) : (
+                                        <h4 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsEditingTitle(true);
+                                                setTempTitle(page.title || page.name || "");
+                                            }}
+                                            title="Haz clic para editar el nombre de la página"
+                                            className="text-sm font-medium text-slate-900 truncate cursor-pointer hover:underline"
+                                        >
+                                            {page.title || page.name || "Página sin título"}
+                                        </h4>
+                                    )}
+                                    
+                                    {!isEditingTitle && (
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider bg-purple-50 text-purple-700 px-2 rounded-md shrink-0">
+                                            {pageType}
+                                        </span>
+                                    )}
                                 </div>
                                 <p className="text-xs text-slate-500 truncate">/{pageSlug}</p>
                             </div>
@@ -97,7 +215,7 @@ export const PageItem = ({
                                 }
                             }}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-black transition-colors cursor-pointer"
-                            title="Editar página"
+                            title="Editar contenido de la página"
                         >
                             <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -111,17 +229,17 @@ export const PageItem = ({
                                     e.stopPropagation();
                                     if (isImageType) {
                                         setOpenLayoutPageUid(isLayoutOpen ? null : page.uid);
-                                    setOpenSharePageUid(null);
-                                    setOpenDeletePageUid(null);
-                                }
-                            }}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLayoutOpen ? "text-black" : "text-slate-500 hover:text-black"}`}
-                            title={isImageType ? "Configurar Layout" : "Solo disponible para páginas de tipo image"}
-                        >
-                            <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                            </svg>
-                        </button>
+                                        setOpenSharePageUid(null);
+                                        setOpenDeletePageUid(null);
+                                    }
+                                }}
+                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLayoutOpen ? "text-black" : "text-slate-500 hover:text-black"}`}
+                                title={isImageType ? "Configurar Layout" : "Solo disponible para páginas de tipo image"}
+                            >
+                                <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                                </svg>
+                            </button>
                         )}
 
                         <button
@@ -176,8 +294,8 @@ export const PageItem = ({
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenDeletePageUid(null);
+                                    e.stopPropagation();
+                                    setOpenDeletePageUid(null);
                                 }}
                                 className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm cursor-pointer"
                             >
@@ -220,8 +338,8 @@ export const PageItem = ({
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.clipboard.writeText(`https://lightjaus.com/${portfolioSlug}/${pageSlug}`);
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(`https://lightjaus.com/${portfolioSlug}/${pageSlug}`);
                                 }}
                                 className="bg-purple-700 hover:bg-purple-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
                             >
@@ -247,8 +365,8 @@ export const PageItem = ({
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex flex-col items-center justify-center gap-1.5 bg-transparent text-slate-700 hover:bg-purple-50 hover:text-purple-700 px-2 py-2.5 rounded-xl text-[11px] font-medium transition"
                                         >
-                                        <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                                        <span>WhatsApp</span>
+                                            <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                            <span>WhatsApp</span>
                                         </a>
                                     );
                                 })()}
@@ -303,37 +421,58 @@ export const PageItem = ({
             <AnimatePresence>
                 {isImageType && isLayoutOpen && (
                     <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5"
-                        >
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5"
+                    >
                         <div className="space-y-2.5">
-                            <span className="text-xs font-semibold text-purple-900 block">Seleccionar Layout de Imágenes</span>
-                            <div className="grid grid-cols-3 gap-2.5">
+                            <div className="grid grid-cols-4 gap-2.5">
+                                {layoutOptions.map((option) => {
+                                    const isSelected = currentLayout === option.id;
+
+                                    return (
+                                    <div 
+                                        key={option?.id}
+                                        onClick={() => handleUpdatePageLayout && handleUpdatePageLayout(page.uid, option.id)}
+                                        className={`border-2 rounded-xl p-3 flex flex-col items-center gap-2.5 cursor-pointer transition-all text-center group ${
+                                        isSelected 
+                                            ? "border-black text-black" 
+                                            : "border-slate-200 text-slate-500"
+                                        }`}
+                                    >
+                                        <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                                            {option?.icon}
+                                        </div>
+                                        <span className={`text-xs font-medium ${
+                                        isSelected ? "text-black font-semibold" : "text-slate-800 group-hover:text-black"
+                                        }`}>
+                                        {option?.name}
+                                        </span>
+                                    </div>
+                                    );
+                                })}
                                 {/* Opción 1: Fila de 3 imágenes */}
-                                <button
+                                {/* <button
                                     type="button"
                                     onClick={() => handleUpdatePageLayout(page.uid, "grid-3")}
                                     className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
                                     currentLayout === "grid-3" || !currentLayout
-                                        ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                        : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
+                                        ? "border-black text-black" 
+                                        : "border-slate-200 text-slate-500"
                                     }`}
                                 >
-                                    <svg className={`w-7 h-7 stroke-2 ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <rect x="3" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                                        <rect x="9.5" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                                        <rect x="16" y="5" width="5" height="14" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                    <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                                    {   option.icon}
+                                    </div>
                                     <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-slate-600"}`}>
                                         Fila de 3 imágenes
                                     </span>
-                                </button>
+                                </button> */}
 
                                 {/* Opción 2: Imagen grande única */}
-                                <button
+                                {/* <button
                                     type="button"
                                     onClick={() => handleUpdatePageLayout(page.uid, "single-large")}
                                     className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
@@ -348,10 +487,10 @@ export const PageItem = ({
                                     <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "single-large" ? "text-white" : "text-slate-600"}`}>
                                         Imagen grande única
                                     </span>
-                                </button>
+                                </button> */}
 
                                 {/* Opción 3: Galería Mosaico */}
-                                <button
+                                {/* <button
                                     type="button"
                                     onClick={() => handleUpdatePageLayout(page.uid, "masonry-grid")}
                                     className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
@@ -369,7 +508,7 @@ export const PageItem = ({
                                     <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "masonry-grid" ? "text-white" : "text-slate-600"}`}>
                                         Galería Mosaico
                                     </span>
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </motion.div>

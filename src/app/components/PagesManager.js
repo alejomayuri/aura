@@ -136,7 +136,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
         slug: slug.trim(),
         type: pageType,
         showOnHome: true,
-        layout: "grid-3",
+        layout: "row",
         items: [],
         createdAt: new Date().toISOString()
       };
@@ -202,7 +202,6 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
     });
     setLocalPages(updated);
     savePagesToFirebase(updated);
-    setOpenLayoutPageUid(null);
   };
 
   return (
