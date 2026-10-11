@@ -53,7 +53,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         id: crypto.randomUUID(),
         title: newGalleryTitle.trim(),
         isActive: true,
-        layout: "grid", // Layout predeterminado
+        layout: "grid",
         items: []
       };
 
@@ -79,9 +79,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  /**
-   * Cambia la opción de layout de una galería y guarda en Firestore
-   */
   const handleSelectLayout = async (galleryId, newLayout) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -111,7 +108,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  // Actualiza el estado visual fluidamente mientras se arrastra
   const handleReorderGalleries = (newOrderGalleries) => {
     const updatedPages = portfolioData.pages.map((p) => {
       if ((p.id || p.slug) === selectedPageId) {
@@ -122,7 +118,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     onUpdatePortfolio(updatedPages);
   };
 
-  // Guarda definitivamente en Firestore al soltar la galería
   const handleSaveGalleriesOrder = async () => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -392,11 +387,36 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
+  const deleteImageFromCloudinary = async (imageUrl) => {
+    if (!imageUrl) return;
+    try {
+      const res = await fetch("/api/delete-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      
+      if (!res.ok) {
+        console.error("No se pudo eliminar la imagen de Cloudinary");
+      }
+    } catch (err) {
+      console.error("Error al conectar con la API de eliminación:", err);
+    }
+  };
+
   const handleDeleteItem = async (galleryId, itemId) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
     try {
+      // Buscar la imagen antes de eliminarla para obtener su URL y borrarla de Cloudinary
+      const targetGallery = galleries.find((gal) => gal.id === galleryId);
+      const targetItem = targetGallery?.items?.find((item) => item.id === itemId);
+
+      if (targetItem?.url) {
+        await deleteImageFromCloudinary(targetItem.url);
+      }
+
       const updatedGalleries = galleries.map((gal) => {
         if (gal.id === galleryId) {
           return { ...gal, items: gal.items.filter((item) => item.id !== itemId) };
@@ -427,6 +447,19 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     if (!currentUser) return;
 
     try {
+      // Encontrar la galería a eliminar para extraer todas las URLs de sus imágenes y borrarlas de Cloudinary
+      const targetGallery = galleries.find((gal) => gal.id === galleryId);
+      if (targetGallery && targetGallery.items && targetGallery.items.length > 0) {
+        await Promise.all(
+          targetGallery.items.map((item) => {
+            if (item.url) {
+              return deleteImageFromCloudinary(item.url);
+            }
+            return Promise.resolve();
+          })
+        );
+      }
+
       const updatedGalleries = galleries.filter((gal) => gal.id !== galleryId);
       const updatedPages = portfolioData.pages.map((p) => {
         if ((p.id || p.slug) === selectedPageId) {
@@ -560,7 +593,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
                     ) : (
                       <div className="space-y-2 flex flex-col items-center">
                         <svg className="w-10 h-10 text-purple-500 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2.5 2.5 0 012.828 0L16 16m-2-2l1.586-1.586a2.5 2.5 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2.5 2.5 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="text-sm font-medium text-black">Arrastra tu imagen aquí o haz clic</span>
                         <span className="text-xs text-black">PNG, JPG, WEBP hasta 10MB</span>
