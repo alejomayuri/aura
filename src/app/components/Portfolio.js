@@ -3,17 +3,10 @@
 import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 export default function Portfolio({ portfolioData, template }) {
-  const pathname = usePathname();
-  const imageSrc = portfolioData?.mainImage || portfolioData?.imagen || portfolioData?.image;
-  
   const currentTemplate = template || portfolioData?.template || "minimal";
   const styles = getTemplateStyles(currentTemplate);
-
-  // Condición para mostrar la etiqueta solo en home (/) o en rutas que incluyan /admin
-  const showBadge = pathname === "/" || (pathname && pathname.includes("/admin"));
 
   const getSocialIcon = (url) => {
     if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
@@ -30,7 +23,6 @@ export default function Portfolio({ portfolioData, template }) {
     return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
   };
 
-  const socialLinks = portfolioData?.socialLinks || [];
   const pages = portfolioData?.pages || [];
 
   const featuredLinks = pages
@@ -38,75 +30,9 @@ export default function Portfolio({ portfolioData, template }) {
     .flatMap((page) => page.items)
     .filter((item) => item.isFeatured === true);
 
+
   return (
     <PortfolioLayout portfolioData={portfolioData} template={template}>
-      {/* Etiqueta flotante absoluta (Visible solo en / y en /admin) */}
-      {showBadge && (
-        <span className={`text-[9px] py-0.5 font-medium uppercase tracking-widest z-20 ${styles.badge}`}>
-          {currentTemplate}
-        </span>
-      )}
-
-      {/* Cabecera dinámica */}
-      <div className={styles.headerLayout}>
-        <div className={`overflow-hidden flex items-center justify-center z-10 ${styles.imageWrapper}`}>
-          {imageSrc ? (
-            <img 
-              src={imageSrc} 
-              alt="Perfil" 
-              className={`w-full h-full object-cover ${currentTemplate === 'glass' ? 'rounded-[1.8rem]' : ''}`}
-            />
-          ) : (
-            <span className="text-[10px] opacity-50 italic">Sin img</span>
-          )}
-        </div>
-
-        <div className={`w-full ${styles.textContainer}`}>
-          <h1 className={styles.title}>
-            {portfolioData?.title || "Tu Título Aquí"}
-          </h1>
-          <p className={`whitespace-pre-wrap ${styles.description}`}>
-            {portfolioData?.description || "Bio o descripción de tu portfolio..."}
-          </p>
-        </div>
-      </div>
-
-      {/* Redes Sociales */}
-      {socialLinks.length > 0 ? (
-        <div className={styles.socialWrapper}>
-          {socialLinks.map((linkItem, index) => {
-            const iconUrl = getSocialIcon(linkItem.url);
-            const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
-            const iconFilter = styles.customIconFilter ? styles.customIconFilter : 
-                             styles.invertIcon ? "invert(1)" : "none";
-            const urlName = linkItem.url.replace(/https?:\/\/(www\.)?/i, "").split('/')[0];
-
-            return (
-              <a
-                key={index}
-                href={formattedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={linkItem.url}
-                className={`flex items-center justify-center border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
-              >
-                <img 
-                  src={iconUrl} 
-                  alt="Red social" 
-                  className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
-                  style={{ filter: iconFilter }} 
-                />
-                {styles.showSocialText && <span className="text-[10px] uppercase font-mono tracking-wider">[{urlName}]</span>}
-              </a>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-2">
-          <span className="text-[10px] opacity-50 italic">Sin redes sociales</span>
-        </div>
-      )}
-
       {/* Trabajos / Colecciones / Páginas internas */}
       {pages.length > 0 && (
         <div className="space-y-3 pt-3 mt-1 ">
@@ -156,7 +82,8 @@ export default function Portfolio({ portfolioData, template }) {
                   href={formattedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`w-full p-3 py-5 transition-all duration-200 cursor-pointer block flex items-center justify-center gap-2 mb-3 ${styles.pageCard}`}                >
+                  className={`w-full p-3 py-5 transition-all duration-200 cursor-pointer block flex items-center justify-center gap-2 mb-3 ${styles.pageCard}`}
+                >
                   <img src={iconUrl} alt="icon" className="w-4 h-4 shrink-0" style={{ filter: iconFilter }} />
                   <span className={`text-xs font-semibold whitespace-normal break-words ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-slate-200 font-medium' : ''}`}>
                     {link.title}

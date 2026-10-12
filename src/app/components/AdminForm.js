@@ -108,24 +108,20 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
     }
   };
 
-  const handleDeletePage = async (pageUid) => {
-    const updatedPages = stablePages.filter((page) => page.uid !== pageUid);
-
-    const updatedData = {
-      ...portfolioData,
-      socialLinks: stableLinks,
-      pages: updatedPages,
-    };
-
-    setPortfolioData(updatedData);
-    setOpenDeletePageUid(null);
-
-    if (typeof onSave === "function") {
-      try {
-        await onSave(updatedData);
-      } catch (error) {
-        console.error("Error al eliminar la página:", error);
+  const deleteImageFromCloudinary = async (imageUrl) => {
+    if (!imageUrl) return;
+    try {
+      const res = await fetch("/api/delete-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      
+      if (!res.ok) {
+        console.error("No se pudo eliminar la imagen de Cloudinary");
       }
+    } catch (err) {
+      console.error("Error al conectar con la API de eliminación:", err);
     }
   };
 
@@ -260,7 +256,13 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
       pages: stablePages 
     };
 
+    const previousImage = currentImageDisplay;
+
     if (modalRemoveImage) {
+      if (previousImage) {
+        await deleteImageFromCloudinary(previousImage);
+      }
+
       setSelectedFile(null);
       setLocalPreview("");
       updatedData.mainImage = "";
@@ -293,6 +295,10 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
         const data = await response.json();
         
         if (data.secure_url) {
+          if (previousImage) {
+            await deleteImageFromCloudinary(previousImage);
+          }
+
           const finalImageUrl = data.secure_url;
           setSelectedFile(null);
           setLocalPreview(finalImageUrl);
@@ -702,54 +708,54 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
             className="space-y-2.5 pt-1 list-none"
           >
             {stablePages.map((page) => {
-  const pageUid = page.uid || page.id;
-  const isVisibleOnHome = page.showOnHome !== false; 
-  const pageType = page.type || page.template || "Página";
-  const isImageType = pageType.toLowerCase() === "image" || pageType.toLowerCase() === "imagen";
-  const isLayoutOpen = openLayoutPageUid === pageUid;
-  const isShareOpen = openSharePageUid === pageUid;
-  const isDeleteOpen = openDeletePageUid === pageUid;
-  const currentLayout = page.layout || "grid-3";
-  const pageSlug = page.slug || page.path || "";
-  const absoluteShareUrl = typeof window !== "undefined" ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` : `/${portfolioSlug}/${pageSlug}`;
+              const pageUid = page.uid || page.id;
+              const isVisibleOnHome = page.showOnHome !== false; 
+              const pageType = page.type || page.template || "Página";
+              const isImageType = pageType.toLowerCase() === "image" || pageType.toLowerCase() === "imagen";
+              const isLayoutOpen = openLayoutPageUid === pageUid;
+              const isShareOpen = openSharePageUid === pageUid;
+              const isDeleteOpen = openDeletePageUid === pageUid;
+              const currentLayout = page.layout || "grid-3";
+              const pageSlug = page.slug || page.path || "";
+              const absoluteShareUrl = typeof window !== "undefined" ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` : `/${portfolioSlug}/${pageSlug}`;
 
-  return (
-    <PageItem
-      key={pageUid}
-      page={page}
-      pageType={pageType}
-      pageSlug={pageSlug}
-      portfolioSlug={portfolioSlug}
-      absoluteShareUrl={absoluteShareUrl}
-      isVisibleOnHome={isVisibleOnHome}
-      isImageType={isImageType}
-      isLayoutOpen={isLayoutOpen}
-      isShareOpen={isShareOpen}
-      isDeleteOpen={isDeleteOpen}
-      currentLayout={currentLayout}
-      
-      handleTogglePageVisibility={handleTogglePageVisibility}
-      setOpenLayoutPageUid={setOpenLayoutPageUid}
-      setOpenSharePageUid={setOpenSharePageUid}
-      setOpenDeletePageUid={setOpenDeletePageUid}
-      handleUpdatePageLayout={handleUpdatePageLayout}
-      
-      stablePages={stablePages}
-      portfolioData={portfolioData}
-      setPortfolioData={(newData) => {
-        if (newData && newData.pages) {
-          const updatedData = { ...portfolioData, pages: newData.pages };
-          setPortfolioData(updatedData);
-          if (typeof onSave === "function") {
-            onSave(updatedData);
-          }
-        }
-      }}
-      onDragEnd={handlePageDragEnd}
-      onSelectPage={onSelectPage}
-    />
-  );
-})}
+              return (
+                <PageItem
+                  key={pageUid}
+                  page={page}
+                  pageType={pageType}
+                  pageSlug={pageSlug}
+                  portfolioSlug={portfolioSlug}
+                  absoluteShareUrl={absoluteShareUrl}
+                  isVisibleOnHome={isVisibleOnHome}
+                  isImageType={isImageType}
+                  isLayoutOpen={isLayoutOpen}
+                  isShareOpen={isShareOpen}
+                  isDeleteOpen={isDeleteOpen}
+                  currentLayout={currentLayout}
+                  
+                  handleTogglePageVisibility={handleTogglePageVisibility}
+                  setOpenLayoutPageUid={setOpenLayoutPageUid}
+                  setOpenSharePageUid={setOpenSharePageUid}
+                  setOpenDeletePageUid={setOpenDeletePageUid}
+                  handleUpdatePageLayout={handleUpdatePageLayout}
+                  
+                  stablePages={stablePages}
+                  portfolioData={portfolioData}
+                  setPortfolioData={(newData) => {
+                    if (newData && newData.pages) {
+                      const updatedData = { ...portfolioData, pages: newData.pages };
+                      setPortfolioData(updatedData);
+                      if (typeof onSave === "function") {
+                        onSave(updatedData);
+                      }
+                    }
+                  }}
+                  onDragEnd={handlePageDragEnd}
+                  onSelectPage={onSelectPage}
+                />
+              );
+            })}
           </Reorder.Group>
         ) : (
           <p className="text-xs text-slate-500 italic pt-1">No hay páginas creadas todavía.</p>

@@ -5,6 +5,57 @@ import { getTemplateStyles } from "@/app/config/themeStyles";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
+// Helper para obtener las clases de alineación de texto e hijos
+const getAlignClass = (align) => {
+  switch (align) {
+    case "left":
+      return "text-left items-start";
+    case "right":
+      return "text-right items-end";
+    case "center":
+    default:
+      return "text-center items-center";
+  }
+};
+
+const getImageStyleClass = (style) => {
+  switch (style) {
+    case "creative-blob":
+      return "rounded-[30%_70%_70%_30%/30%_30%_70%_70%]";
+    case "square-rounded":
+      return "rounded-xl";
+    case "horizontal":
+      return "rounded-t-2xl";
+    case "fade-bottom":
+      return "rounded-t-2xl";
+    case "full-width":
+      return "rounded-full";
+    case "rounded":
+      return "w-30 h-30 object-cover shadow-sm rounded-full";
+    default:
+      return "w-30 h-30 object-cover shadow-sm rounded-full";
+  }
+};
+
+const getImageStyleWrapperClass = (style) => {
+  switch (style) {
+    case "creative-blob":
+      return "w-20 h-20";
+    case "square-rounded":
+      return "w-20 h-20";
+    case "horizontal":
+      return "w-full h-20";
+    case "fade-bottom":
+      return "w-full h-25";
+    case "full-width":
+      return "w-full h-22.5";
+    case "rounded":
+      return "pt-24";
+    default:
+      return "pt-24";
+  }
+};
+
 export default function PortfolioLayout({ portfolioData, template, children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -14,6 +65,21 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
   // Verificación: Solo se muestra en páginas de portfolio, excluyendo /admin y home
   const isPortfolioPage = pathname && pathname !== "/" && !pathname.includes("/admin");
+
+  const imageSrc = portfolioData?.mainImage || portfolioData?.imagen || portfolioData?.image;
+  const titleAlign = portfolioData?.titleAlign || "center";
+  const alignmentClasses = getAlignClass(titleAlign);
+
+  const bioAlign = portfolioData?.bioAlign || "center";
+  const bioAlignmentClasses = getAlignClass(bioAlign);
+
+  const socialPosition = portfolioData?.socialPosition || "top";
+
+  const imageStyle = portfolioData?.imageStyle || "rounded";
+  const imageStyleClass = getImageStyleClass(imageStyle);
+  const imageWrapperClass = getImageStyleWrapperClass(imageStyle);
+
+  console.log("PortfolioLayout - portfolioData:", portfolioData);
 
   const getSocialIcon = (url) => {
     if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
@@ -33,21 +99,54 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
   const socialLinks = portfolioData?.socialLinks || [];
   const pages = portfolioData?.pages || [];
 
+  // Función reutilizable para renderizar las redes sociales
+  const renderSocialLinks = () => {
+    if (socialLinks.length === 0) return null;
+
+    return (
+      <div className="flex flex-wrap items-center justify-center mt-1 gap-3 py-3">
+        {socialLinks.map((linkItem, index) => {
+          const iconUrl = getSocialIcon(linkItem.url);
+          const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
+          const iconFilter = styles.customIconFilter ? styles.customIconFilter : 
+                             styles.invertIcon ? "invert(1)" : "none";
+          const urlName = linkItem.url.replace(/https?:\/\/(www\.)?/i, "").split('/')[0];
+
+          return (
+            <a
+              key={index}
+              href={formattedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={linkItem.url}
+              className={`flex items-center justify-center border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
+            >
+              <img 
+                src={iconUrl} 
+                alt="Red social" 
+                className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
+                style={{ filter: iconFilter }} 
+              />
+              {styles.showSocialText && <span className="text-[10px] uppercase font-mono tracking-wider">[{urlName}]</span>}
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
-    // <main className={`${styles.bgScreen || "min-h-screen bg-slate-950 relative"} pt-0 xl:pt-12 flex flex-col items-center justify-start`}>
-      <>
-      {/* Menú y Overlay: Se oculta visualmente por completo y bloquea interacción si no está abierto */}
+    <>
+      {/* Menú y Overlay */}
       {isPortfolioPage && (
         <div className={`fixed inset-0 z-[100] flex justify-center items-end transition-all duration-300 ${
           isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}>
-          {/* Overlay oscuro con desenfoque */}
           <div 
             onClick={() => setIsMenuOpen(false)}
             className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300"
           />
 
-          {/* Menú deslizante */}
           <div className={`relative w-full max-w-xl h-auto max-h-[70vh] bg-white p-6 flex flex-col rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out transform z-20 overflow-y-auto pointer-events-auto ${
             isMenuOpen ? "translate-y-0" : "translate-y-full"
           }`}>
@@ -59,7 +158,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
             </button>
             
             <div className="flex flex-col gap-6 pb-4">
-              {/* Bloque 1: Links de navegación */}
               <div className="flex flex-col gap-3">
                 <Link 
                   href={`/${portfolioData?.slug || ""}`} 
@@ -81,7 +179,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
                 ))}
               </div>
 
-              {/* Bloque 2: Redes sociales */}
               {socialLinks.length > 0 && (
                 <div className="flex items-center justify-around py-1">
                   {socialLinks.map((linkItem, index) => {
@@ -108,7 +205,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
                 </div>
               )}
 
-              {/* Bloque 3: Textos y botones de acción */}
               <div className="flex flex-col gap-1 text-left">
                 <p className="text-lg font-bold text-black">Únete a {portfolioData?.slug || "Lightjaus"} en Lightjaus</p>
                 <p className="text-base font-normal text-black">¿Te gustaría tener un portfolio como este?</p>
@@ -135,9 +231,9 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
         </div>
       )}
 
-      {/* Contenedor Principal del Layout con el Fondo Correspondiente */}
+      {/* Contenedor Principal del Layout */}
       <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200' : ''}`}>
-        <div className={`relative w-full max-w-xl border p-5 transition-all duration-300 ${styles.container}`}>
+        <div className={`relative w-full max-w-xl p-5 pt-0 transition-all duration-300 ${styles.container}`}>
           
           {/* Botón Menú Hamburguesa */}
           {isPortfolioPage && (
@@ -153,8 +249,38 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
             </button>
           )}
 
-          {/* Contenido inyectado */}
+          {/* CABECERA GLOBAL COMÚN (Imagen, Título, Bio y Redes Top) */}
+          <div className={styles.headerLayout}>
+            <div className={`flex w-full justify-center mb-2.5 z-10 ${imageWrapperClass}`}>
+              {imageSrc ? (
+                <img 
+                  src={imageSrc} 
+                  alt="Perfil" 
+                  className={`${imageStyleClass}`}
+                />
+              ) : (
+                <span className="text-[10px] opacity-50 italic">Sin img</span>
+              )}
+            </div>
+
+            <div className={`px-4 w-full flex flex-col ${styles.textContainer}`}>
+              <h1 className={`w-full ${styles.title} text-[1.5rem] ${alignmentClasses} mb-1`}>
+                {portfolioData?.title || "Tu Título Aquí"}
+              </h1>
+              <p className={`w-full whitespace-pre-wrap ${styles.description} text-[16px]/5.5 ${bioAlignmentClasses}`}>
+                {portfolioData?.description || "Bio o descripción de tu portfolio..."}
+              </p>
+            </div>
+          </div>
+
+          {/* Redes Sociales ARRIBA si socialPosition es 'top' */}
+          {socialPosition === "top" && renderSocialLinks()}
+
+          {/* Contenido inyectado (Páginas internas, links destacados, etc.) */}
           {children}
+
+          {/* Redes Sociales ABAJO si socialPosition es 'bottom' */}
+          {socialPosition === "bottom" && renderSocialLinks()}
 
           {/* Footer compartido para páginas públicas */}
           {isPortfolioPage && (
@@ -180,6 +306,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
           )}
         </div>
       </div>
-      </>
+    </>
   );
 }

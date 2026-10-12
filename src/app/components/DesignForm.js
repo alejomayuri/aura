@@ -446,6 +446,23 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     setColorTimeout(newTimeout);
   };
 
+  const deleteImageFromCloudinary = async (imageUrl) => {
+    if (!imageUrl) return;
+    try {
+      const res = await fetch("/api/delete-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl }),
+      });
+      
+      if (!res.ok) {
+        console.error("No se pudo eliminar la imagen de Cloudinary");
+      }
+    } catch (err) {
+      console.error("Error al conectar con la API de eliminación:", err);
+    }
+  };
+
   const handleModalFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -466,6 +483,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
     let updatedData = { ...portfolioData };
 
     if (modalRemoveImage) {
+      // Eliminar de Cloudinary antes de vaciar las propiedades
+      if (currentImageDisplay) {
+        await deleteImageFromCloudinary(currentImageDisplay);
+      }
+
       updatedData.mainImage = "";
       updatedData.imagen = "";
       updatedData.image = "";
@@ -498,6 +520,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
         const data = await response.json();
 
         if (data.secure_url) {
+          // Si ya existía una imagen anterior en Cloudinary, la borramos para limpiar espacio
+          if (currentImageDisplay) {
+            await deleteImageFromCloudinary(currentImageDisplay);
+          }
+
           const finalImageUrl = data.secure_url;
 
           updatedData.mainImage = finalImageUrl;
@@ -761,11 +788,9 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       <div className="space-y-3 pt-4 font-['Poppins']">
         <h3 className="text-base font-semibold text-slate-900">Colores</h3>
         <div className="flex flex-col gap-3 w-full">
-          
-          {/* Si la plantilla usa gradientes, renderizamos el selector doble */}
           {isGradientTemplate ? (
             <GradientColorPickerItem
-              label="Fondo"
+              label="Color Principal (Gradiente)"
               colorStart={primaryColor}
               colorEnd={primaryColorEnd}
               onChangeStart={(val) => handleColorChange("primaryColor", val)}
@@ -773,44 +798,37 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
             />
           ) : (
             <ColorPickerItem
-              label="Fondo"
+              label="Color Principal"
               colorValue={primaryColor}
               onChange={(val) => handleColorChange("primaryColor", val)}
             />
           )}
 
           <ColorPickerItem
-            label="Bloques de contenido"
+            label="Color Secundario"
             colorValue={secondaryColor}
             onChange={(val) => handleColorChange("secondaryColor", val)}
           />
 
           {!isSocialTransparent && (
             <ColorPickerItem
-              label="Bloques de redes sociales"
-              colorValue={socialColor}
+              label="Tercer Color (Redes Sociales)"
+              colorValue={socialColor ?? "#0f172a"}
               onChange={(val) => handleColorChange("socialColor", val)}
             />
           )}
-          
-          <ColorPickerItem
-            label="Títulos"
-            colorValue={titleColor}
-            onChange={(val) => handleColorChange("titleColor", val)}
-          />
 
           <ColorPickerItem
-            label="Textos"
-            colorValue={textColor}
-            onChange={(val) => handleColorChange("textColor", val)}
-          />
-
-          <ColorPickerItem
-            label="Íconos"
+            label="Color de Iconos"
             colorValue={iconsColor}
             onChange={(val) => handleColorChange("iconsColor", val)}
           />
 
+          <ColorPickerItem
+            label="Cuarto Color (Títulos y Textos)"
+            colorValue={titleColor}
+            onChange={(val) => handleColorChange("titleColor", val)}
+          />
         </div>
       </div>
     </div>

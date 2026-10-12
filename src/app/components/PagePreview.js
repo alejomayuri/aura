@@ -5,8 +5,6 @@ import PortfolioLayout from "@/app/components/PortfolioLayout"; // 👈 Importam
 
 export default function PagePreview({ page, portfolioData }) {
   const currentTemplate = portfolioData?.template || "minimal";
-  const imageSrc = portfolioData?.mainImage || portfolioData?.imagen || portfolioData?.image;
-  const socialLinks = portfolioData?.socialLinks || [];
 
   // Obtenemos los estilos desde el archivo externo
   const styles = getTemplateStyles(currentTemplate);
@@ -28,63 +26,7 @@ export default function PagePreview({ page, portfolioData }) {
   return (
     <PortfolioLayout portfolioData={portfolioData} template={currentTemplate}>
 
-      {/* ================= 1. CABECERA GLOBAL DEL PORTFOLIO ================= */}
-      <div className={styles.headerLayout}>
-        
-        {/* Imagen Principal */}
-        <div className={`overflow-hidden flex items-center justify-center shrink-0 z-10 ${styles.imageWrapper}`}>
-          {imageSrc ? (
-            <img 
-              src={imageSrc} 
-              alt="Perfil" 
-              className={`w-full h-full object-cover ${currentTemplate === 'glass' ? 'rounded-[1.8rem]' : ''}`}
-            />
-          ) : (
-            <span className="text-[10px] opacity-50 italic">Sin img</span>
-          )}
-        </div>
-
-        {/* Título Principal del Portfolio */}
-        <div className={`w-full ${styles.textContainer}`}>
-          <h1 className={styles.title}>
-            {portfolioData?.title || "Tu Título Aquí"}
-          </h1>
-          <p className={`whitespace-pre-wrap ${styles.description}`}>
-            {portfolioData?.description || "Bio o descripción de tu portfolio..."}
-          </p>
-        </div>
-
-      </div>
-
-      {/* ================= 2. REDES SOCIALES GLOBALES ================= */}
-      {socialLinks.length > 0 && (
-        <div className={styles.socialWrapper}>
-          {socialLinks.map((linkItem, index) => {
-            const iconUrl = getSocialIcon(linkItem.url);
-            const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
-            const iconFilter = styles.customIconFilter ? styles.customIconFilter : styles.invertIcon ? "invert(1)" : "none";
-            const urlName = linkItem.url.replace(/https?:\/\/(www\.)?/i, "").split('/')[0];
-
-            return (
-              <a
-                key={index}
-                href={formattedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.socialIconBtn}
-              >
-                <img 
-                  src={iconUrl} 
-                  alt="Red social" 
-                  className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
-                  style={{ filter: iconFilter }} 
-                />
-                {styles.showSocialText && <span className="text-[10px] uppercase font-mono tracking-wider ml-2">[{urlName}]</span>}
-              </a>
-            );
-          })}
-        </div>
-      )}
+      
 
       {/* ================= 3. TÍTULO Y CONTENIDO ESPECÍFICO DE ESTA PÁGINA ================= */}
       <div className="mb-6">
