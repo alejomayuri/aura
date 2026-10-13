@@ -222,6 +222,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#0f172aff",
         secondaryColor: "#1e293bff",
+        primaryColorEnd: null,
         socialColor: null,
         textColor: "#f8fafcff",
         iconsColor: "#ffffffff",
@@ -240,6 +241,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#020617ff",
         secondaryColor: "#2e1065ff",
+        primaryColorEnd: null,
         socialColor: null,
         textColor: "#c084fcff",
         iconsColor: "#a855f7ff",
@@ -258,6 +260,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#18181bff",
         secondaryColor: "#27272aff",
+        primaryColorEnd: null,
         socialColor: null,
         textColor: "#f4f4f5ff",
         iconsColor: "#e4e4e7ff",
@@ -276,6 +279,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#facc15ff",
         secondaryColor: "#ffffffff",
+        primaryColorEnd: null,
         socialColor: "#ffffffff",
         textColor: "#000000ff",
         iconsColor: "#000000ff",
@@ -313,6 +317,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#000000ff",
         secondaryColor: "#052e16ff",
+        primaryColorEnd: null,
         socialColor: null,
         textColor: "#22c55eff",
         iconsColor: "#4ade80ff",
@@ -331,6 +336,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#c026d3ff",
         secondaryColor: "#67e8f9ff",
+        primaryColorEnd: null,
         socialColor: "#bef264ff",
         textColor: "#3b0764ff",
         iconsColor: "#3b0764ff",
@@ -368,6 +374,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#fef08aff",
         secondaryColor: "#ffffffff",
+        primaryColorEnd: null,
         socialColor: "#22d3eeff",
         textColor: "#000000ff",
         iconsColor: "#000000ff",
@@ -825,9 +832,15 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
           />
 
           <ColorPickerItem
-            label="Cuarto Color (Títulos y Textos)"
+            label="Color del título"
             colorValue={titleColor}
             onChange={(val) => handleColorChange("titleColor", val)}
+          />
+
+          <ColorPickerItem
+            label="Color de los textos"
+            colorValue={textColor}
+            onChange={(val) => handleColorChange("textColor", val)}
           />
         </div>
       </div>

@@ -77,7 +77,7 @@ export const ImageStyleOption = ({
         {isCreativeBlob ? (
           <>
             {currentImageDisplay ? (
-                <img src={currentImageDisplay} alt="Preview" className="rounded-[30%_70%_70%_30%/30%_30%_70%_70%] aspect-square object-cover w-20 h-20 mt-3" />
+              <img src={currentImageDisplay} alt="Preview" className="rounded-[30%_70%_70%_30%/30%_30%_70%_70%] aspect-square object-cover w-20 h-20 mt-3" />
             ) : (
               <div className="w-20 h-20 rounded-2xl rounded-tr-xs bg-black/10 shrink-0 flex items-center justify-center text-xs mt-3"></div>
             )}

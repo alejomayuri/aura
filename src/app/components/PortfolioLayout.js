@@ -21,15 +21,15 @@ const getAlignClass = (align) => {
 const getImageStyleClass = (style) => {
   switch (style) {
     case "creative-blob":
-      return "rounded-[30%_70%_70%_30%/30%_30%_70%_70%]";
+      return "rounded-[30%_70%_70%_30%/30%_30%_70%_70%] aspect-square object-cover w-38 h-38";
     case "square-rounded":
-      return "rounded-xl";
+      return "w-38 h-38 rounded-xl object-cover shrink-0 shadow-xs";
     case "horizontal":
-      return "rounded-t-2xl";
+      return "w-full h-48 rounded-xl object-cover shrink-0 shadow-xs";
     case "fade-bottom":
-      return "rounded-t-2xl";
+      return "w-full h-56 object-cover";
     case "full-width":
-      return "rounded-full";
+      return "w-full h-56 object-cover";
     case "rounded":
       return "w-30 h-30 object-cover shadow-sm rounded-full";
     default:
@@ -40,15 +40,15 @@ const getImageStyleClass = (style) => {
 const getImageStyleWrapperClass = (style) => {
   switch (style) {
     case "creative-blob":
-      return "w-20 h-20";
+      return "w-20 pt-16";
     case "square-rounded":
-      return "w-20 h-20";
+      return "w-20 pt-16 mb-4";
     case "horizontal":
-      return "w-full h-20";
+      return "w-full px-5 pt-5";
     case "fade-bottom":
-      return "w-full h-25";
+      return "w-full";
     case "full-width":
-      return "w-full h-22.5";
+      return "w-full";
     case "rounded":
       return "pt-24";
     default:
@@ -99,6 +99,8 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
   const socialLinks = portfolioData?.socialLinks || [];
   const pages = portfolioData?.pages || [];
 
+  const pageColors =  portfolioData?.colors || {};
+
   // Función reutilizable para renderizar las redes sociales
   const renderSocialLinks = () => {
     if (socialLinks.length === 0) return null;
@@ -120,6 +122,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
               rel="noopener noreferrer"
               title={linkItem.url}
               className={`flex items-center justify-center border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
+              style={{backgroundColor: pageColors?.socialColor}}
             >
               <img 
                 src={iconUrl} 
@@ -233,7 +236,8 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
       {/* Contenedor Principal del Layout */}
       <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200' : ''}`}>
-        <div className={`relative w-full max-w-xl p-5 pt-0 transition-all duration-300 ${styles.container}`}>
+        <div className={`relative w-full max-w-xl pt-0 transition-all duration-300 ${styles.container}`}
+            style={{ background: pageColors?.primaryColorEnd ? `linear-gradient(to top right, ${pageColors?.primaryColor}, ${pageColors?.primaryColorEnd})` : `${pageColors?.primaryColor}` }}>
           
           {/* Botón Menú Hamburguesa */}
           {isPortfolioPage && (
@@ -251,7 +255,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
           {/* CABECERA GLOBAL COMÚN (Imagen, Título, Bio y Redes Top) */}
           <div className={styles.headerLayout}>
-            <div className={`flex w-full justify-center mb-2.5 z-10 ${imageWrapperClass}`}>
+            <div className={`flex w-full relative justify-center mb-2.5 z-10 ${imageWrapperClass}`}>
               {imageSrc ? (
                 <img 
                   src={imageSrc} 
@@ -261,13 +265,25 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
               ) : (
                 <span className="text-[10px] opacity-50 italic">Sin img</span>
               )}
+              {imageStyle === "fade-bottom" && (
+                <div 
+                  style={{
+                    background: `linear-gradient(to top, ${pageColors?.primaryColor}, transparent)`
+                  }}
+                  className="absolute inset-x-0 bottom-0 h-4/7"
+                ></div>
+              )}
             </div>
 
-            <div className={`px-4 w-full flex flex-col ${styles.textContainer}`}>
-              <h1 className={`w-full ${styles.title} text-[1.5rem] ${alignmentClasses} mb-1`}>
+            <div className={`px-4 w-full px-5 flex flex-col ${styles.textContainer}`}>
+              <h1 className={`w-full ${styles.title} text-[1.5rem] ${alignmentClasses} mb-1`}
+                style={{ color: pageColors?.titleColor || "#000000" }}
+              >
                 {portfolioData?.title || "Tu Título Aquí"}
               </h1>
-              <p className={`w-full whitespace-pre-wrap ${styles.description} text-[16px]/5.5 ${bioAlignmentClasses}`}>
+              <p className={`w-full whitespace-pre-wrap ${styles.description} text-[16px]/5.5 ${bioAlignmentClasses}`}
+                style={{ color: pageColors?.textColor || "#000000" }}
+              >
                 {portfolioData?.description || "Bio o descripción de tu portfolio..."}
               </p>
             </div>
