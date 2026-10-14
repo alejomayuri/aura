@@ -195,7 +195,7 @@ export default function AdminDashboard() {
             <span className="text-[11px] text-slate-700 bg-white px-3 py-1 rounded-full border border-purple-100 shadow-sm">Live</span>
           </div>
 
-          <div className="w-[400px] h-[750px] bg-white border-[6px] border-slate-900 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col">
+          <div className="w-[400px] h-[750px] bg-white border-slate-900 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col">
             <div className="hide-scrollbar w-full h-full overflow-y-auto flex flex-col">
               {selectedPage ? (
                 <PagePreview page={selectedPage} portfolioData={portfolioData} />

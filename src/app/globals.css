@@ -17,3 +17,20 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 3px; /* Barra delgada */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.45);
+}

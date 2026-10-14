@@ -50,7 +50,7 @@ export default function PagePreview({ page, portfolioData }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`w-full p-3 py-5 transition-all duration-200 cursor-pointer block flex items-center justify-center gap-2 mb-3 ${styles.pageCard}`}                >
-                  <img src={iconUrl} alt="icon" className="w-4 h-4 shrink-0" style={{ filter: iconFilter }} />
+                  <img src={iconUrl} alt="icon" className="w-4 h-4 shrink-0" style={{ filter: iconFilter, stroke: 'white', fill: 'white' }} />
                   <span className={`text-xs font-semibold whitespace-normal break-words ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-slate-200 font-medium' : ''}`}>
                     {link.title}
                   </span>

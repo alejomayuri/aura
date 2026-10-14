@@ -15,7 +15,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 bg-lime-300 border-2 border-fuchsia-950 text-fuchsia-950 transition-all rounded-none flex items-center justify-center shadow-[3px_3px_0px_0px_#000]",
         pageCard: "bg-cyan-300 border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87] hover:bg-lime-300 transition-all rounded-none text-left font-mono",
         pageTitle: "text-fuchsia-950 font-black text-xs uppercase",
-        miniImgShape: "rounded-none border-2 border-fuchsia-950",
         invertIcon: false
       };
     case "holographic":
@@ -32,7 +31,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 rounded-full border border-white/50 text-white transition-all shadow-md flex items-center justify-center hover:scale-110",
         pageCard: "bg-white/15 backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-2xl text-left shadow-lg transition-all",
         pageTitle: "text-white font-bold text-xs tracking-wider",
-        miniImgShape: "rounded-xl border border-white/40",
         invertIcon: false
       };
     case "comic":
@@ -49,7 +47,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 border-3 border-black text-black hover:bg-red-500 hover:text-white transition-all rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] flex items-center justify-center font-bold",
         pageCard: "bg-white border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
         pageTitle: "text-black font-black uppercase text-xs tracking-tight",
-        miniImgShape: "rounded-lg border-2 border-black",
         invertIcon: false
       };
 
@@ -68,7 +65,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-9 h-9 flex items-center justify-center rounded-none border border-purple-500/40 text-purple-300 hover:bg-purple-900/60 hover:-translate-y-1 transition-transform",
         pageCard: "bg-purple-950/20 border border-purple-500/30 hover:border-purple-400 rounded-none text-left",
         pageTitle: "text-purple-300 font-bold uppercase tracking-wider",
-        miniImgShape: "rounded-none",
         invertIcon: true
       };
     case "classic":
@@ -85,7 +81,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-8 h-8 flex items-center justify-center rounded-sm border border-zinc-700 hover:bg-zinc-700 transition-colors",
         pageCard: "bg-zinc-800/50 border border-zinc-700 hover:border-zinc-500 rounded-sm text-left",
         pageTitle: "text-zinc-200 font-serif font-semibold",
-        miniImgShape: "rounded-sm",
         invertIcon: true
       };
     case "brutal":
@@ -102,8 +97,8 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 border-2 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]",
         pageCard: "bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none text-left mb-3",
         pageTitle: "text-black font-black uppercase text-xs",
-        miniImgShape: "rounded-none border-2 border-black",
-        invertIcon: false
+        // invertIcon: false
+        customIconFilter: "invert(0.5) sepia(1) hue-rotate(80deg) saturate(500%)"
       };
     case "glass":
       return {
@@ -119,7 +114,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-11 h-11 backdrop-blur-sm border border-white/50 text-slate-700 rounded-2xl hover:bg-white/50 hover:scale-105 transition-all shadow-sm flex items-center justify-center",
         pageCard: "bg-white/20 backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-[1.5rem] text-left shadow-sm",
         pageTitle: "text-slate-700 font-semibold text-xs",
-        miniImgShape: "rounded-xl border border-white/30",
         invertIcon: false
       };
     case "terminal":
@@ -136,7 +130,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-full py-1.5 px-2 border border-green-500/20 text-green-400 hover:bg-green-900/30 hover:border-green-500 text-xs flex items-center justify-start gap-2.5 transition-colors rounded-none",
         pageCard: "bg-transparent border border-green-500/30 hover:bg-green-900/20 text-left rounded-none border-l-4 hover:border-l-green-400",
         pageTitle: "text-green-400 text-xs",
-        miniImgShape: "rounded-none opacity-60 grayscale border border-green-500/30",
         invertIcon: false,
         showSocialText: true,
         customIconFilter: "invert(0.5) sepia(1) hue-rotate(80deg) saturate(500%)"
@@ -156,7 +149,6 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors",
         pageCard: "bg-slate-800/30 border border-slate-700 hover:border-slate-600 rounded-2xl text-left",
         pageTitle: "text-slate-200 font-medium text-xs",
-        miniImgShape: "rounded-md",
         invertIcon: true
       };
   }

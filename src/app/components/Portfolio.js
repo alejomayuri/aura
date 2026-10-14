@@ -2,7 +2,7 @@
 
 import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
-import Link from "next/link";
+import ImagePageCard from "@/app/components/PortfolioComponents/ImagePageCard"; // Ajusta la ruta según donde lo guardes
 
 export default function Portfolio({ portfolioData, template }) {
   const currentTemplate = template || portfolioData?.template || "minimal";
@@ -25,72 +25,55 @@ export default function Portfolio({ portfolioData, template }) {
 
   const pages = portfolioData?.pages || [];
 
-  const featuredLinks = pages
-    .filter((page) => page.type === "link" && page.items)
-    .flatMap((page) => page.items)
-    .filter((item) => item.isFeatured === true);
-
-
   return (
     <PortfolioLayout portfolioData={portfolioData} template={template}>
-      {/* Trabajos / Colecciones / Páginas internas */}
+      {/* Contenedor principal que respeta estrictamente el orden de las páginas */}
       {pages.length > 0 && (
-        <div className="space-y-3 pt-3 mt-1 ">
+        <div className="space-y-3 pt-3 mt-1 px-3">
           {pages.map((page) => {
-            if (page.type === "link") return null;
-            let previewImages = page.type === "image" && page.galleries ? page.galleries.flatMap(g => g.items || []).slice(0, 3) : [];
+            if (!page?.showOnHome) return null;
 
-            return (
-              <Link 
-                key={page.id} 
-                href={`/${portfolioData?.slug}/${page.slug || page.id}`}
-                className={`w-full p-3 transition-all duration-200 cursor-pointer block ${styles.pageCard}`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs truncate pr-2 ${styles.pageTitle}`}>{page.title}</span>
-                  <span className="text-[9px] uppercase tracking-wider opacity-50 shrink-0 font-bold">
-                    {currentTemplate === 'terminal' ? '[+]' : '→'}
-                  </span>
-                </div>
-                {previewImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-1.5 mt-2">
-                    {previewImages.map((img, idx) => (
-                      <div key={img.id || idx} className={`aspect-square overflow-hidden bg-slate-900 border border-slate-800/50 ${styles.miniImgShape}`}>
-                        <img src={img.url} alt="Preview" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      )}
+            if (page.type === "link") {
+              if (!page.items || page.items.length === 0) return null;
 
-      {/* Links Destacados */}
-      {featuredLinks.length > 0 && (
-        <div className="space-y-2 pt-3 mt-3">
-          <p className="text-[10px] uppercase tracking-widest opacity-50 font-semibold mb-1">Links Destacados</p>
-          {featuredLinks.map((link) => {
-              const iconUrl = getSocialIcon(link.url);
-              const formattedUrl = link.url.startsWith("http") ? link.url : `https://${link.url}`;
-              const iconFilter = styles.customIconFilter ? styles.customIconFilter : styles.invertIcon ? "invert(1)" : "none";
-              
               return (
-                <a
-                  key={link.id}
-                  href={formattedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full p-3 py-5 transition-all duration-200 cursor-pointer block flex items-center justify-center gap-2 mb-3 ${styles.pageCard}`}
-                >
-                  <img src={iconUrl} alt="icon" className="w-4 h-4 shrink-0" style={{ filter: iconFilter }} />
-                  <span className={`text-xs font-semibold whitespace-normal break-words ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-slate-200 font-medium' : ''}`}>
-                    {link.title}
-                  </span>
-                </a>
+                <div key={page.id} className="space-y-3">
+                  {page.items.map((link) => {
+                    const iconUrl = getSocialIcon(link.url);
+                    const formattedUrl = link.url.startsWith("http") ? link.url : `https://${link.url}`;
+                    const iconFilter = styles.customIconFilter ? styles.customIconFilter : styles.invertIcon ? "invert(1)" : "none";
+
+                    return (
+                      <a
+                        key={link.id || link.url}
+                        href={formattedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full p-3 py-5 transition-all duration-200 cursor-pointer block flex items-center justify-center gap-2 mb-3 ${styles.pageCard}`}
+                      >
+                        <span className={`text-xs font-semibold whitespace-normal break-words ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-slate-200 font-medium' : ''}`}>
+                          {link.title}
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
               );
-            })}
+            }
+
+            if (page.type === "image") {
+              return (
+                <ImagePageCard 
+                  layout={page.layout}
+                  key={page.id}
+                  page={page}
+                  portfolioSlug={portfolioData?.slug}
+                  styles={styles}
+                  currentTemplate={currentTemplate}
+                />
+              )
+            }
+          })}
         </div>
       )}
     </PortfolioLayout>

@@ -3,43 +3,33 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { HexAlphaColorPicker } from "react-colorful";
+import { HexColorPicker } from "react-colorful";
 import Title from "./AdminFormsComponents/Title";
 import { ImageStyleOption } from "./AdminFormsComponents/home/ImageStyleOption";
 
-// Helper para convertir cualquier color a HEX8 de 8 dígitos (#RRGGBBAA)
-function toHex8(color) {
-  if (!color || color === "transparent") return "#00000000";
-
+function toHex(color) {
+  if (!color) return "#000000";
   if (color.startsWith("#")) {
-    if (color.length === 7) return `${color}ff`;
-    if (color.length === 9) return color;
-    if (color.length === 4) {
-      const r = color[1], g = color[2], b = color[3];
-      return `#${r}${r}${g}${g}${b}${b}ff`;
-    }
+    return color;
   }
-
-  if (color.startsWith("rgba") || color.startsWith("rgb")) {
-    const values = color.match(/[\d.]+/g);
-    if (values && values.length >= 3) {
-      const r = parseInt(values[0]).toString(16).padStart(2, "0");
-      const g = parseInt(values[1]).toString(16).padStart(2, "0");
-      const b = parseInt(values[2]).toString(16).padStart(2, "0");
-      const aFloat = values[3] !== undefined ? parseFloat(values[3]) : 1;
-      const a = Math.round(aFloat * 255).toString(16).padStart(2, "0");
-      return `#${r}${g}${b}${a}`;
-    }
-  }
-
-  return "#ffffff99";
+  // Si viene en formato rgb/rgba, lo puedes ignorar o manejar de forma plana, 
+  // pero lo ideal es trabajar directamente con strings HEX.
+  return color;
 }
 
-// ColorPicker individual
+// ColorPicker individual para colores sólidos
 function ColorPickerItem({ label, colorValue, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const popoverRef = useRef(null);
-  const hex8Value = toHex8(colorValue);
+  
+  const solidHex = toHex(colorValue) || "#000000";
+  const [textValue, setTextValue] = useState(solidHex);
+
+  const [prevColorValue, setPrevColorValue] = useState(colorValue);
+  if (colorValue !== prevColorValue) {
+    setPrevColorValue(colorValue);
+    setTextValue(toHex(colorValue) || "#000000");
+  }
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -55,6 +45,26 @@ function ColorPickerItem({ label, colorValue, onChange }) {
     };
   }, [isOpen]);
 
+  const handleTextChange = (e) => {
+    let val = e.target.value;
+
+    // 1. Permitir solo caracteres hexadecimales y la almohadilla
+    val = val.replace(/[^0-9a-fA-F#]/g, "");
+
+    // 2. Asegurar que el '#' solo esté al inicio
+    if (val.indexOf("#") > 0) {
+      val = val.replace(/#/g, "");
+    }
+
+    // 3. Limitar a un máximo de 7 caracteres (#RRGGBB)
+    if (val.length > 7) {
+      val = val.slice(0, 7);
+    }
+
+    setTextValue(val);
+    onChange(val);
+  };
+
   return (
     <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full">
       <div>
@@ -66,33 +76,29 @@ function ColorPickerItem({ label, colorValue, onChange }) {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden relative flex items-center justify-center"
-            style={{
-              backgroundImage:
-                "linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)",
-              backgroundSize: "8px 8px",
-              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-            }}
-          >
-            <div
-              className="w-full h-full rounded-full transition-colors"
-              style={{ backgroundColor: hex8Value }}
-            />
-          </button>
+            className="w-12 h-12 rounded-full cursor-pointer appearance-none border-0 p-0 overflow-hidden relative flex items-center justify-center"
+            style={{ backgroundColor: solidHex }}
+          />
         </div>
 
         {isOpen && (
           <div className="absolute right-0 top-14 z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-xl flex flex-col items-center gap-3 w-[220px]">
-            <HexAlphaColorPicker
-              color={hex8Value}
-              onChange={onChange}
+            {/* Usamos el HexColorPicker estándar para colores sólidos */}
+            <HexColorPicker
+              color={solidHex}
+              onChange={(newColor) => {
+                setTextValue(newColor);
+                onChange(newColor);
+              }}
               className="!w-full !h-40"
             />
             <div className="w-full flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
               <input
                 type="text"
-                value={hex8Value}
-                onChange={(e) => onChange(e.target.value)}
+                value={textValue}
+                onChange={handleTextChange}
+                maxLength={7}
+                placeholder="#000000"
                 className="w-full text-xs font-mono uppercase bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center text-slate-700 outline-none focus:border-purple-500"
               />
             </div>
@@ -108,8 +114,25 @@ function GradientColorPickerItem({ label, colorStart, colorEnd, onChangeStart, o
   const [openPicker, setOpenPicker] = useState(null); // 'start' | 'end' | null
   const popoverRef = useRef(null);
 
-  const hex8Start = toHex8(colorStart);
-  const hex8End = toHex8(colorEnd);
+  const solidStart = toHex(colorStart) || "#000000";
+  const solidEnd = toHex(colorEnd) || "#000000";
+
+  // Estados locales para los inputs de texto de ambos selectores
+  const [textStart, setTextStart] = useState(solidStart);
+  const [textEnd, setTextEnd] = useState(solidEnd);
+
+  // Sincronización limpia basada en props sin efectos secundarios
+  const [prevStart, setPrevStart] = useState(colorStart);
+  if (colorStart !== prevStart) {
+    setPrevStart(colorStart);
+    setTextStart(toHex(colorStart) || "#000000");
+  }
+
+  const [prevEnd, setPrevEnd] = useState(colorEnd);
+  if (colorEnd !== prevEnd) {
+    setPrevEnd(colorEnd);
+    setTextEnd(toHex(colorEnd) || "#000000");
+  }
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -125,6 +148,31 @@ function GradientColorPickerItem({ label, colorStart, colorEnd, onChangeStart, o
     };
   }, [openPicker]);
 
+  const handleTextChange = (e, type) => {
+    let val = e.target.value;
+
+    // 1. Permitir solo caracteres hexadecimales y la almohadilla
+    val = val.replace(/[^0-9a-fA-F#]/g, "");
+
+    // 2. Asegurar que el '#' solo esté al inicio
+    if (val.indexOf("#") > 0) {
+      val = val.replace(/#/g, "");
+    }
+
+    // 3. Limitar a un máximo de 7 caracteres (#RRGGBB)
+    if (val.length > 7) {
+      val = val.slice(0, 7);
+    }
+
+    if (type === "start") {
+      setTextStart(val);
+      onChangeStart(val);
+    } else {
+      setTextEnd(val);
+      onChangeEnd(val);
+    }
+  };
+
   return (
     <div className="bg-white border border-slate-300 rounded-2xl p-4 flex items-center justify-between w-full" ref={popoverRef}>
       <div>
@@ -132,61 +180,49 @@ function GradientColorPickerItem({ label, colorStart, colorEnd, onChangeStart, o
       </div>
 
       <div className="flex items-center gap-3 relative">
-        {/* Selector 1 */}
+        {/* Selector 1 (Inicio) */}
         <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
           <button
             type="button"
             onClick={() => setOpenPicker(openPicker === "start" ? null : "start")}
-            className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden relative flex items-center justify-center"
-            style={{
-              backgroundImage:
-                "linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)",
-              backgroundSize: "8px 8px",
-              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-            }}
-          >
-            <div
-              className="w-full h-full rounded-full transition-colors"
-              style={{ backgroundColor: hex8Start }}
-            />
-          </button>
+            className="w-12 h-12 rounded-full cursor-pointer appearance-none border-0 p-0 overflow-hidden relative flex items-center justify-center"
+            style={{ backgroundColor: solidStart }}
+          />
         </div>
 
-        {/* Selector 2 */}
+        {/* Selector 2 (Fin) */}
         <div className="rounded-full p-0.5 border border-slate-300 shadow-sm hover:border-slate-400 transition-colors bg-white flex items-center justify-center">
           <button
             type="button"
             onClick={() => setOpenPicker(openPicker === "end" ? null : "end")}
-            className="w-12 h-12 rounded-full cursor-pointer appearance-none bg-transparent border-0 p-0 overflow-hidden relative flex items-center justify-center"
-            style={{
-              backgroundImage:
-                "linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)",
-              backgroundSize: "8px 8px",
-              backgroundPosition: "0 0, 0 4px, 4px -4px, -4px 0px",
-            }}
-          >
-            <div
-              className="w-full h-full rounded-full transition-colors"
-              style={{ backgroundColor: hex8End }}
-            />
-          </button>
+            className="w-12 h-12 rounded-full cursor-pointer appearance-none border-0 p-0 overflow-hidden relative flex items-center justify-center"
+            style={{ backgroundColor: solidEnd }}
+          />
         </div>
 
         {/* Popover del color picker */}
         {openPicker && (
           <div className="absolute right-0 top-14 z-50 bg-white border border-slate-200 rounded-2xl p-3 shadow-xl flex flex-col items-center gap-3 w-[220px]">
-            <HexAlphaColorPicker
-              color={openPicker === "start" ? hex8Start : hex8End}
-              onChange={openPicker === "start" ? onChangeStart : onChangeEnd}
+            <HexColorPicker
+              color={openPicker === "start" ? solidStart : solidEnd}
+              onChange={(newColor) => {
+                if (openPicker === "start") {
+                  setTextStart(newColor);
+                  onChangeStart(newColor);
+                } else {
+                  setTextEnd(newColor);
+                  onChangeEnd(newColor);
+                }
+              }}
               className="!w-full !h-40"
             />
             <div className="w-full flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
               <input
                 type="text"
-                value={openPicker === "start" ? hex8Start : hex8End}
-                onChange={(e) =>
-                  openPicker === "start" ? onChangeStart(e.target.value) : onChangeEnd(e.target.value)
-                }
+                value={openPicker === "start" ? textStart : textEnd}
+                onChange={(e) => handleTextChange(e, openPicker)}
+                maxLength={7}
+                placeholder="#000000"
                 className="w-full text-xs font-mono uppercase bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-center text-slate-700 outline-none focus:border-purple-500"
               />
             </div>
@@ -258,13 +294,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "Editorial",
       hasGradient: false,
       colors: {
-        primaryColor: "#18181bff",
-        secondaryColor: "#27272aff",
+        primaryColor: "#18181b",
+        secondaryColor: "#27272a",
         primaryColorEnd: null,
         socialColor: null,
-        textColor: "#f4f4f5ff",
-        iconsColor: "#e4e4e7ff",
-        titleColor: "#ffffffff",
+        textColor: "#f4f4f5",
+        iconsColor: "#e4e4e7",
+        titleColor: "#ffffff",
       },
     },
     {
@@ -277,13 +313,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "NEO-BRUTAL",
       hasGradient: false,
       colors: {
-        primaryColor: "#facc15ff",
-        secondaryColor: "#ffffffff",
+        primaryColor: "#facc15",
+        secondaryColor: "#ffffff",
         primaryColorEnd: null,
-        socialColor: "#ffffffff",
-        textColor: "#000000ff",
-        iconsColor: "#000000ff",
-        titleColor: "#000000ff",
+        socialColor: "#ffffff",
+        textColor: "#000000",
+        iconsColor: "#000000",
+        titleColor: "#000000",
       },
     },
     {
@@ -296,13 +332,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "Blur Effect",
       hasGradient: true,
       colors: {
-        primaryColor: "#fbcfe8ff",
-        primaryColorEnd: "#c7d2feff",
-        secondaryColor: "#ffffff80",
-        socialColor: "#f3e8ffb3",
-        textColor: "#334155ff",
-        iconsColor: "#475569ff",
-        titleColor: "#1e293bff",
+        primaryColor: "#fbcfe8",
+        primaryColorEnd: "#c7d2fe",
+        secondaryColor: "#ffffff",
+        socialColor: "#f3e8ff",
+        textColor: "#334155",
+        iconsColor: "#475569",
+        titleColor: "#1e293b",
       },
     },
     {
@@ -315,13 +351,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: ">_ bash",
       hasGradient: false,
       colors: {
-        primaryColor: "#000000ff",
-        secondaryColor: "#052e16ff",
+        primaryColor: "#000000",
+        secondaryColor: "#052e16",
         primaryColorEnd: null,
         socialColor: null,
-        textColor: "#22c55eff",
-        iconsColor: "#4ade80ff",
-        titleColor: "#22c55eff",
+        textColor: "#22c55e",
+        iconsColor: "#4ade80",
+        titleColor: "#22c55e",
       },
     },
     {
@@ -334,13 +370,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "Cyber",
       hasGradient: false,
       colors: {
-        primaryColor: "#c026d3ff",
-        secondaryColor: "#67e8f9ff",
+        primaryColor: "#c026d3",
+        secondaryColor: "#67e8f9",
         primaryColorEnd: null,
-        socialColor: "#bef264ff",
-        textColor: "#3b0764ff",
-        iconsColor: "#3b0764ff",
-        titleColor: "#bef264ff",
+        socialColor: "#bef264",
+        textColor: "#3b0764",
+        iconsColor: "#3b0764",
+        titleColor: "#bef264",
       },
     },
     {
@@ -353,13 +389,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "Holo Glow",
       hasGradient: true,
       colors: {
-        primaryColor: "#ec4899ff",
-        primaryColorEnd: "#6366f1ff",
-        secondaryColor: "#a855f7cc",
+        primaryColor: "#ec4899",
+        primaryColorEnd: "#6366f1",
+        secondaryColor: "#a855f7",
         socialColor: null,
-        textColor: "#ffffffff",
-        iconsColor: "#ffffffff",
-        titleColor: "#ffffffff",
+        textColor: "#ffffff",
+        iconsColor: "#ffffff",
+        titleColor: "#ffffff",
       },
     },
     {
@@ -372,13 +408,13 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       previewBtnText: "POW!",
       hasGradient: false,
       colors: {
-        primaryColor: "#fef08aff",
-        secondaryColor: "#ffffffff",
+        primaryColor: "#fef08a",
+        secondaryColor: "#ffffff",
         primaryColorEnd: null,
-        socialColor: "#22d3eeff",
-        textColor: "#000000ff",
-        iconsColor: "#000000ff",
-        titleColor: "#000000ff",
+        socialColor: "#22d3ee",
+        textColor: "#000000",
+        iconsColor: "#000000",
+        titleColor: "#000000",
       },
     }
   ];
