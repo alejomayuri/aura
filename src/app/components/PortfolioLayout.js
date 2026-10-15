@@ -27,9 +27,9 @@ const getImageStyleClass = (style) => {
     case "horizontal":
       return "w-full h-48 rounded-xl object-cover shrink-0 shadow-xs";
     case "fade-bottom":
-      return "w-full h-56 object-cover";
+      return "w-full h-auto object-cover";
     case "full-width":
-      return "w-full h-56 object-cover";
+      return "w-full h-auto object-cover";
     case "rounded":
       return "w-30 h-30 object-cover shadow-sm rounded-full";
     default:
@@ -200,13 +200,11 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
     return (
       <div className="flex flex-wrap items-center justify-center mt-1 gap-3 py-3">
         {socialLinks.map((linkItem, index) => {
-          const iconUrl = getSocialIcon(linkItem.url);
           const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
-          const iconFilter = styles.customIconFilter ? styles.customIconFilter : 
-                             styles.invertIcon ? "invert(1)" : "none";
-          const urlName = linkItem.url.replace(/https?:\/\/(www\.)?/i, "").split('/')[0];
           const socialIconSvg = getSocialIconSvg(linkItem.url, pageColors?.iconsColor || "#000", pageColors?.iconsColor || "#000");
-
+          
+          if (!linkItem?.enabled) return null
+          
           return (
             <a
               key={index}
@@ -217,13 +215,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
               className={`flex items-center justify-center border transition-all duration-200 shadow-sm ${styles.socialIconBtn}`}
               style={{backgroundColor: pageColors?.socialColor}}
             >
-              {/* <img 
-                src={iconUrl} 
-                alt="Red social" 
-                className="w-4 h-4 opacity-80 hover:opacity-100 transition-opacity" 
-                style={{ filter: iconFilter }} 
-              />
-              {styles.showSocialText && <span className="text-[10px] uppercase font-mono tracking-wider">[{urlName}]</span>} */}
               {socialIconSvg}
             </a>
           );
@@ -329,7 +320,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
       )}
 
       {/* Contenedor Principal del Layout */}
-      <div className={`w-full flex justify-center ${currentTemplate === 'glass' ? 'bg-gradient-to-tr from-pink-200 via-purple-200 to-indigo-200' : ''}`}>
+      <div className={`w-full flex justify-center`}>
         <div className={`relative w-full max-w-xl pt-0 transition-all duration-300 ${styles.container}`}
             style={{ background: pageColors?.primaryColorEnd ? `linear-gradient(to top right, ${pageColors?.primaryColor}, ${pageColors?.primaryColorEnd})` : `${pageColors?.primaryColor}` }}>
           

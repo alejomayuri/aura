@@ -13,7 +13,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-lime-300 font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]",
         socialWrapper: "flex flex-wrap items-center justify-center gap-2 py-3 bg-fuchsia-900/40 border-y-2 border-lime-300 my-2",
         socialIconBtn: "w-10 h-10 bg-lime-300 border-2 border-fuchsia-950 text-fuchsia-950 transition-all rounded-none flex items-center justify-center shadow-[3px_3px_0px_0px_#000]",
-        pageCard: "bg-cyan-300 border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87] hover:bg-lime-300 transition-all rounded-none text-left font-mono",
+        pageCard: "border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87] hover:bg-lime-300 transition-all rounded-none text-left font-mono",
         pageTitle: "text-fuchsia-950 font-black text-xs uppercase",
         invertIcon: false
       };
@@ -29,7 +29,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-white font-extrabold tracking-wide drop-shadow-md",
         socialWrapper: "flex flex-wrap items-center justify-center gap-3 py-4 bg-white/10 backdrop-blur-md rounded-2xl mx-2 my-2 border border-white/20",
         socialIconBtn: "w-10 h-10 rounded-full border border-white/50 text-white transition-all shadow-md flex items-center justify-center hover:scale-110",
-        pageCard: "bg-white/15 backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-2xl text-left shadow-lg transition-all",
+        pageCard: "backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-2xl text-left shadow-lg transition-all",
         pageTitle: "text-white font-bold text-xs tracking-wider",
         invertIcon: false
       };
@@ -45,7 +45,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-black font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_#fff]",
         socialWrapper: "flex flex-wrap items-center justify-center gap-2.5 py-3 border-y-4 border-black my-2 bg-white/50",
         socialIconBtn: "w-10 h-10 border-3 border-black text-black hover:bg-red-500 hover:text-white transition-all rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] flex items-center justify-center font-bold",
-        pageCard: "bg-white border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
+        pageCard: "border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
         pageTitle: "text-black font-black uppercase text-xs tracking-tight",
         invertIcon: false
       };
@@ -63,7 +63,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-purple-400 font-extrabold tracking-widest uppercase text-lg",
         socialWrapper: "flex flex-wrap items-center justify-end gap-2 py-3",
         socialIconBtn: "w-9 h-9 flex items-center justify-center rounded-none border border-purple-500/40 text-purple-300 hover:bg-purple-900/60 hover:-translate-y-1 transition-transform",
-        pageCard: "bg-purple-950/20 border border-purple-500/30 hover:border-purple-400 rounded-none text-left",
+        pageCard: "border border-purple-500/30 hover:border-purple-400 rounded-none text-left",
         pageTitle: "text-purple-300 font-bold uppercase tracking-wider",
         invertIcon: true
       };
@@ -79,7 +79,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-zinc-100 font-serif tracking-normal text-lg",
         socialWrapper: "flex flex-wrap items-center justify-start gap-2 pt-4 border-t border-zinc-800 mt-2",
         socialIconBtn: "w-8 h-8 flex items-center justify-center rounded-sm border border-zinc-700 hover:bg-zinc-700 transition-colors",
-        pageCard: "bg-zinc-800/50 border border-zinc-700 hover:border-zinc-500 rounded-sm text-left",
+        pageCard: "border border-zinc-700 hover:border-zinc-500 rounded-sm text-left",
         pageTitle: "text-zinc-200 font-serif font-semibold",
         invertIcon: true
       };
@@ -95,7 +95,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-black font-black tracking-tighter uppercase leading-none",
         socialWrapper: "flex flex-wrap items-center justify-start gap-3 py-4",
         socialIconBtn: "w-10 h-10 border-2 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]",
-        pageCard: "bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none text-left mb-3",
+        pageCard: "border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none text-left mb-3",
         pageTitle: "text-black font-black uppercase text-xs",
         // invertIcon: false
         customIconFilter: "invert(0.5) sepia(1) hue-rotate(80deg) saturate(500%)"
@@ -112,9 +112,10 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-slate-800 font-bold text-lg tracking-tight",
         socialWrapper: "flex flex-wrap items-center justify-center gap-2.5 py-4",
         socialIconBtn: "w-11 h-11 backdrop-blur-sm border border-white/50 text-slate-700 rounded-2xl hover:bg-white/50 hover:scale-105 transition-all shadow-sm flex items-center justify-center",
-        pageCard: "bg-white/20 backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-[1.5rem] text-left shadow-sm",
+        pageCard: "backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-[1.5rem] text-left shadow-sm",
         pageTitle: "text-slate-700 font-semibold text-xs",
-        invertIcon: false
+        invertIcon: false,
+        radiusImageLink: "rounded-md"
       };
     case "terminal":
       return {
@@ -128,7 +129,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-green-400 font-bold text-base before:content-['>_'] before:mr-1",
         socialWrapper: "flex flex-col items-start w-full gap-1.5 py-3 border-t border-dashed border-green-500/30 mt-2",
         socialIconBtn: "w-full py-1.5 px-2 border border-green-500/20 text-green-400 hover:bg-green-900/30 hover:border-green-500 text-xs flex items-center justify-start gap-2.5 transition-colors rounded-none",
-        pageCard: "bg-transparent border border-green-500/30 hover:bg-green-900/20 text-left rounded-none border-l-4 hover:border-l-green-400",
+        pageCard: "border border-green-500/30 hover:bg-green-900/20 text-left rounded-none border-l-4 hover:border-l-green-400",
         pageTitle: "text-green-400 text-xs",
         invertIcon: false,
         showSocialText: true,
@@ -147,7 +148,7 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-white font-bold tracking-tight",
         socialWrapper: "flex flex-wrap items-center justify-center gap-3 py-3",
         socialIconBtn: "w-10 h-10 flex items-center justify-center rounded-full border border-slate-700 transition-colors",
-        pageCard: "bg-slate-800/30 border border-slate-700 hover:border-slate-600 rounded-2xl text-left",
+        pageCard: "border border-slate-700 hover:border-slate-600 rounded-2xl text-left",
         pageTitle: "text-slate-200 font-medium text-xs",
         invertIcon: true
       };

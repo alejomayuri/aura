@@ -334,7 +334,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       colors: {
         primaryColor: "#fbcfe8",
         primaryColorEnd: "#c7d2fe",
-        secondaryColor: "#ffffff",
+        secondaryColor: "#f3e8ff",
         socialColor: "#f3e8ff",
         textColor: "#334155",
         iconsColor: "#475569",

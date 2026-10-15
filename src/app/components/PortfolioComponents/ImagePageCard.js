@@ -1,39 +1,38 @@
 import Link from "next/link";
 
-export default function ImagePageCard({ page, portfolioSlug, styles, layout, currentTemplate }) {
+export default function ImagePageCard({ page, portfolioSlug, styles, layout, currentTemplate, blockColor, textColor }) {
   const cardLayout = page.layout || layout || "row";
 
-  // Layout "row": hasta 3 imágenes en cuadrícula cuadrada
-  const previewImages = page.type === "image" && page.galleries 
-    ? page.galleries.flatMap(g => g.items || []).slice(0, 3) 
+  // 1. Obtenemos y filtramos solo las imágenes que están activas (isActive !== false)
+  const activeItems = page.type === "image" && page.galleries 
+    ? page.galleries.flatMap(g => g.items || []).filter(img => img.isActive !== false) 
     : [];
 
-  // Layout "single": la primera imagen de la primera galería
-  const singleImage = page.type === "image" && page.galleries?.[0]?.items?.[0] 
-    ? page.galleries[0].items[0] 
-    : null;
-
-  // Layout "carousel": hasta las primeras 5 imágenes
-  const carouselImages = page.type === "image" && page.galleries 
-    ? page.galleries.flatMap(g => g.items || []).slice(0, 5) 
-    : [];
-
-  // Layout "grid": hasta las primeras 4 imágenes para mostrar en columnas
-  const gridImages = page.type === "image" && page.galleries 
-    ? page.galleries.flatMap(g => g.items || []).slice(0, 4) 
-    : [];
-
-  if (page.type === "image" && (!page.galleries || page.galleries.length === 0)) {
+  // Si no hay ninguna imagen activa, no renderizamos la tarjeta
+  if (page.type === "image" && (activeItems.length === 0 || !page.galleries || page.galleries.length === 0)) {
     return null;
   }
+
+  // Layout "row": hasta 3 imágenes activas en cuadrícula cuadrada
+  const previewImages = activeItems.slice(0, 3);
+
+  // Layout "single": la primera imagen activa disponible
+  const singleImage = activeItems[0] || null;
+
+  // Layout "carousel": hasta las primeras 5 imágenes activas
+  const carouselImages = activeItems.slice(0, 5);
+
+  // Layout "grid": hasta las primeras 4 imágenes activas para mostrar en columnas
+  const gridImages = activeItems.slice(0, 4);
 
   return (
     <Link 
       href={`/${portfolioSlug}/${page.slug || page.id}`}
-      className={`w-full p-3 transition-all duration-200 cursor-pointer block ${styles.pageCard}`}
+      className={`w-full p-3 transition-all duration-200 mb-6 cursor-pointer block ${styles.pageCard}`}
+      style={{background: blockColor}}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className={`text-xs truncate pr-2 ${styles.pageTitle}`}>{page.title}</span>
+        <span className={`text-xs truncate pr-2 ${styles.pageTitle}`} style={{color: textColor}}>{page.title}</span>
         <span className="text-[9px] uppercase tracking-wider opacity-50 shrink-0 font-bold">
           {currentTemplate === 'terminal' ? '[+]' : '→'}
         </span>
