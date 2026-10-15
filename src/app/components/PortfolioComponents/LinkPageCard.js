@@ -2,8 +2,11 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
   if (!page?.items || page.items.length === 0) return null;
 
   return (
-    <div key={page.id} className="space-y-3">
+    <div key={page.id} className="space-y-3 mb-6">
       {page.items.map((link) => {
+        // Si isFeatured no es true, omitimos el link y no se muestra
+        if (link.isFeatured !== true) return null;
+
         const formattedUrl = link.url.startsWith("http") ? link.url : `https://${link.url}`;
         const layout = link.layout || "classic"; // Por defecto usa classic
 
@@ -33,7 +36,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
 
               {/* Título centrado en el medio */}
               <span 
-                className={`relative z-10 text-sm font-bold text-center whitespace-normal break-words px-4 ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-white' : ''}`}
+                className={`relative z-10 text-center whitespace-normal break-words px-4 ${styles.pageTitle}`}
                 style={{ color: textColor }}
               >
                 {link.title}
@@ -42,7 +45,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
           );
         }
 
-        // Layout "classic" (comportamiento previo)
+        // Layout "classic"
         return (
           <a
             key={link.id || link.url}
@@ -68,7 +71,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
 
             {/* Título del enlace centrado */}
             <span 
-              className={`text-xs font-semibold text-center whitespace-normal break-words px-2 ${styles.pageTitle} ${currentTemplate === 'minimal' ? '!text-slate-200 font-medium' : ''}`}
+              className={`text-center whitespace-normal break-words px-2 ${styles.pageTitle}`}
               style={{ color: textColor }}
             >
               {link.title}

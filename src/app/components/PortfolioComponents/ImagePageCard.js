@@ -32,7 +32,7 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
       style={{background: blockColor}}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className={`text-xs truncate pr-2 ${styles.pageTitle}`} style={{color: textColor}}>{page.title}</span>
+        <span className={`truncate pr-2 ${styles.pageTitle}`} style={{color: textColor}}>{page.title}</span>
         <span className="text-[9px] uppercase tracking-wider opacity-50 shrink-0 font-bold">
           {currentTemplate === 'terminal' ? '[+]' : '→'}
         </span>
