@@ -2,7 +2,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
   if (!page?.items || page.items.length === 0) return null;
 
   return (
-    <div key={page.id} className="space-y-3 mb-6">
+    <div key={page.id} className="space-y-3 mb-8">
       {page.items.map((link) => {
         // Si isFeatured no es true, omitimos el link y no se muestra
         if (link.isFeatured !== true) return null;
@@ -10,7 +10,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
         const formattedUrl = link.url.startsWith("http") ? link.url : `https://${link.url}`;
         const layout = link.layout || "classic"; // Por defecto usa classic
 
-        // Layout "featured": más alto, imagen de fondo y título centrado
+        // Layout "featured": mantiene relación de aspecto 350px / 240px
         if (layout === "featured") {
           return (
             <a
@@ -18,7 +18,7 @@ export default function LinkPageCard({ page, styles, currentTemplate, blockColor
               href={formattedUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full min-h-[140px] p-4 relative overflow-hidden transition-all duration-200 cursor-pointer flex items-center justify-center mb-3 ${styles.pageCard}`}
+              className={`w-full aspect-[350/240] p-4 relative overflow-hidden transition-all duration-200 cursor-pointer flex items-center justify-center mb-3 ${styles.pageCard}`}
               style={{ backgroundColor: blockColor }}
             >
               {/* Imagen de fondo si existe */}

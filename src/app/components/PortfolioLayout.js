@@ -198,7 +198,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
     if (socialLinks.length === 0) return null;
 
     return (
-      <div className={`flex flex-wrap items-center justify-center mt-1 ${styles.socialGap} py-3`}>
+      <div className={`flex flex-wrap items-center justify-center ${styles.socialGap} py-3`}>
         {socialLinks.map((linkItem, index) => {
           const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
           const svgHeight = styles.svgHeight
@@ -372,7 +372,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
               <p className={`w-full whitespace-pre-wrap ${styles.description} text-[16px]/5.5 ${bioAlignmentClasses}`}
                 style={{ color: pageColors?.textColor || "#000000" }}
               >
-                {portfolioData?.description || "Bio o descripción de tu portfolio..."}
+                {portfolioData?.description}
               </p>
             </div>
           </div>

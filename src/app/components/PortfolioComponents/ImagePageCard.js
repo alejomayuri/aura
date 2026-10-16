@@ -22,20 +22,17 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
   // Layout "carousel": hasta las primeras 5 imágenes activas
   const carouselImages = activeItems.slice(0, 5);
 
-  // Layout "grid": hasta las primeras 4 imágenes activas para mostrar en columnas
+  // Layout "grid": hasta las primeras 4 imágenes activas para mostrar en cuadrícula de 2x2
   const gridImages = activeItems.slice(0, 4);
 
   return (
     <Link 
       href={`/${portfolioSlug}/${page.slug || page.id}`}
-      className={`w-full p-3 transition-all duration-200 mb-6 cursor-pointer block ${styles.pageCard}`}
+      className={`w-full p-3 transition-all duration-200 mb-8 cursor-pointer block ${styles.pageCard}`}
       style={{background: blockColor}}
     >
       <div className="flex items-center justify-between mb-1">
         <span className={`truncate pr-2 ${styles.pageTitle}`} style={{color: textColor}}>{page.title}</span>
-        <span className="text-[9px] uppercase tracking-wider opacity-50 shrink-0 font-bold">
-          {currentTemplate === 'terminal' ? '[+]' : '→'}
-        </span>
       </div>
       
       {cardLayout === "single" && singleImage ? (
@@ -65,11 +62,11 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
           </div>
         </div>
       ) : cardLayout === "grid" && gridImages.length > 0 ? (
-        /* Layout Grid: 2 columnas con espaciado */
-        <div className="mt-2 columns-2 gap-2 space-y-2">
+        /* Layout Grid: Cuadrícula simétrica de 2x2 con imágenes cuadradas */
+        <div className="grid grid-cols-2 gap-2 mt-2">
           {gridImages.map((img, idx) => (
-            <div key={img.id || idx} className="overflow-hidden break-inside-avoid bg-slate-900">
-              <img src={img.url} alt="Grid Preview" className="w-full h-auto object-cover transition-opacity" />
+            <div key={img.id || idx} className="aspect-square overflow-hidden bg-slate-900">
+              <img src={img.url} alt="Grid Preview" className="w-full h-full object-cover transition-opacity" />
             </div>
           ))}
         </div>
