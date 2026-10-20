@@ -328,7 +328,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
             style={{ background: pageColors?.primaryColorEnd ? `linear-gradient(to top right, ${pageColors?.primaryColor}, ${pageColors?.primaryColorEnd})` : `${pageColors?.primaryColor}` }}>
           
           {/* Botón Menú Hamburguesa */}
-          {isPortfolioPage && (
             <button 
               onClick={() => setIsMenuOpen(true)}
               className="absolute top-5 right-5 z-50 p-2 bg-white border border-black/10 rounded-full shadow-sm hover:scale-105 transition-all cursor-pointer"
@@ -339,7 +338,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
                 <div className="w-4 h-0.5 bg-black"></div>
               </div>
             </button>
-          )}
 
           {/* CABECERA GLOBAL COMÚN (Imagen, Título, Bio y Redes Top) */}
           <div className={styles.headerLayout}>
@@ -387,7 +385,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
           {socialPosition === "bottom" && renderSocialLinks()}
 
           {/* Footer compartido para páginas públicas */}
-          {isPortfolioPage && (
             <>
               <div className="mt-8 flex justify-center">
                 <a 
@@ -407,7 +404,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
                 <Link href="/" className="hover:opacity-100 transition-opacity text-black">Explorar</Link>
               </footer>
             </>
-          )}
         </div>
       </div>
     </>
