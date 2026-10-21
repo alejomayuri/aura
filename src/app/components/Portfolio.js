@@ -23,6 +23,7 @@ export default function Portfolio({ portfolioData, template }) {
               return (
                 <LinkPageCard 
                   key={page.id}
+                  home={true}
                   page={page}
                   blockColor={portfolioData?.colors?.secondaryColor}
                   textColor={portfolioData?.colors?.textColor}

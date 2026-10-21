@@ -1,8 +1,15 @@
-export default function LinkPageCard({ page, styles, internal, blockColor, textColor }) {
+export default function LinkPageCard({ page, styles, internal, blockColor, textColor, home = false }) {
   if (!page?.items || page.items.length === 0) return null;
 
   return (
     <div key={page.id} className="space-y-3 mb-8">
+      {home && (
+        <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+          style={{ color: textColor }}
+        >
+          {page.title}
+        </span>
+      )}
       {page.items.map((link) => {
         // Si isFeatured no es true, omitimos el link y no se muestra
         if (link.isFeatured !== true && !internal) return null;

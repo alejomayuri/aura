@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Reorder, AnimatePresence, motion } from "framer-motion";
 import { GalleryItem } from "@/app/components/AdminFormsComponents/typeImage/GalleryItem"; 
 import DeleteButton from "../ui/DeleteButton";
@@ -35,9 +35,13 @@ export default function GalleryCard({
   const currentLayout = gal.layout || "grid";
 
   const onTitleSubmit = () => {
+    if (!isEditing) return;
     setIsEditing(false);
-    if (editingTitle.trim() && editingTitle !== gal.title) {
-      handleUpdateGalleryTitle(gal.id, editingTitle.trim());
+    
+    const trimmedTitle = editingTitle.trim();
+    if (trimmedTitle && trimmedTitle !== gal.title) {
+      // Disparamos la actualización instantánea
+      handleUpdateGalleryTitle(gal.id, trimmedTitle);
     } else {
       setEditingTitle(gal.title);
     }
@@ -112,10 +116,8 @@ export default function GalleryCard({
           {/* Cabecera de la galería */}
           <div className="flex items-center justify-between border-b border-slate-100 pb-3 gap-3">
             <div className="flex items-center gap-2.5 flex-1 overflow-hidden">
-              {/* Icono Draggable */}
               <DragIcon />
 
-              {/* Título o Input de Edición */}
               <div className="flex-1 overflow-hidden">
                 {isEditing ? (
                   <input
@@ -124,7 +126,10 @@ export default function GalleryCard({
                     onChange={(e) => setEditingTitle(e.target.value)}
                     onBlur={onTitleSubmit}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") onTitleSubmit();
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        onTitleSubmit();
+                      }
                       if (e.key === "Escape") {
                         setEditingTitle(gal.title);
                         setIsEditing(false);
@@ -136,8 +141,8 @@ export default function GalleryCard({
                 ) : (
                   <div
                     onClick={() => {
-                      setIsEditing(true);
                       setEditingTitle(gal.title);
+                      setIsEditing(true);
                     }}
                     className="group cursor-pointer flex items-center gap-1.5"
                   >
@@ -178,7 +183,6 @@ export default function GalleryCard({
                 + Añadir Imagen
               </button>
 
-              {/* Toggle Activo */}
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -191,7 +195,6 @@ export default function GalleryCard({
                 <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600" />
               </label>
 
-              {/* Componente DeleteButton utilizado para borrar la galería */}
               <DeleteButton
                 isOpen={isGalleryDeleteOpen}
                 onClick={() =>
@@ -201,7 +204,6 @@ export default function GalleryCard({
             </div>
           </div>
 
-          {/* Confirmación de eliminación */}
           <AnimatePresence>
             {isGalleryDeleteOpen && (
               <motion.div
@@ -233,7 +235,6 @@ export default function GalleryCard({
             )}
           </AnimatePresence>
 
-          {/* Pestañas */}
           <div className="border-b border-slate-100">
             <div className="flex items-center gap-1">
               <button 
@@ -253,7 +254,6 @@ export default function GalleryCard({
             </div>
           </div>
 
-          {/* Contenido según pestaña activa */}
           <AnimatePresence mode="wait">
             {activeTab === "images" && (
               <motion.div

@@ -79,6 +79,8 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
   const imageStyleClass = getImageStyleClass(imageStyle);
   const imageWrapperClass = getImageStyleWrapperClass(imageStyle);
 
+  const textColor= portfolioData?.colors?.textColor
+
   console.log("PortfolioLayout - portfolioData:", portfolioData);
 
   const getSocialIcon = (url) => {
@@ -324,7 +326,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
       {/* Contenedor Principal del Layout */}
       <div className={`w-full flex justify-center`}>
-        <div className={`relative w-full max-w-xl pt-0 transition-all duration-300 ${styles.container}`}
+        <div className={`relative w-full max-w-xl pt-0 shadow-2xl rounded-none md:rounded-3xl bg-white transition-all duration-300 ${styles.container}`}
             style={{ background: pageColors?.primaryColorEnd ? `linear-gradient(to top right, ${pageColors?.primaryColor}, ${pageColors?.primaryColorEnd})` : `${pageColors?.primaryColor}` }}>
           
           {/* Botón Menú Hamburguesa */}
@@ -391,17 +393,23 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
                   href="https://lightjaus.so" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="px-6 py-2 bg-white text-black font-bold text-[11px] rounded-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 border border-slate-100"
+                  className={`px-6 mt-20 py-4 bg-white text-black text-md rounded-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 border border-slate-100`}
+                  style={{fontFamily: "'Poppins', sans-serif"}}
                 >
-                  Únete a {portfolioData?.slug || "Lightjaus"} en Lightjaus
+                  Únete a Lightjaus
                 </a>
               </div>
 
-              <footer className="mt-10 pt-5 border-t border-slate-800/10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] tracking-widest opacity-40">
-                <Link href="/cookies" className="hover:opacity-100 transition-opacity text-black">Política de cookies</Link>
-                <Link href="/privacy" className="hover:opacity-100 transition-opacity text-black">Privacidad</Link>
-                <Link href="/report" className="hover:opacity-100 transition-opacity text-black">Reportar</Link>
-                <Link href="/" className="hover:opacity-100 transition-opacity text-black">Explorar</Link>
+              <footer style={{fontFamily: "'Poppins', sans-serif"}} className="px-4 mt-3 mb-20 pt-5 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-[11px] tracking-widest">
+                <Link href="/cookies" style={{color:textColor}} className="transition-opacity">Política de cookies</Link>
+                <span  style={{color:textColor}} aria-hidden="true">•</span>
+                <Link href="/cookies" style={{color:textColor}} className="transition-opacity">Reportar un problema</Link>
+                <span  style={{color:textColor}} aria-hidden="true">•</span>
+                <Link href="/cookies" style={{color:textColor}} className="transition-opacity">Privacidad</Link>
+                <span  style={{color:textColor}} aria-hidden="true">•</span>
+                <Link href="/privacy" style={{color:textColor}} className="transition-opacity">Privacidad</Link>
+                <span  style={{color:textColor}} aria-hidden="true">•</span>
+                <Link href="/" style={{color:textColor}} className="transition-opacity">Explorar Lightjaus</Link>
               </footer>
             </>
         </div>

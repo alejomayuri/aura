@@ -168,40 +168,39 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
     }
   };
 
-  const handleUpdateGalleryTitle = async (galleryId) => {
-    if (!editingGalleryTitle.trim()) {
-      setEditingGalleryId(null);
-      return;
+  const handleUpdateGalleryTitle = async (galleryId, newTitle) => {
+  if (!newTitle || !newTitle.trim()) return;
+
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+
+  // 1. Actualización optimista local inmediata para que la UI no parpadee
+  const updatedGalleries = galleries.map((gal) => {
+    if (gal.id === galleryId) {
+      return { ...gal, title: newTitle.trim() };
     }
+    return gal;
+  });
 
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    try {
-      const updatedGalleries = galleries.map((gal) => {
-        if (gal.id === galleryId) {
-          return { ...gal, title: editingGalleryTitle.trim() };
-        }
-        return gal;
-      });
-
-      const updatedPages = portfolioData.pages.map((p) => {
-        if ((p.id || p.slug) === selectedPageId) {
-          return { ...p, galleries: updatedGalleries };
-        }
-        return p;
-      });
-
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
-      setEditingGalleryId(null);
-    } catch (err) {
-      console.error("Error al actualizar título:", err);
-      setError("No se pudo actualizar el título de la galería.");
+  const updatedPages = portfolioData.pages.map((p) => {
+    if ((p.id || p.slug) === selectedPageId) {
+      return { ...p, galleries: updatedGalleries };
     }
-  };
+    return p;
+  });
+
+  // Reflejas el cambio en la pantalla al instante
+  onUpdatePortfolio(updatedPages);
+
+  // 2. Persistencia en segundo plano en Firebase
+  try {
+    const portfolioRef = doc(db, "portfolios", currentUser.uid);
+    await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
+  } catch (err) {
+    console.error("Error al actualizar título:", err);
+    setError("No se pudo actualizar el título de la galería.");
+  }
+};
 
   const handleUpdateItemTitle = async (galleryId, itemId, newTitle) => {
     const currentUser = auth.currentUser;

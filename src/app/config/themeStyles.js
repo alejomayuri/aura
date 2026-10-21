@@ -1,21 +1,18 @@
 export const getTemplateStyles = (currentTemplate) => {
   switch (currentTemplate) {
-    // ================= NUEVOS TEMAS LOCOS Y EXTREMOS =================
-    
-    
-    
-    
     case "classic":
       return {
+          bgScreen: "bg-zinc-950", // Color de fondo desktop para classic
           title: "text-zinc-100 font-serif tracking-normal text-lg",
           socialIconBtn: "w-10 h-10 flex items-center justify-center",    
           svgHeight: 7,
-          svgWidth: 7,     
+          svgWidth: 7,    
           pageTitle: "text-zinc-200 font-serif",
           socialGap: "gap-2"
       };
     case "brutal":
       return {
+        bgScreen: "bg-amber-100", // Color de fondo desktop para brutal
         headerLayout: "flex flex-col items-start gap-2",
         description: "text-black font-bold tracking-tight text-center",
         title: "text-black font-black tracking-tighter uppercase leading-none",
@@ -28,6 +25,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "glass":
       return {
+        bgScreen: "bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900", // Color de fondo desktop para glass
         description: "text-slate-700 font-bold tracking-tight text-center",
         title: "text-slate-800 font-bold text-lg tracking-tight",
         socialIconBtn: "w-11 h-11 backdrop-blur-sm border border-white/50 text-slate-700 rounded-2xl hover:bg-white/50 hover:scale-105 transition-all shadow-sm flex items-center justify-center",
@@ -40,6 +38,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "comic":
       return {
+        bgScreen: "bg-yellow-400", // Color de fondo desktop para comic
         container: "border-4 border-black rounded-t-[2rem]",
         description: "text-black font-bold tracking-tight text-center",
         title: "text-black font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_#fff]",
@@ -53,18 +52,20 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "y2k":
       return {
+        bgScreen: "bg-purple-950", // Color de fondo desktop para y2k
         container: "border-4 border-lime-300",
         description: "font-bold tracking-tight",
         title: "text-lime-300 font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]",
         socialIconBtn: "w-10 h-10 bg-lime-300 border-2 border-fuchsia-950 text-fuchsia-950 transition-all rounded-none flex items-center justify-center shadow-[3px_3px_0px_0px_#000]",
         pageCard: "border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87] hover:bg-lime-300 transition-all rounded-none text-left font-mono",
-        pageTitle: "text-fuchsia-950 font-black text-md uppercase",
+        pageTitle: "text-fuchsia-950 font-black text-md uppercase font-mono",
         svgHeight: 5,
         svgWidth: 5,
         socialGap: "gap-2"
       };
     case "terminal":
       return {
+        bgScreen: "bg-black", // Color de fondo desktop para terminal
         description: "text-green-400 font-mono",
         title: "font-mono text-green-400 font-bold text-base before:content-['>_'] before:mr-1",
         socialIconBtn: "w-11 h-11 ",
@@ -77,6 +78,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "minimal":
     default:
       return {
+        bgScreen: "bg-slate-100", // Color de fondo desktop por defecto (minimal)
         container: "shadow-xl rounded-t-3xl relative",
         description: "font-bold",
         title: "font-bold tracking-tight",
@@ -90,6 +92,7 @@ export const getTemplateStyles = (currentTemplate) => {
       };
     case "holographic":
       return {
+        bgScreen: "bg-indigo-950", // Color de fondo desktop para holographic
         container: "shadow-xl rounded-t-3xl relative",
         description: "text-white font-bold text-center",
         title: "text-white font-extrabold tracking-wide drop-shadow-md",
