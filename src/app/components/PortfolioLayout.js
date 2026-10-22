@@ -81,8 +81,6 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
 
   const textColor= portfolioData?.colors?.textColor
 
-  console.log("PortfolioLayout - portfolioData:", portfolioData);
-
   const getSocialIcon = (url) => {
     if (!url) return "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/globe.svg";
     const lowerUrl = url.toLowerCase();

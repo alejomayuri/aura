@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { getPortfolioData, savePortfolioData } from "@/lib/db";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import Portfolio from "@/app/components/Portfolio";
 import AdminForm from "@/app/components/AdminForm";
@@ -14,60 +10,23 @@ import ImagePageEditor from "@/app/components/ImagePageEditor";
 import LinkPageEditor from "@/app/components/LinkPageEditor";
 import PagePreview from "@/app/components/PagePreview";
 import MyLightjaus from "@/app/components/MyLightjaus";
+import { usePortfolioSync } from "@/app/hooks/usePortfolioSync";
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
+  const {
+    user,
+    loading,
+    checkingAuth,
+    saving,
+    saveMessage,
+    portfolioData,
+    setPortfolioData,
+    handleSave,
+    updatePortfolio,
+  } = usePortfolioSync();
+
   const [activeTab, setActiveTab] = useState("my-lightjaus");
   const [selectedSubPageId, setSelectedSubPageId] = useState(null);
-  const router = useRouter();
-
-  const [portfolioData, setPortfolioData] = useState({
-    title: "",
-    mainImage: "",
-    template: "minimal",
-    pages: [] 
-  });
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
-        router.replace("/admin/login");
-      } else {
-        setUser(currentUser);
-        const data = await getPortfolioData(currentUser.uid);
-        if (data) {
-          setPortfolioData((prev) => ({
-            ...prev,
-            ...data
-          }));
-        }
-        setCheckingAuth(false);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleSave = async (dataToSave = portfolioData) => {
-    if (!user) return;
-    setSaving(true);
-    setSaveMessage("");
-
-    const success = await savePortfolioData(user.uid, dataToSave);
-    setSaving(false);
-
-    if (success) {
-      setSaveMessage("¡Guardado con éxito!");
-      setTimeout(() => setSaveMessage(""), 3000);
-    } else {
-      setSaveMessage("Error al guardar.");
-    }
-  };
 
   if (checkingAuth || loading) {
     return (
@@ -85,7 +44,7 @@ export default function AdminDashboard() {
     const foundPage = portfolioData.pages.find(p => p.id === tab || p.slug === tab);
     if (foundPage) {
       setSelectedSubPageId(tab);
-    } else if (tab === "main" || tab === "pages" || tab === "my-lightjaus" || tab === "design") {
+    } else if (["main", "pages", "my-lightjaus", "design"].includes(tab)) {
       setSelectedSubPageId(null);
     }
   };
@@ -122,10 +81,7 @@ export default function AdminDashboard() {
         style={{ backgroundColor: "#fff" }}
       >
         {activeTab === "my-lightjaus" && (
-          <MyLightjaus 
-            portfolioData={portfolioData} 
-            user={user} 
-          />
+          <MyLightjaus portfolioData={portfolioData} user={user} />
         )}
 
         {activeTab === "main" && (
@@ -134,9 +90,7 @@ export default function AdminDashboard() {
             setPortfolioData={setPortfolioData} 
             onSave={handleSave}
             saving={saving}
-            onSelectPage={(pageIdOrSlug) => {
-                handleSelectTab(pageIdOrSlug);
-              }}
+            onSelectPage={handleSelectTab}
           />
         )}
 
@@ -151,40 +105,34 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "pages" && (
-            <PagesManager 
-              portfolioData={portfolioData} 
-              user={user}
-              onUpdatePages={(newPages) => {
-                setPortfolioData(prev => ({ ...prev, pages: newPages }));
-              }} 
-              onSelectPage={(pageIdOrSlug) => {
-                handleSelectTab(pageIdOrSlug);
-              }}
+          <PagesManager 
+            portfolioData={portfolioData} 
+            setPortfolioData={setPortfolioData}
+            onSave={handleSave}
+            onSelectPage={handleSelectTab}
           />
         )}
 
         {activeTab !== "design" && selectedPage && selectedPage.type === "image" && (
-            <ImagePageEditor 
-                portfolioData={portfolioData}
-                selectedPageId={selectedSubPageId}
-                onUpdatePortfolio={(updatedPages) => {
-                    setPortfolioData(prev => ({ ...prev, pages: updatedPages }));
-                }}
-            />
+          <ImagePageEditor 
+            portfolioData={portfolioData}
+            selectedPageId={selectedSubPageId}
+            updatePortfolio={updatePortfolio}
+            onSave={handleSave}
+          />
         )}
 
         {activeTab !== "design" && selectedPage && selectedPage.type === "link" && (
-            <LinkPageEditor 
-                portfolioData={portfolioData}
-                selectedPageId={selectedSubPageId}
-                onUpdatePortfolio={(updatedPages) => {
-                    setPortfolioData(prev => ({ ...prev, pages: updatedPages }));
-                }}
-            />
+          <LinkPageEditor 
+            portfolioData={portfolioData}
+            selectedPageId={selectedSubPageId}
+            updatePortfolio={updatePortfolio}
+            onSave={handleSave}
+          />
         )}
       </div>
 
-      {/* ================= 3. VISTA PREVIA (DERECHA - OCULTA EN MY LIGHTJAUS) ================= */}
+      {/* ================= 3. VISTA PREVIA ================= */}
       {activeTab !== "my-lightjaus" && (
         <section className="w-[680px] bg-slate-50 p-6 pt-20 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
           <div className="w-[400px] flex justify-between items-center mb-4">

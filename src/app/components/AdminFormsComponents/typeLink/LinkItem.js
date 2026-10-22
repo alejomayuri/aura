@@ -18,7 +18,6 @@ export default function LinkItem({
   setTempUrl,
   handleSaveUrl,
   handleOpenImageModal,
-  handleRemoveImage,
   handleToggleFeatured,
   handleToggleActive,
   layoutOpenId,

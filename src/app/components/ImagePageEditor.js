@@ -1,48 +1,90 @@
 "use client";
 
 import { useState } from "react";
-import { createPortal } from "react-dom";
-import { db, auth } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { Reorder } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
 import GalleryCard from "./AdminFormsComponents/typeImage/GalleryCard";
+import ImageModal from "@/app/components/AdminFormsComponents/modals/ImageModal";
+import { useImageModal } from "@/app/hooks/useImageModal";
+import { deleteImageFromCloudinary } from "@/app/services/cloudinaryService";
 
-export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdatePortfolio }) {
-  const selectedPage = portfolioData.pages.find((p) => (p.id || p.slug) === selectedPageId);
+export default function ImagePageEditor({ portfolioData, selectedPageId, updatePortfolio, onSave }) {
+  const selectedPage = portfolioData?.pages?.find((p) => (p.id || p.slug) === selectedPageId);
 
   const [newGalleryTitle, setNewGalleryTitle] = useState("");
-  
-  const [modalGalleryId, setModalGalleryId] = useState(null);
-  const [modalTempFile, setModalTempFile] = useState(null);
-  const [modalTempPreview, setModalTempPreview] = useState(null);
-  
-  const [editingGalleryId, setEditingGalleryId] = useState(null);
-  const [editingGalleryTitle, setEditingGalleryTitle] = useState("");
-
   const [deleteGalleryUid, setDeleteGalleryUid] = useState(null);
   const [deleteItemTarget, setDeleteItemTarget] = useState({ galleryId: null, itemId: null });
 
   const [loading, setLoading] = useState(false);
-  const [savingGalleryId, setSavingGalleryId] = useState(null);
   const [savingItemId, setSavingItemId] = useState(null);
-  const [hoveredGalleryId, setHoveredGalleryId] = useState(null);
-  
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  const galleries = selectedPage?.galleries || [];
+
+  // Función unificada para actualizar el estado local y persistir globalmente
+  const savePortfolioChanges = async (updatedPages) => {
+    try {
+      if (typeof updatePortfolio === "function") {
+        updatePortfolio({ pages: updatedPages });
+      }
+
+      if (typeof onSave === "function") {
+        await onSave({ ...portfolioData, pages: updatedPages });
+      }
+    } catch (err) {
+      console.error("Error al guardar los cambios del portfolio:", err);
+      setError(`Error al guardar: ${err.message}`);
+    }
+  };
+
+  // Integración del custom hook para la subida de imágenes a las galerías
+  const {
+    modalLinkId: modalGalleryId,
+    modalTempPreview,
+    modalRemoveImage,
+    setModalRemoveImage,
+    uploading,
+    openModal: openGalleryModal,
+    closeModal: closeGalleryModal,
+    handleModalFileSelect,
+    handleConfirm: confirmGalleryImageHook,
+  } = useImageModal(async (galleryId, newImageUrl) => {
+    if (!selectedPage || !newImageUrl) return;
+
+    const newItem = {
+      id: crypto.randomUUID(),
+      url: newImageUrl,
+      title: "",
+      description: "",
+      isActive: true,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedGalleries = galleries.map((gal) => {
+      if (gal.id === galleryId) {
+        return { ...gal, items: [newItem, ...gal.items] };
+      }
+      return gal;
+    });
+
+    const updatedPages = portfolioData.pages.map((p) => {
+      if ((p.id || p.slug) === selectedPageId) {
+        return { ...p, galleries: updatedGalleries };
+      }
+      return p;
+    });
+
+    await savePortfolioChanges(updatedPages);
+  });
 
   if (!selectedPage) {
     return <div className="text-sm text-slate-500">Selecciona una página válida desde el menú lateral.</div>;
   }
 
-  const galleries = selectedPage.galleries || [];
-
   const handleCreateGallery = async (e) => {
     e.preventDefault();
     if (!newGalleryTitle.trim()) return;
-
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
 
     setLoading(true);
     setError(null);
@@ -66,11 +108,9 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
       setNewGalleryTitle("");
+      setSuccessMsg(`Galería "${newGallery.title}" creada con éxito.`);
     } catch (err) {
       console.error("Error al crear galería:", err);
       setError("No se pudo crear la galería.");
@@ -80,9 +120,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   };
 
   const handleSelectLayout = async (galleryId, newLayout) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     try {
       const updatedGalleries = galleries.map((gal) => {
         if (gal.id === galleryId) {
@@ -98,10 +135,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
     } catch (err) {
       console.error("Error al guardar el layout:", err);
       setError("No se pudo guardar la opción de layout.");
@@ -115,17 +149,18 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
       }
       return p;
     });
-    onUpdatePortfolio(updatedPages);
+    
+    if (typeof updatePortfolio === "function") {
+      updatePortfolio({ pages: updatedPages }, false);
+    }
   };
 
   const handleSaveGalleriesOrder = async () => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     setError(null);
     try {
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: portfolioData.pages }, { merge: true });
+      if (typeof onSave === "function") {
+        await onSave(portfolioData);
+      }
     } catch (err) {
       console.error("Error al guardar orden de galerías:", err);
       setError("No se pudo guardar el nuevo orden de las galerías.");
@@ -147,19 +182,19 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
       return p;
     });
 
-    onUpdatePortfolio(updatedPages);
+    if (typeof updatePortfolio === "function") {
+      updatePortfolio({ pages: updatedPages }, false);
+    }
   };
 
   const handleSaveItemsOrder = async (droppedItem) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     setSavingItemId(droppedItem.id);
     setError(null);
 
     try {
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: portfolioData.pages }, { merge: true });
+      if (typeof onSave === "function") {
+        await onSave(portfolioData);
+      }
     } catch (err) {
       console.error("Error al guardar orden de imágenes:", err);
       setError("No se pudo guardar el nuevo orden de las imágenes.");
@@ -169,42 +204,26 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   };
 
   const handleUpdateGalleryTitle = async (galleryId, newTitle) => {
-  if (!newTitle || !newTitle.trim()) return;
+    if (!newTitle || !newTitle.trim()) return;
 
-  const currentUser = auth.currentUser;
-  if (!currentUser) return;
+    const updatedGalleries = galleries.map((gal) => {
+      if (gal.id === galleryId) {
+        return { ...gal, title: newTitle.trim() };
+      }
+      return gal;
+    });
 
-  // 1. Actualización optimista local inmediata para que la UI no parpadee
-  const updatedGalleries = galleries.map((gal) => {
-    if (gal.id === galleryId) {
-      return { ...gal, title: newTitle.trim() };
-    }
-    return gal;
-  });
+    const updatedPages = portfolioData.pages.map((p) => {
+      if ((p.id || p.slug) === selectedPageId) {
+        return { ...p, galleries: updatedGalleries };
+      }
+      return p;
+    });
 
-  const updatedPages = portfolioData.pages.map((p) => {
-    if ((p.id || p.slug) === selectedPageId) {
-      return { ...p, galleries: updatedGalleries };
-    }
-    return p;
-  });
-
-  // Reflejas el cambio en la pantalla al instante
-  onUpdatePortfolio(updatedPages);
-
-  // 2. Persistencia en segundo plano en Firebase
-  try {
-    const portfolioRef = doc(db, "portfolios", currentUser.uid);
-    await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-  } catch (err) {
-    console.error("Error al actualizar título:", err);
-    setError("No se pudo actualizar el título de la galería.");
-  }
-};
+    await savePortfolioChanges(updatedPages);
+  };
 
   const handleUpdateItemTitle = async (galleryId, itemId, newTitle) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
     setSavingItemId(itemId);
 
     try {
@@ -228,22 +247,16 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
-      setSavingItemId(null);
+      await savePortfolioChanges(updatedPages);
     } catch (err) {
       console.error("Error al actualizar el título de la imagen:", err);
       setError("No se pudo actualizar el título de la imagen.");
+    } finally {
       setSavingItemId(null);
     }
   };
 
   const handleToggleGalleryActive = async (galleryId, currentActiveState) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     try {
       const updatedGalleries = galleries.map((gal) => {
         if (gal.id === galleryId) {
@@ -259,10 +272,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
     } catch (err) {
       console.error("Error al cambiar estado de galería:", err);
       setError("No se pudo actualizar el estado de la galería.");
@@ -270,9 +280,6 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   };
 
   const handleToggleItemActive = async (galleryId, itemId, currentActiveState) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     try {
       const updatedGalleries = galleries.map((gal) => {
         if (gal.id === galleryId) {
@@ -294,121 +301,15 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
     } catch (err) {
       console.error("Error al cambiar estado de imagen:", err);
       setError("No se pudo actualizar el estado de la imagen.");
     }
   };
 
-  const handleModalFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setModalTempFile(file);
-      setModalTempPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleCancelImageSelection = () => {
-    setModalGalleryId(null);
-    setModalTempFile(null);
-    setModalTempPreview(null);
-  };
-
-  const handleConfirmImageSelection = async () => {
-    if (!modalTempFile || !modalGalleryId) return;
-
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", modalTempFile);
-      formData.append("upload_preset", "pataki_portfolio_upload"); 
-
-      const res = await fetch("https://api.cloudinary.com/v1_1/dz3p460iu/image/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const responseText = await res.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (err) {
-        console.error("Error de respuesta del servidor:", responseText);
-        throw new Error("El servidor devolvió una respuesta no válida.");
-      }
-
-      if (!res.ok) throw new Error(data.error || "Error al subir la imagen");
-
-      const imageUrl = data.secure_url || data.url;
-
-      const newItem = {
-        id: crypto.randomUUID(),
-        url: imageUrl,
-        title: "",
-        description: "",
-        isActive: true,
-        createdAt: new Date().toISOString()
-      };
-
-      const updatedGalleries = galleries.map((gal) => {
-        if (gal.id === modalGalleryId) {
-          return { ...gal, items: [newItem, ...gal.items] };
-        }
-        return gal;
-      });
-
-      const updatedPages = portfolioData.pages.map((p) => {
-        if ((p.id || p.slug) === selectedPageId) {
-          return { ...p, galleries: updatedGalleries };
-        }
-        return p;
-      });
-
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
-      handleCancelImageSelection();
-    } catch (err) {
-      console.error("Error al añadir imagen:", err);
-      setError(`Error: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteImageFromCloudinary = async (imageUrl) => {
-    if (!imageUrl) return;
-    try {
-      const res = await fetch("/api/delete-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl }),
-      });
-      
-      if (!res.ok) {
-        console.error("No se pudo eliminar la imagen de Cloudinary");
-      }
-    } catch (err) {
-      console.error("Error al conectar con la API de eliminación:", err);
-    }
-  };
-
   const handleDeleteItem = async (galleryId, itemId) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     try {
-      // Buscar la imagen antes de eliminarla para obtener su URL y borrarla de Cloudinary
       const targetGallery = galleries.find((gal) => gal.id === galleryId);
       const targetItem = targetGallery?.items?.find((item) => item.id === itemId);
 
@@ -430,10 +331,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
       setDeleteItemTarget({ galleryId: null, itemId: null });
     } catch (err) {
       console.error("Error al eliminar imagen:", err);
@@ -442,11 +340,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
   };
 
   const handleDeleteGallery = async (galleryId) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
-
     try {
-      // Encontrar la galería a eliminar para extraer todas las URLs de sus imágenes y borrarlas de Cloudinary
       const targetGallery = galleries.find((gal) => gal.id === galleryId);
       if (targetGallery && targetGallery.items && targetGallery.items.length > 0) {
         await Promise.all(
@@ -467,10 +361,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         return p;
       });
 
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      onUpdatePortfolio(updatedPages);
+      await savePortfolioChanges(updatedPages);
       setDeleteGalleryUid(null);
     } catch (err) {
       console.error("Error al eliminar galería:", err);
@@ -533,9 +424,7 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
                 handleDeleteItem={handleDeleteItem}
                 handleUpdateItemTitle={handleUpdateItemTitle}
                 handleSelectLayout={handleSelectLayout}
-                setModalGalleryId={setModalGalleryId}
-                setModalTempFile={setModalTempFile}
-                setModalTempPreview={setModalTempPreview}
+                setModalGalleryId={openGalleryModal}
                 deleteGalleryUid={deleteGalleryUid}
                 setDeleteGalleryUid={setDeleteGalleryUid}
                 deleteItemTarget={deleteItemTarget}
@@ -549,82 +438,21 @@ export default function ImagePageEditor({ portfolioData, selectedPageId, onUpdat
         )}
       </Reorder.Group>
 
-      {/* MODAL PARA SUBIR IMAGEN */}
-      {typeof window !== "undefined" && createPortal(
-        <AnimatePresence>
-          {modalGalleryId && targetGalleryForModal && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="bg-white rounded-2xl shadow-xl border border-purple-100 w-full max-w-md overflow-hidden p-6 space-y-5"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-slate-900">
-                    Añadir imagen a &quot;{targetGalleryForModal.title}&quot;
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={handleCancelImageSelection}
-                    className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className={`flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-500 rounded-2xl p-6 bg-purple-50/30 transition text-center relative group ${loading ? "pointer-events-none opacity-50" : "cursor-pointer"}`}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      disabled={loading}
-                      onChange={handleModalFileSelect}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                    />
-                    {modalTempPreview ? (
-                      <div className="space-y-3 flex flex-col items-center">
-                        <img src={modalTempPreview} alt="Preview nueva" className="max-h-48 rounded-xl object-contain shadow-sm" />
-                        <span className="text-xs text-purple-700 font-medium bg-purple-100 px-3 py-1 rounded-full">
-                          Haz clic o arrastra otra para cambiar
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 flex flex-col items-center">
-                        <svg className="w-10 h-10 text-purple-500 stroke-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2.5 2.5 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-sm font-medium text-black">Arrastra tu imagen aquí o haz clic</span>
-                        <span className="text-xs text-black">PNG, JPG, WEBP hasta 10MB</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleCancelImageSelection}
-                    disabled={loading}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer disabled:opacity-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleConfirmImageSelection}
-                    disabled={!modalTempFile || loading}
-                    className="bg-purple-700 hover:bg-purple-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
-                  >
-                    {loading ? "Subiendo..." : "Aceptar"}
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      {/* MODAL REUTILIZADO DE IMAGEN */}
+      <ImageModal
+        isOpen={Boolean(modalGalleryId && targetGalleryForModal)}
+        onClose={closeGalleryModal}
+        title={`Añadir imagen a "${targetGalleryForModal?.title || ""}"`}
+        currentImageDisplay={null}
+        modalTempPreview={modalTempPreview}
+        modalRemoveImage={modalRemoveImage}
+        setModalRemoveImage={setModalRemoveImage}
+        uploading={uploading}
+        handleModalFileSelect={handleModalFileSelect}
+        handleConfirmImageSelection={async () => {
+          await confirmGalleryImageHook(null);
+        }}
+      />
     </div>
   );
 }

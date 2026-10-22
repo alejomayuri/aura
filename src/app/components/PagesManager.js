@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { db, auth } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { Reorder, motion, AnimatePresence } from "framer-motion";
 import Title from "./AdminFormsComponents/Title";
-import { PageItem } from "./AdminFormsComponents/PageItem";
+import PagesList from "./AdminFormsComponents/PagesList";
+import { contentTypes } from "@/app/config/contentTypes";
 
-export default function PagesManager({ portfolioData, onUpdatePages, onSelectPage }) {
+export default function PagesManager({ portfolioData, setPortfolioData, onSave, onSelectPage }) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [pageType, setPageType] = useState("image");
@@ -15,81 +13,25 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   
-  // Estado para controlar la visibilidad del formulario de creación
   const [showForm, setShowForm] = useState(false);
-  // Referencia para detectar clics fuera del formulario
   const formRef = useRef(null);
 
-  const [localPages, setLocalPages] = useState(() => portfolioData?.pages || []);
-  const [openLayoutPageUid, setOpenLayoutPageUid] = useState(null);
-  const [openSharePageUid, setOpenSharePageUid] = useState(null);
-  const [openDeletePageUid, setOpenDeletePageUid] = useState(null);
+  const localPages = portfolioData?.pages || [];
 
-  const portfolioSlug = portfolioData?.slug || portfolioData?.username || "mi-portfolio";
-
-  // Definición de los tipos de contenido actualizados con la corchea musical para audio
-  const contentTypes = [
-    {
-      id: "image",
-      title: "Imagen",
-      description: "Muestra colecciones de imágenes o fotografías.",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
-    },
-    {
-      id: "audio",
-      title: "Audio",
-      description: "Comparte canciones o podcast.",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-        </svg>
-      ),
-    },
-    {
-      id: "store",
-      title: "Tienda",
-      description: "Muestra productos para vender.",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-    },
-    {
-      id: "link",
-      title: "Link",
-      description: "Comparte varios enlaces de interés.",
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
-      ),
-    },
-  ];
-
-  // Efecto para cerrar el formulario al hacer clic fuera de él
+  // Manejo de clics fuera del formulario
   useEffect(() => {
     function handleClickOutside(event) {
       if (showForm && formRef.current && !formRef.current.contains(event.target)) {
         setShowForm(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showForm]);
 
   useEffect(() => {
     if (successMsg) {
-      const timer = setTimeout(() => {
-        setSuccessMsg(null);
-      }, 4000);
+      const timer = setTimeout(() => setSuccessMsg(null), 4000);
       return () => clearTimeout(timer);
     }
   }, [successMsg]);
@@ -110,17 +52,29 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
     setSlug(generatedSlug);
   };
 
+  // Sincronización optimizada utilizando la función global onSave
+  const syncAndSave = async (updatedPages, successMessage = null) => {
+    try {
+      const updatedData = { ...portfolioData, pages: updatedPages };
+      setPortfolioData(updatedData);
+
+      if (typeof onSave === "function") {
+        await onSave(updatedData);
+      }
+
+      if (successMessage) {
+        setSuccessMsg(successMessage);
+      }
+    } catch (err) {
+      console.error("Error al actualizar páginas:", err);
+      setError(`Error al guardar: ${err.message}`);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!title.trim() || !slug.trim()) {
       setError("Por favor completa el título y el slug.");
-      return;
-    }
-
-    const currentUser = auth.currentUser;
-    if (!currentUser || !currentUser.uid) {
-      setError("No hay una sesión activa en Firebase.");
       return;
     }
 
@@ -128,80 +82,26 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
     setError(null);
     setSuccessMsg(null);
 
-    try {
-      const newPage = {
-        uid: Date.now().toString(),
-        id: Date.now().toString(),
-        title: title.trim(),
-        slug: slug.trim(),
-        type: pageType,
-        showOnHome: true,
-        layout: "row",
-        items: [],
-        createdAt: new Date().toISOString()
-      };
+    const newPage = {
+      uid: Date.now().toString(),
+      id: Date.now().toString(),
+      title: title.trim(),
+      slug: slug.trim(),
+      type: pageType,
+      showOnHome: true,
+      layout: "row",
+      items: [],
+      createdAt: new Date().toISOString()
+    };
 
-      const updatedPages = [...localPages, newPage];
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
+    const updatedPages = [...localPages, newPage];
+    await syncAndSave(updatedPages, "¡Página creada y guardada con éxito!");
 
-      await setDoc(portfolioRef, { pages: updatedPages }, { merge: true });
-
-      setLocalPages(updatedPages);
-      if (onUpdatePages) onUpdatePages(updatedPages);
-
-      setSuccessMsg("¡Página creada y guardada con éxito!");
-      setTitle("");
-      setSlug("");
-      setPageType("image");
-      setShowForm(false);
-    } catch (err) {
-      console.error("Error al guardar en Firestore:", err);
-      setError(`Error al guardar: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const savePagesToFirebase = async (newPages) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser || !currentUser.uid) return;
-
-    try {
-      const portfolioRef = doc(db, "portfolios", currentUser.uid);
-      await setDoc(portfolioRef, { pages: newPages }, { merge: true });
-      if (onUpdatePages) onUpdatePages(newPages);
-    } catch (err) {
-      console.error("Error al actualizar páginas en Firestore:", err);
-      setError(`Error al actualizar: ${err.message}`);
-    }
-  };
-
-  const handleReorderPages = (newOrder) => {
-    setLocalPages(newOrder);
-    savePagesToFirebase(newOrder);
-  };
-
-  const handleTogglePageVisibility = (uid) => {
-    const updated = localPages.map((p) => {
-      if (p.uid === uid || p.id === uid) {
-        const currentShow = p.showOnHome !== false;
-        return { ...p, showOnHome: !currentShow };
-      }
-      return p;
-    });
-    setLocalPages(updated);
-    savePagesToFirebase(updated);
-  };
-
-  const handleUpdatePageLayout = (uid, newLayout) => {
-    const updated = localPages.map((p) => {
-      if (p.uid === uid || p.id === uid) {
-        return { ...p, layout: newLayout };
-      }
-      return p;
-    });
-    setLocalPages(updated);
-    savePagesToFirebase(updated);
+    setLoading(false);
+    setTitle("");
+    setSlug("");
+    setPageType("image");
+    setShowForm(false);
   };
 
   return (
@@ -222,11 +122,7 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
           </button>
         )}
 
-        <div 
-          className={`grid transition-all duration-300 ease-in-out ${
-            showForm ? "grid-rows-[1fr] opacity-100 mb-4" : "grid-rows-[0fr] opacity-0 overflow-hidden"
-          }`}
-        >
+        <div className={`grid transition-all duration-300 ease-in-out ${showForm ? "grid-rows-[1fr] opacity-100 mb-4" : "grid-rows-[0fr] opacity-0 overflow-hidden"}`}>
           <div className="overflow-hidden space-y-2">
             <form onSubmit={handleSubmit} className="bg-white border border-slate-300 p-5 rounded-xl space-y-4 shadow-sm">
               <div className="space-y-1.5">
@@ -261,12 +157,8 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
                           {type.icon}
                         </div>
                         <div className="space-y-0.5">
-                          <p className={`text-xs font-semibold ${isSelected ? "text-slate-900" : "text-slate-900"}`}>
-                            {type.title}
-                          </p>
-                          <p className="text-[11px] text-slate-500 leading-snug">
-                            {type.description}
-                          </p>
+                          <p className="text-xs font-semibold text-slate-900">{type.title}</p>
+                          <p className="text-[11px] text-slate-500 leading-snug">{type.description}</p>
                         </div>
                       </button>
                     );
@@ -299,66 +191,17 @@ export default function PagesManager({ portfolioData, onUpdatePages, onSelectPag
       </div>
 
       <div className="space-y-3 pt-2 pb-4">
-        {/* <label className="text-base font-semibold text-slate-900 block">
-          Páginas Registradas ({localPages.length})
-        </label> */}
-
-        {localPages.length > 0 ? (
-          <Reorder.Group 
-            axis="y" 
-            values={localPages} 
-            onReorder={handleReorderPages}
-            className="space-y-2.5 pt-1 list-none"
-          >
-            {localPages.map((page) => {
-              const pageUid = page.uid || page.id;
-              const isVisibleOnHome = page.showOnHome !== false; 
-              const pType = page.type || page.template || "Página";
-              const isImageType = pType.toLowerCase() === "image" || pType.toLowerCase() === "imagen";
-              const isLayoutOpen = openLayoutPageUid === pageUid;
-              const isShareOpen = openSharePageUid === pageUid;
-              const isDeleteOpen = openDeletePageUid === pageUid;
-              const currentLayout = page.layout || "grid-3";
-              const pageSlug = page.slug || page.path || "";
-              const absoluteShareUrl = typeof window !== "undefined" ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` : `/${portfolioSlug}/${pageSlug}`;
-
-              return (
-                <PageItem
-                  key={pageUid}
-                  page={page}
-                  pageType={pType}
-                  pageSlug={pageSlug}
-                  portfolioSlug={portfolioSlug}
-                  absoluteShareUrl={absoluteShareUrl}
-                  isVisibleOnHome={isVisibleOnHome}
-                  isImageType={isImageType}
-                  isLayoutOpen={isLayoutOpen}
-                  isShareOpen={isShareOpen}
-                  isDeleteOpen={isDeleteOpen}
-                  currentLayout={currentLayout}
-                  
-                  handleTogglePageVisibility={handleTogglePageVisibility}
-                  setOpenLayoutPageUid={setOpenLayoutPageUid}
-                  setOpenSharePageUid={setOpenSharePageUid}
-                  setOpenDeletePageUid={setOpenDeletePageUid}
-                  handleUpdatePageLayout={handleUpdatePageLayout}
-                  
-                  stablePages={localPages}
-                  portfolioData={{ ...portfolioData, pages: localPages }}
-                  setPortfolioData={(newData) => {
-                    if (newData && newData.pages) {
-                      setLocalPages(newData.pages);
-                      savePagesToFirebase(newData.pages);
-                    }
-                  }}
-                  onSelectPage={onSelectPage}
-                />
-              );
-            })}
-          </Reorder.Group>
-        ) : (
-          <p className="text-sm text-slate-400 italic text-center py-6">No hay páginas guardadas en la base de datos todavía.</p>
-        )}
+        <PagesList 
+          pages={localPages}
+          portfolioData={portfolioData}
+          setPortfolioData={setPortfolioData}
+          onSave={onSave}
+          onSelectPage={onSelectPage}
+           onReorderPages={(newPages) => {
+            setPortfolioData({ ...portfolioData, pages: newPages });
+          }}
+          emptyMessage="No hay páginas guardadas en la base de datos todavía."
+        />
       </div>
     </div>
   );
