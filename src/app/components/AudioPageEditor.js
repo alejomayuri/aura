@@ -92,7 +92,7 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
     }
   };
 
- const handleAddTrack = async (e) => {
+const handleAddTrack = async (e) => {
     e.preventDefault();
     if (!trackUrl.trim()) return;
 
@@ -105,40 +105,28 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
 
       let fetchedThumbnail = null;
       let fetchedTitle = "Pista de audio";
-      let fetchedArtist = "";
+      let fetchedArtist = "Artista";
 
       try {
-        const oembedRes = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(rawUrl)}`);
-        if (oembedRes.ok) {
-          const oembedData = await oembedRes.json();
-          if (oembedData.thumbnail_url) {
-            fetchedThumbnail = oembedData.thumbnail_url;
-          }
-          if (oembedData.title) {
-            const fullTitle = oembedData.title;
-            
-            // Spotify oEmbed devuelve títulos como:
-            // "Highway Tune - Single de Greta Van Fleet" o "Hypnotize - The Notorious B.I.G."
-            if (fullTitle.includes("· Single de")) {
-              const parts = fullTitle.split("· Single de");
-              fetchedTitle = parts[0].trim();
-              fetchedArtist = parts[1].trim();
-            } else if (fullTitle.includes("· Álbum de")) {
-              const parts = fullTitle.split("· Álbum de");
-              fetchedTitle = parts[0].trim();
-              fetchedArtist = parts[1].trim();
-            } else if (fullTitle.includes(" - ")) {
-              const parts = fullTitle.split(" - ");
-              fetchedTitle = parts[0].trim();
-              fetchedArtist = parts[parts.length - 1].replace(/^(de|por)\s+/i, "").trim();
-            } else {
-              fetchedTitle = fullTitle;
-              fetchedArtist = "Artista";
-            }
-          }
+        const res = await fetch("/api/spotify-track", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: rawUrl }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          if (data.title) fetchedTitle = data.title;
+          if (data.artist) fetchedArtist = data.artist;
+          if (data.thumbnail) fetchedThumbnail = data.thumbnail;
+        } else {
+          console.warn("Error devuelto por la API:", data.error);
         }
-      } catch (err) {
-        console.warn("No se pudo obtener información de oEmbed:", err);
+      } catch (apiErr) {
+        console.warn("Error de red al conectar con la API:", apiErr);
       }
 
       const newItem = {
@@ -146,7 +134,7 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
         url: formattedUrl,
         originalUrl: rawUrl,
         title: fetchedTitle,
-        artist: fetchedArtist || "Artista",
+        artist: fetchedArtist,
         thumbnail: fetchedThumbnail,
         layout: "classic",
         isActive: true,
