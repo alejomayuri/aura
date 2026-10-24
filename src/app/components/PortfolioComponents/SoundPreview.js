@@ -166,7 +166,7 @@ export default function SoundPreview({ page, styles, portfolioData, blockColor, 
 
                     {/* TÍTULO Y ARTISTA FIJOS ARRIBA */}
                     <div className="text-center space-y-1 pr-6 pl-6 shrink-0 pt-2 pb-4 bg-white z-10">
-                        <h3 className="text-lg tracking-tight text-black truncate max-w-full " title={selectedTrackModal.title || "Pista de música"}>
+                        <h3 className="text-lg tracking-tight text-black truncate max-w-full" title={selectedTrackModal.title || "Pista de música"}>
                             {selectedTrackModal.title || "Pista de música"}
                         </h3>
                         <p className="text-sm text-slate-600 flex items-center justify-center max-w-full truncate font-medium">
@@ -175,8 +175,8 @@ export default function SoundPreview({ page, styles, portfolioData, blockColor, 
                         </p>
                     </div>
 
-                    {/* CONTENIDO QUE HACE SCROLL (REPRODUCTOR, PLATAFORMAS Y BOTÓN) */}
-                    <div className="space-y-5 pt-4 overflow-y-auto flex-1 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {/* CONTENIDO QUE HACE SCROLL (REPRODUCTOR Y PLATAFORMAS) */}
+                    <div className="space-y-5 pt-2 pb-4 overflow-y-auto flex-1 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {/* Reproductor de la canción en versión grande */}
                         <div className="w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner shrink-0">
                             {selectedTrackModal.url ? (
@@ -225,9 +225,11 @@ export default function SoundPreview({ page, styles, portfolioData, blockColor, 
                                 <p className="text-xs text-slate-500 italic py-2">No hay plataformas extra añadidas a esta pista.</p>
                             )}
                         </div>
+                    </div>
 
-                        {/* Botón Open in Spotify abajo a la izquierda */}
-                        <div className="flex justify-start pt-2 pb-2">
+                    {/* BOTÓN OPEN IN SPOTIFY FIJO ABAJO */}
+                    <div className="pt-3 bg-white shrink-0">
+                        <div className="flex justify-start">
                             <a
                                 href={selectedTrackModal.originalUrl || selectedTrackModal.url}
                                 target="_blank"
