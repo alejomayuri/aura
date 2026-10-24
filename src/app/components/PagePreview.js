@@ -4,6 +4,7 @@ import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
 import ImageGalleryView from "@/app/components/PortfolioComponents/ImageGalleryView"; // Ajusta la ruta según donde lo guardes
 import LinkPageCard from "./PortfolioComponents/LinkPageCard";
+import SoundPreview from "./PortfolioComponents/SoundPreview"; // Ajusta la ruta según donde hayas guardado SoundPreview
 
 export default function PagePreview({ page, portfolioData }) {
   const currentTemplate = portfolioData?.template || "minimal";
@@ -24,14 +25,14 @@ export default function PagePreview({ page, portfolioData }) {
         <div className="space-y-3 px-6.5">
           {page.items && page.items.length > 0 ? (
            
-           <LinkPageCard 
-              key={page.id}
-              page={page}
-              blockColor={portfolioData?.colors?.secondaryColor}
-              textColor={portfolioData?.colors?.textColor}
-              styles={styles}
-              currentTemplate={currentTemplate}
-              internal={true}
+            <LinkPageCard 
+                key={page.id}
+                page={page}
+                blockColor={portfolioData?.colors?.secondaryColor}
+                textColor={portfolioData?.colors?.textColor}
+                styles={styles}
+                currentTemplate={currentTemplate}
+                internal={true}
             />
           ) : (
             <p className="text-xs text-center italic opacity-50">No hay enlaces agregados aún.</p>
@@ -49,8 +50,20 @@ export default function PagePreview({ page, portfolioData }) {
         />
       )}
 
-      {/* Tipos en desarrollo (Audio, Text...) */}
-      {page.type !== "link" && page.type !== "image" && (
+      {/* Muestra para página tipo AUDIO */}
+      {(page.type === "audio" || page.type === "sound") && (
+        <div className="px-6.5">
+          <SoundPreview 
+            page={page} 
+            portfolioData={portfolioData}
+            blockColor={portfolioData?.colors?.secondaryColor}
+            styles={styles}
+          />
+        </div>
+      )}
+
+      {/* Tipos en desarrollo (otros tipos restantes) */}
+      {page.type !== "link" && page.type !== "image" && page.type !== "audio" && page.type !== "sound" && (
         <div className="text-center py-10 opacity-50 text-xs italic">
           Vista previa para contenido tipo {page.type} en desarrollo...
         </div>

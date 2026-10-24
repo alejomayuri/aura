@@ -3,7 +3,8 @@
 import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
 import ImagePageCard from "@/app/components/PortfolioComponents/ImagePageCard";
-import LinkPageCard from "@/app/components/PortfolioComponents/LinkPageCard"; // Ajusta la ruta según donde lo guardes
+import LinkPageCard from "@/app/components/PortfolioComponents/LinkPageCard";
+import SoundPreview from "@/app/components/PortfolioComponents/SoundPreview"; // Ajusta la ruta según donde lo hayas guardado
 
 export default function Portfolio({ portfolioData, template }) {
   const currentTemplate = template || portfolioData?.template || "minimal";
@@ -45,6 +46,21 @@ export default function Portfolio({ portfolioData, template }) {
                   styles={styles}
                   currentTemplate={currentTemplate}
                 />
+              );
+            }
+
+            // Renderizado para páginas tipo AUDIO / SOUND en el home
+            if (page.type === "audio" || page.type === "sound") {
+              return (
+                <div key={page.id} className="space-y-2">
+                  <SoundPreview 
+                    page={page} 
+                    portfolioData={portfolioData}
+                    blockColor={portfolioData?.colors?.secondaryColor}
+                    textColor={portfolioData?.colors?.textColor}
+                    styles={styles}
+                  />
+                </div>
               );
             }
 
