@@ -55,6 +55,7 @@ export default function Portfolio({ portfolioData, template }) {
                 <div key={page.id} className="space-y-2">
                   <SoundPreview 
                     page={page} 
+                    home={true}
                     portfolioData={portfolioData}
                     blockColor={portfolioData?.colors?.secondaryColor}
                     textColor={portfolioData?.colors?.textColor}

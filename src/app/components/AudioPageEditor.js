@@ -15,13 +15,15 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
 
   const formRef = useRef(null);
 
+  // Efecto para hacer que el mensaje de error desaparezca automáticamente a los 4 segundos
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (formRef.current && !formRef.current.contains(event.target)) {}
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 4000);
+      return () => clearTimeout(timer);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [error]);
 
   const items = selectedPage?.items || [];
 
@@ -47,30 +49,53 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
     }
   };
 
-  const formatSpotifyUrl = (url) => {
+  const formatAudioUrl = (url, resolvedSoundCloudUrl = "") => {
     if (!url) return "";
     try {
-      let cleanUrl = url.trim().split("?")[0];
+      let cleanUrl = url.trim();
 
-      if (cleanUrl.startsWith("spotify:")) {
-        const parts = cleanUrl.split(":");
-        if (parts.length >= 3) {
-          cleanUrl = `https://open.spotify.com/${parts[1]}/${parts[2]}`;
+      // Formatear Spotify
+      if (cleanUrl.includes("spotify.com") || cleanUrl.startsWith("spotify:")) {
+        let spotifyUrl = cleanUrl.split("?")[0];
+        if (spotifyUrl.startsWith("spotify:")) {
+          const parts = spotifyUrl.split(":");
+          if (parts.length >= 3) {
+            spotifyUrl = `https://open.spotify.com/${parts[1]}/${parts[2]}`;
+          }
+        }
+        spotifyUrl = spotifyUrl.replace(/\/intl-[a-z]{2}\//, "/");
+        const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/);
+        if (match && match[1] && match[2]) {
+          return `https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator&theme=0`;
+        }
+        return spotifyUrl;
+      }
+
+      // Formatear YouTube / YouTube Music
+      if (cleanUrl.includes("youtube.com") || cleanUrl.includes("youtu.be") || cleanUrl.includes("music.youtube.com")) {
+        let videoId = "";
+        
+        if (cleanUrl.includes("youtu.be/")) {
+          videoId = cleanUrl.split("youtu.be/")[1]?.split("?")[0];
+        } else if (cleanUrl.includes("watch?v=")) {
+          const urlParams = new URLSearchParams(cleanUrl.split("?")[1]);
+          videoId = urlParams.get("v");
+        } else if (cleanUrl.includes("/embed/")) {
+          videoId = cleanUrl.split("/embed/")[1]?.split("?")[0];
+        }
+
+        if (videoId) {
+          return `https://www.youtube.com/embed/${videoId}`;
         }
       }
 
-      cleanUrl = cleanUrl.replace(/\/intl-[a-z]{2}\//, "/");
-
-      if (cleanUrl.includes("/embed/")) {
-        return `${cleanUrl}?utm_source=generator&theme=0`;
-      }
-
-      const match = cleanUrl.match(/spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/);
-      if (match && match[1] && match[2]) {
-        return `https://open.spotify.com/embed/${match[1]}/${match[2]}?utm_source=generator&theme=0`;
+      // Formatear SoundCloud
+      const targetScUrl = resolvedSoundCloudUrl || cleanUrl;
+      if (cleanUrl.includes("soundcloud.com") || cleanUrl.includes("on.soundcloud.com")) {
+        return `https://w.soundcloud.com/player/?url=${encodeURIComponent(targetScUrl)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`;
       }
     } catch (e) {
-      console.error("Error formateando URL de Spotify", e);
+      console.error("Error formateando URL de audio", e);
     }
     return url;
   };
@@ -78,12 +103,10 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
   const detectPlatformName = (url) => {
     try {
       const lowerUrl = url.toLowerCase();
+      if (lowerUrl.includes("music.youtube.com")) return "YouTube Music";
       if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) return "YouTube";
-      if (lowerUrl.includes("soundcloud.com")) return "SoundCloud";
-      if (lowerUrl.includes("apple.com")) return "Apple Music";
-      if (lowerUrl.includes("deezer.com")) return "Deezer";
-      if (lowerUrl.includes("tidal.com")) return "Tidal";
-      if (lowerUrl.includes("bandcamp.com")) return "Bandcamp";
+      if (lowerUrl.includes("soundcloud.com") || lowerUrl.includes("on.soundcloud.com")) return "SoundCloud";
+      if (lowerUrl.includes("spotify.com") || lowerUrl.startsWith("spotify:")) return "Spotify";
       
       const hostname = new URL(url).hostname.replace("www.", "");
       return hostname.charAt(0).toUpperCase() + hostname.slice(1).split(".")[0];
@@ -92,42 +115,126 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
     }
   };
 
-const handleAddTrack = async (e) => {
+  const handleAddTrack = async (e) => {
     e.preventDefault();
     if (!trackUrl.trim()) return;
+
+    const rawUrl = trackUrl.trim();
+    const lowerRawUrl = rawUrl.toLowerCase();
+
+    // Validación: Solo se permite Spotify, YouTube Music o SoundCloud
+    const isSpotify = lowerRawUrl.includes("spotify.com") || lowerRawUrl.startsWith("spotify:");
+    const isYouTube = lowerRawUrl.includes("youtube.com") || lowerRawUrl.includes("youtu.be") || lowerRawUrl.includes("music.youtube.com");
+    const isSoundCloud = lowerRawUrl.includes("soundcloud.com") || lowerRawUrl.includes("on.soundcloud.com");
+
+    if (!isSpotify && !isYouTube && !isSoundCloud) {
+      setError("Solo se permite añadir enlaces de Spotify, YouTube Music o SoundCloud.");
+      setTrackUrl(""); // <- Limpia el input inmediatamente al fallar la validación
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
-      const rawUrl = trackUrl.trim();
-      const formattedUrl = formatSpotifyUrl(rawUrl);
+      const platformName = detectPlatformName(rawUrl);
 
       let fetchedThumbnail = null;
       let fetchedTitle = "Pista de audio";
       let fetchedArtist = "Artista";
+      let resolvedSoundCloudUrl = "";
 
-      try {
-        const res = await fetch("/api/spotify-track", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url: rawUrl }),
-        });
+      if (isSpotify) {
+        try {
+          const res = await fetch("/api/spotify-track", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: rawUrl }),
+          });
 
-        const data = await res.json();
+          const data = await res.json();
 
-        if (res.ok) {
-          if (data.title) fetchedTitle = data.title;
-          if (data.artist) fetchedArtist = data.artist;
-          if (data.thumbnail) fetchedThumbnail = data.thumbnail;
-        } else {
-          console.warn("Error devuelto por la API:", data.error);
+          if (res.ok) {
+            if (data.title) fetchedTitle = data.title;
+            if (data.artist) fetchedArtist = data.artist.replace(/ - Topic$/i, "").trim();
+            if (data.thumbnail) fetchedThumbnail = data.thumbnail;
+          }
+        } catch (apiErr) {
+          console.warn("Error de red al conectar con la API de Spotify:", apiErr);
         }
-      } catch (apiErr) {
-        console.warn("Error de red al conectar con la API:", apiErr);
+      } 
+      else if (isYouTube) {
+        try {
+          let videoId = "";
+          if (rawUrl.includes("youtu.be/")) {
+            videoId = rawUrl.split("youtu.be/")[1]?.split("?")[0];
+          } else if (rawUrl.includes("watch?v=")) {
+            const urlParams = new URLSearchParams(rawUrl.split("?")[1]);
+            videoId = urlParams.get("v");
+          }
+
+          if (videoId) {
+            fetchedThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            
+            const oEmbedRes = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+            if (oEmbedRes.ok) {
+              const oEmbedData = await oEmbedRes.json();
+              if (oEmbedData.title) {
+                fetchedTitle = oEmbedData.title;
+              }
+              if (oEmbedData.author_name) {
+                fetchedArtist = oEmbedData.author_name.replace(/ - Topic$/i, "").trim();
+              }
+            }
+          }
+        } catch (ytErr) {
+          console.warn("No se pudo obtener la información de YouTube mediante oEmbed", ytErr);
+          fetchedTitle = "Pista de YouTube Music";
+        }
       }
+      else if (isSoundCloud) {
+        try {
+          const oEmbedRes = await fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(rawUrl)}`);
+          if (oEmbedRes.ok) {
+            const oEmbedData = await oEmbedRes.json();
+            
+            if (oEmbedData.title) {
+              const fullTitle = oEmbedData.title;
+              if (fullTitle.includes(" by ")) {
+                const parts = fullTitle.split(" by ");
+                fetchedTitle = parts[0];
+                fetchedArtist = parts[1];
+              } else {
+                fetchedTitle = fullTitle;
+              }
+            }
+            if (oEmbedData.author_name) {
+              fetchedArtist = oEmbedData.author_name;
+            }
+            if (oEmbedData.thumbnail_url) {
+              fetchedThumbnail = oEmbedData.thumbnail_url;
+            }
+
+            if (oEmbedData.html) {
+              const srcMatch = oEmbedData.html.match(/src="([^"]+)"/);
+              if (srcMatch && srcMatch[1]) {
+                const parsedIframeUrl = new URL(srcMatch[1]);
+                const trackParam = parsedIframeUrl.searchParams.get("url");
+                if (trackParam) {
+                  resolvedSoundCloudUrl = trackParam;
+                }
+              }
+            }
+          }
+        } catch (scErr) {
+          console.warn("No se pudo obtener la información de SoundCloud mediante oEmbed", scErr);
+          fetchedTitle = "Pista de SoundCloud";
+        }
+      }
+
+      const formattedUrl = formatAudioUrl(rawUrl, resolvedSoundCloudUrl);
 
       const newItem = {
         id: crypto.randomUUID(),
@@ -279,11 +386,11 @@ const handleAddTrack = async (e) => {
           externalRoute={`/${portfolioData.slug}/${selectedPage?.slug}`}
           openInNewTab={true}
         />
-        <p className="text-sm text-slate-500">Página tipo audio (Spotify / Podcasts)</p>
+        <p className="text-sm text-slate-500">Página tipo audio (Spotify / YouTube Music / SoundCloud / Podcasts)</p>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm p-3.5 rounded-xl">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm p-3.5 rounded-xl transition-all duration-300">
           {error}
         </div>
       )}
@@ -307,7 +414,7 @@ const handleAddTrack = async (e) => {
               <div className="space-y-2">
                 <input
                   type="url"
-                  placeholder="Pega el enlace de Spotify (ej. https://open.spotify.com/track/...)"
+                  placeholder="Pega el enlace (ej. Spotify, YouTube Music o SoundCloud)..."
                   value={trackUrl}
                   onChange={(e) => setTrackUrl(e.target.value)}
                   required
@@ -330,6 +437,7 @@ const handleAddTrack = async (e) => {
                 onClick={() => {
                   setShowForm(false);
                   setTrackUrl("");
+                  setError(null);
                 }}
                 className="px-4 py-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
               >

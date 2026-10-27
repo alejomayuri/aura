@@ -26,15 +26,22 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
   const gridImages = activeItems.slice(0, 4);
 
   return (
+    <>
+        <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+          style={{ color: textColor }}
+        >
+          {page.title}
+        </span>
+      
     <Link 
       href={`/${portfolioSlug}/${page.slug || page.id}`}
       className={`w-full p-3 transition-all duration-200 mb-8 cursor-pointer block ${styles.pageCard}`}
       style={{background: blockColor}}
     >
-      <div className="flex items-center justify-between mb-1">
+      {/* <div className="flex items-center justify-between mb-1">
         <span className={`truncate pr-2 ${styles.pageTitle}`} style={{color: textColor}}>{page.title}</span>
       </div>
-      
+       */}
       {cardLayout === "single" && singleImage ? (
         <div className="mt-2 overflow-hidden bg-slate-900 flex items-center justify-center">
           <img 
@@ -80,5 +87,6 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
         </div>
       )}
     </Link>
+    </>
   );
 }
