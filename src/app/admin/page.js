@@ -8,7 +8,8 @@ import DesignForm from "@/app/components/DesignForm";
 import PagesManager from "@/app/components/PagesManager";
 import ImagePageEditor from "@/app/components/ImagePageEditor";
 import LinkPageEditor from "@/app/components/LinkPageEditor";
-import AudioPageEditor from "@/app/components/AudioPageEditor"; // <--- 1. Importas el nuevo componente
+import AudioPageEditor from "@/app/components/AudioPageEditor";
+import StorePageEditor from "@/app/components/StorePageEditor"; // <--- 1. Importas el nuevo componente StorePageEditor
 import PagePreview from "@/app/components/PagePreview";
 import MyLightjaus from "@/app/components/MyLightjaus";
 import { usePortfolioSync } from "@/app/hooks/usePortfolioSync";
@@ -51,7 +52,7 @@ export default function AdminDashboard() {
   };
 
   const selectedPage = portfolioData.pages.find(p => p.id === selectedSubPageId || p.slug === selectedSubPageId);
-
+  // console.log("selectedPage", selectedPage)
   return (
     <div className="h-screen bg-white text-slate-900 flex overflow-hidden relative">
       <style jsx>{`
@@ -132,9 +133,18 @@ export default function AdminDashboard() {
           />
         )}
 
-        {/* --- 2. RENDERIZADO DEL EDITOR DE AUDIO --- */}
         {activeTab !== "design" && selectedPage && selectedPage.type === "audio" && (
           <AudioPageEditor 
+            portfolioData={portfolioData}
+            selectedPageId={selectedSubPageId}
+            updatePortfolio={updatePortfolio}
+            onSave={handleSave}
+          />
+        )}
+
+        {/* --- 2. RENDERIZADO DEL EDITOR DE TIENDA (STORE) --- */}
+        {activeTab !== "design" && selectedPage && selectedPage.type === "store" && (
+          <StorePageEditor 
             portfolioData={portfolioData}
             selectedPageId={selectedSubPageId}
             updatePortfolio={updatePortfolio}
