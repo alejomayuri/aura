@@ -12,9 +12,19 @@ export default function StoreCardItem({
   onToggleFeatured,
   onUpdateOffer,
   onDeleteTrack,
+  editingTitleId,
+  setEditingTitleId,
+  tempTitle,
+  setTempTitle,
+  handleSaveTitle,
+  deleteConfirmId,
+  setDeleteConfirmId,
 }) {
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
+
+  const isEditing = editingTitleId === item.id;
+  const isDeleteOpen = deleteConfirmId === item.id;
+  const isFeatured = item.isFeatured === true;
 
   // Tipo de descuento actual ("amount" o "percentage")
   const [discountType, setDiscountType] = useState(item.discountType || "amount"); 
@@ -70,12 +80,15 @@ export default function StoreCardItem({
     setIsOfferOpen(false);
   };
 
-  const isFeatured = item.isFeatured === true;
-
   return (
     <Reorder.Item
+      key={item.id}
       value={item}
       onDragEnd={onDragEnd}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
       className="list-none bg-white border border-slate-300 p-3.5 rounded-xl cursor-grab active:cursor-grabbing shadow-sm"
     >
       {/* Contenedor principal con items-center para fijarlo arriba */}
@@ -89,7 +102,7 @@ export default function StoreCardItem({
         <div className="flex flex-col gap-3 overflow-hidden w-full">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
-              {/* Imagen Preview del producto */}
+              {/* Imagen Preview del producto (a la izquierda de la info, como lo tenías) */}
               {item.thumbnail ? (
                 <img
                   src={item.thumbnail}
@@ -104,9 +117,37 @@ export default function StoreCardItem({
 
               {/* Información del producto */}
               <div className="flex-1 min-w-0 pr-1">
-                <h4 className="text-sm font-semibold text-slate-800 truncate" title={item.title}>
-                  {item.title}
-                </h4>
+                {/* Título editable mediante el patrón centralizado con LinkItem */}
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={tempTitle}
+                      onChange={(e) => setTempTitle(e.target.value)}
+                      onBlur={() => handleSaveTitle(item.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveTitle(item.id);
+                        if (e.key === "Escape") setEditingTitleId(null);
+                      }}
+                      className="w-full text-sm font-medium text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h4
+                      onClick={() => {
+                        setEditingTitleId(item.id);
+                        setTempTitle(item.title || "");
+                      }}
+                      className="text-sm font-medium text-slate-800 truncate cursor-pointer hover:underline transition-colors"
+                      title="Haz clic para editar el nombre"
+                    >
+                      {item.title || "Sin título"}
+                    </h4>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
                   {item.isOnSale && item.discountPrice > 0 ? (
                     <div className="flex items-center gap-1.5">
@@ -119,7 +160,7 @@ export default function StoreCardItem({
                       </span>
                     </div>
                   ) : (
-                    <span className="font-medium text-slate-700">
+                    <span className="text-sm font-medium text-slate-700">
                       {item.currency || "S/"} {Number(item.price || 0).toFixed(2)}
                     </span>
                   )}
@@ -137,22 +178,22 @@ export default function StoreCardItem({
             </div>
           </div>
 
-          {/* Fila inferior dentro del bloque derecho: Todos los íconos juntos (Estrella, Oferta, Switch y Tachito) */}
+          {/* Fila inferior dentro del bloque derecho: Todos los íconos juntos (Estrella con color original, Oferta, Switch y Tachito) */}
           <div className="flex items-center gap-3 text-xs" onClick={(e) => e.stopPropagation()}>
-            {/* Botón de Destacar (Estrella) */}
+            {/* Botón de Destacar (Estrella con su color amarillo original) */}
             <button
               type="button"
               onClick={() => onToggleFeatured && onToggleFeatured(item.id)}
               className={`cursor-pointer transition-all p-1 ${
-                isFeatured ? "text-amber-500" : "text-slate-400 hover:text-slate-700"
+                isFeatured ? "text-black" : "text-slate-400 hover:text-slate-700"
               }`}
               title={isFeatured ? "Quitar destacado" : "Destacar producto"}
             >
               <svg
                 className="w-5 h-5"
-                fill={isFeatured ? "#000" : "none"}
+                fill={isFeatured ? "currentColor" : "none"}
                 viewBox="0 0 24 24"
-                stroke={isFeatured ? "#000" : "currentColor"}
+                stroke={isFeatured ? "currentColor" : "currentColor"}
                 strokeWidth="1.5"
               >
                 <path
@@ -168,14 +209,14 @@ export default function StoreCardItem({
               type="button"
               onClick={() => {
                 setIsOfferOpen(!isOfferOpen);
-                setIsDeleteOpen(false);
+                setDeleteConfirmId(null);
               }}
               className={`cursor-pointer transition-all ${
                 item.isOnSale ? "text-purple-600" : "text-slate-400 hover:text-black"
               }`}
               title="Configurar oferta"
             >
-              <svg className="w-5 h-5" fill={item.isOnSale ? "#fff" : "#fff"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
             </button>
@@ -191,11 +232,11 @@ export default function StoreCardItem({
               <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
             </label>
 
-            {/* Botón de eliminar / Tachito (Cierra el panel de ofertas al abrirse) */}
+            {/* Botón de eliminar / Tachito */}
             <DeleteButton
               isOpen={isDeleteOpen}
               onClick={() => {
-                setIsDeleteOpen(!isDeleteOpen);
+                setDeleteConfirmId(isDeleteOpen ? null : item.id);
                 setIsOfferOpen(false);
               }}
             />
@@ -291,17 +332,14 @@ export default function StoreCardItem({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsDeleteOpen(false)}
+                    onClick={() => setDeleteConfirmId(null)}
                     className="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsDeleteOpen(false);
-                      onDeleteTrack(item.id);
-                    }}
+                    onClick={() => onDeleteTrack(item.id)}
                     className="bg-rose-600 text-white px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer"
                   >
                     Eliminar

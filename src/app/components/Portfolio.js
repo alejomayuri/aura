@@ -4,7 +4,8 @@ import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
 import ImagePageCard from "@/app/components/PortfolioComponents/ImagePageCard";
 import LinkPageCard from "@/app/components/PortfolioComponents/LinkPageCard";
-import SoundPreview from "@/app/components/PortfolioComponents/SoundPreview"; // Ajusta la ruta según donde lo hayas guardado
+import SoundPreview from "@/app/components/PortfolioComponents/SoundPreview";
+import StorePreview from "./PortfolioComponents/StorePreview";
 
 export default function Portfolio({ portfolioData, template }) {
   const currentTemplate = template || portfolioData?.template || "minimal";
@@ -49,7 +50,7 @@ export default function Portfolio({ portfolioData, template }) {
               );
             }
 
-            // Renderizado para páginas tipo AUDIO / SOUND en el home
+            {/* Renderizado para páginas tipo AUDIO / SOUND en el home */}
             if (page.type === "audio" || page.type === "sound") {
               return (
                 <div key={page.id} className="space-y-2">
@@ -59,6 +60,21 @@ export default function Portfolio({ portfolioData, template }) {
                     portfolioData={portfolioData}
                     blockColor={portfolioData?.colors?.secondaryColor}
                     textColor={portfolioData?.colors?.textColor}
+                    styles={styles}
+                  />
+                </div>
+              );
+            }
+
+            {/* Renderizado para páginas tipo STORE en el home */}
+            if (page.type === "store") {
+              return (
+                <div key={page.id} className="space-y-2">
+                  <StorePreview 
+                    page={page} 
+                    home={true}
+                    portfolioData={portfolioData}
+                    blockColor={portfolioData?.colors?.secondaryColor}
                     styles={styles}
                   />
                 </div>

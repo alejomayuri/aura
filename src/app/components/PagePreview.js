@@ -2,9 +2,10 @@
 
 import { getTemplateStyles } from "@/app/config/themeStyles";
 import PortfolioLayout from "@/app/components/PortfolioLayout";
-import ImageGalleryView from "@/app/components/PortfolioComponents/ImageGalleryView"; // Ajusta la ruta según donde lo guardes
+import ImageGalleryView from "@/app/components/PortfolioComponents/ImageGalleryView";
 import LinkPageCard from "./PortfolioComponents/LinkPageCard";
-import SoundPreview from "./PortfolioComponents/SoundPreview"; // Ajusta la ruta según donde hayas guardado SoundPreview
+import SoundPreview from "./PortfolioComponents/SoundPreview";
+import StorePreview from "./PortfolioComponents/StorePreview"; // <-- Importamos tu componente StorePreview
 
 export default function PagePreview({ page, portfolioData }) {
   const currentTemplate = portfolioData?.template || "minimal";
@@ -24,7 +25,6 @@ export default function PagePreview({ page, portfolioData }) {
       {page.type === "link" && (
         <div className="space-y-3 px-6.5">
           {page.items && page.items.length > 0 ? (
-           
             <LinkPageCard 
                 key={page.id}
                 page={page}
@@ -62,8 +62,20 @@ export default function PagePreview({ page, portfolioData }) {
         </div>
       )}
 
+      {/* Muestra para página tipo STORE (Tienda de productos) */}
+      {page.type === "store" && (
+        <div className="px-6.5">
+          <StorePreview 
+            page={page} 
+            portfolioData={portfolioData}
+            blockColor={portfolioData?.colors?.secondaryColor}
+            styles={styles}
+          />
+        </div>
+      )}
+
       {/* Tipos en desarrollo (otros tipos restantes) */}
-      {page.type !== "link" && page.type !== "image" && page.type !== "audio" && page.type !== "sound" && (
+      {page.type !== "link" && page.type !== "image" && page.type !== "audio" && page.type !== "sound" && page.type !== "store" && (
         <div className="text-center py-10 opacity-50 text-xs italic">
           Vista previa para contenido tipo {page.type} en desarrollo...
         </div>

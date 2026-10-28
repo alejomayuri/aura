@@ -19,6 +19,11 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [productThumbnail, setProductThumbnail] = useState("");
 
+  // Estados de control para edición de título y borrado (igual que en LinkItem)
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [tempTitle, setTempTitle] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -120,6 +125,24 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
     }
   };
 
+  // Función para guardar el título editado al presionar Enter o perder el foco
+  const handleSaveTitle = async (itemId) => {
+    if (!tempTitle.trim()) {
+      setEditingTitleId(null);
+      return;
+    }
+
+    const updatedItems = items.map((item) => {
+      if (item.id === itemId) {
+        return { ...item, title: tempTitle.trim() };
+      }
+      return item;
+    });
+
+    setEditingTitleId(null);
+    await savePortfolioChanges(updatedItems);
+  };
+
   // Función para alternar el estado destacado de la estrella
   const handleToggleFeatured = async (itemId) => {
     const updatedItems = items.map((item) => {
@@ -163,6 +186,7 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
 
   const handleDeleteItem = async (itemId) => {
     const updatedItems = items.filter((item) => item.id !== itemId);
+    setDeleteConfirmId(null);
     await savePortfolioChanges(updatedItems);
   };
 
@@ -170,16 +194,6 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
     const updatedItems = items.map((item) => {
       if (item.id === itemId) {
         return { ...item, isActive: item.isActive === false };
-      }
-      return item;
-    });
-    await savePortfolioChanges(updatedItems);
-  };
-
-  const handleUpdateItemLayout = async (itemId, newLayout) => {
-    const updatedItems = items.map((item) => {
-      if (item.id === itemId) {
-        return { ...item, layout: newLayout };
       }
       return item;
     });
@@ -371,6 +385,7 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                     setProductThumbnail("");
                     setNewCategoryInput("");
                     setIsAddingNewCategory(false);
+                    setShowForm(false);
                   }}
                   className="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                 >
@@ -408,6 +423,13 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                     onToggleFeatured={handleToggleFeatured}
                     onUpdateOffer={handleUpdateOffer}
                     onDeleteTrack={handleDeleteItem}
+                    editingTitleId={editingTitleId}
+                    setEditingTitleId={setEditingTitleId}
+                    tempTitle={tempTitle}
+                    setTempTitle={setTempTitle}
+                    handleSaveTitle={handleSaveTitle}
+                    deleteConfirmId={deleteConfirmId}
+                    setDeleteConfirmId={setDeleteConfirmId}
                 />
               ))}
             </AnimatePresence>
