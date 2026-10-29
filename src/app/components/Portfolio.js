@@ -75,6 +75,10 @@ export default function Portfolio({ portfolioData, template }) {
                     home={true}
                     portfolioData={portfolioData}
                     blockColor={portfolioData?.colors?.secondaryColor}
+                    primaryColor={portfolioData?.colors?.primaryColor}
+                    textColor={portfolioData.colors?.textColor}
+                    titleColor={portfolioData?.colors?.titleColor}
+                    iconsColor={portfolioData?.colors?.iconsColor}
                     styles={styles}
                   />
                 </div>

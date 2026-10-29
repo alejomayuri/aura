@@ -69,6 +69,11 @@ export default function PagePreview({ page, portfolioData }) {
             page={page} 
             portfolioData={portfolioData}
             blockColor={portfolioData?.colors?.secondaryColor}
+            primaryColor={portfolioData?.colors?.primaryColor}
+            secondaryColor={portfolioData?.colors?.secondaryColor}
+            textColor={portfolioData.colors?.textColor}
+            titleColor={portfolioData?.colors?.titleColor}
+            socialColor={portfolioData?.colors?.socialColor}
             styles={styles}
           />
         </div>

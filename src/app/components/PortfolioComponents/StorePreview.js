@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function StorePreview({ page, portfolioData, styles, blockColor, home = false }) {
+export default function StorePreview({ page, portfolioData, styles, blockColor, primaryColor, socialColor, secondaryColor, titleColor, textColor, iconsColor, home = false }) {
   const items = page?.items || [];
   const categories = page?.categories?.length > 0 ? page.categories : ["General"];
   
@@ -28,6 +28,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
       {/* Título de la tienda si está en el home */}
       {home && (
         <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+          style={{ color: textColor }}
         >
           {page.title}
         </span>
@@ -39,11 +40,11 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
           <button
             type="button"
             onClick={() => setSelectedCategory("Todos")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition cursor-pointer shrink-0 ${
-              selectedCategory === "Todos"
-                ? "bg-black text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
+            className={`px-3.5 py-1.5 ${styles.radiusImageLink} text-xs font-medium transition cursor-pointer shrink-0 ${styles.pageCard}`}
+            style={{
+              backgroundColor: selectedCategory === "Todos" ? blockColor : textColor,
+              color: selectedCategory === "Todos" ? textColor : secondaryColor
+            }}
           >
             Todos
           </button>
@@ -52,11 +53,11 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
               key={idx}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition cursor-pointer shrink-0 ${
-                selectedCategory === cat
-                  ? "bg-black text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
+              className={`px-3.5 py-1.5 ${styles.radiusImageLink} text-xs font-medium transition cursor-pointer shrink-0 ${styles.pageCard}`}
+              style={{
+                backgroundColor: selectedCategory === cat ? blockColor : textColor,
+                color: selectedCategory === cat ? textColor : secondaryColor
+              }}
             >
               {cat}
             </button>
@@ -95,21 +96,15 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                     🛍️
                   </div>
                 )}
-                
-                {isOnSale && (
-                  <span className="absolute top-2 right-2 bg-rose-600 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase shadow-xs">
-                    Oferta
-                  </span>
-                )}
               </div>
 
               {/* Contenido abajo: Nombre, precio y botón distribuidos uniformemente */}
-              <div className="p-3 flex flex-col flex-1 justify-between gap-2">
+              <div className="p-3 flex flex-col flex-1 justify-between gap-1.5">
                 <div className="space-y-0.5">
-                  <span className="text-[9px] font-medium text-slate-400 uppercase tracking-wider block truncate">
+                  <span style={{color: iconsColor}} className="text-[9px] font-medium text-slate-400 uppercase tracking-wider block truncate">
                     {item.category || "General"}
                   </span>
-                  <h4 className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                  <h4 style={{color: textColor}} className="text-[15px] font-semibold text-slate-900 line-clamp-2 group-hover:text-purple-600 transition-colors">
                     {item.title || "Sin título"}
                   </h4>
                 </div>
@@ -119,24 +114,26 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {isOnSale ? (
                       <div className="flex flex-col">
-                        <span className="line-through text-slate-400 text-[10px]">
+                        <span style={{color: textColor}} className="line-through text-slate-400 text-[10px]">
                           {currencySymbol} {Number(item.price || 0).toFixed(2)}
                         </span>
-                        <span className="font-bold text-rose-600 text-xs">
+                        <span style={{color: textColor}} className="font-bold text-rose-600 text-[15px]">
                           {currencySymbol} {Number(item.discountPrice).toFixed(2)}
                         </span>
                       </div>
                     ) : (
-                      <span className="font-bold text-slate-900 text-xs">
+                      <span style={{color: textColor}} className="font-bold text-slate-900 text-[15px]">
                         {currencySymbol} {Number(item.price || 0).toFixed(2)}
                       </span>
                     )}
                   </div>
 
                   {/* Botón de comprar */}
-                  <div className="w-full py-1.5 bg-slate-900 group-hover:bg-black text-white text-[11px] font-medium rounded-xl text-center transition-colors shadow-xs flex items-center justify-center gap-1">
-                    <span>Ver producto</span>
-                    <svg className="w-3 h-3 transform -rotate-45 group-hover:rotate-0 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <div className={`w-full py-2 bg-slate-900 group-hover:bg-black text-white text-[12px] font-medium ${styles.radiusImageLink} text-center transition-colors shadow-xs flex items-center justify-center gap-1`}
+                    style={{background: textColor}}
+                  >
+                    <span style={{color: blockColor}}>Ver producto</span>
+                    <svg className="w-3 h-3 transform -rotate-45 group-hover:rotate-0 transition-transform" fill="none" viewBox="0 0 24 24" stroke={blockColor} strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </div>
