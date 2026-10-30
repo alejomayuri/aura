@@ -16,14 +16,14 @@ export default function PagePreview({ page, portfolioData }) {
     <PortfolioLayout portfolioData={portfolioData} template={currentTemplate}>
 
       {/* ================= TÍTULO Y CONTENIDO ESPECÍFICO DE ESTA PÁGINA ================= */}
-      <div className="my-4 px-6.5">
+      <div className="my-4 px-4">
         <h2 className={`text-lg ${styles.pageTitle}`}
           style={{color: portfolioData?.colors?.titleColor}}
         >{page.title}</h2>
       </div>
 
       {page.type === "link" && (
-        <div className="space-y-3 px-6.5">
+        <div className="space-y-3 px-4">
           {page.items && page.items.length > 0 ? (
             <LinkPageCard 
                 key={page.id}
@@ -52,7 +52,7 @@ export default function PagePreview({ page, portfolioData }) {
 
       {/* Muestra para página tipo AUDIO */}
       {(page.type === "audio" || page.type === "sound") && (
-        <div className="px-6.5">
+        <div className="px-4">
           <SoundPreview 
             page={page} 
             portfolioData={portfolioData}
@@ -64,7 +64,7 @@ export default function PagePreview({ page, portfolioData }) {
 
       {/* Muestra para página tipo STORE (Tienda de productos) */}
       {page.type === "store" && (
-        <div className="px-6.5">
+        <div className="px-4">
           <StorePreview 
             page={page} 
             portfolioData={portfolioData}

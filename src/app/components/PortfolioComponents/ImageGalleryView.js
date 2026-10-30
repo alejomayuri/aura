@@ -4,7 +4,7 @@ export default function ImageGalleryView({ page, styles, galleryColor }) {
   }
 
   return (
-    <div className="space-y-6 px-6.5">
+    <div className="space-y-6 px-4">
       {page.galleries.map((gal) => {
         // Filtramos solo las imágenes activas (isActive !== false)
         const activeItems = gal.items?.filter((img) => img.isActive !== false) || [];

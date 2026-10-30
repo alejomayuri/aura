@@ -17,7 +17,7 @@ export default function Portfolio({ portfolioData, template }) {
     <PortfolioLayout portfolioData={portfolioData} template={template}>
       {/* Contenedor principal que respeta estrictamente el orden de las páginas */}
       {pages.length > 0 && (
-        <div className="space-y-3 pt-3 mt-1 px-6.5">
+        <div className="space-y-3 pt-3 mt-1 px-4">
           {pages.map((page) => {
             if (!page?.showOnHome) return null;
 
