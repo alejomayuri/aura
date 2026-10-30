@@ -24,7 +24,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 mb-8">
       {/* Título de la tienda si está en el home */}
       {home && (
         <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
@@ -84,7 +84,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 style={blockStyle}
             >
               {/* Imagen arriba (altura proporcional) */}
-              <div className="w-full h-[45%] bg-slate-100 relative overflow-hidden border-b border-slate-100 shrink-0">
+              <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden border-b border-slate-100 shrink-0">
                 {item.thumbnail ? (
                   <img
                     src={item.thumbnail}
@@ -101,10 +101,10 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
               {/* Contenido abajo: Nombre, precio y botón distribuidos uniformemente */}
               <div className="p-3 flex flex-col flex-1 justify-between gap-1.5">
                 <div className="space-y-0.5">
-                  <span style={{color: iconsColor}} className="text-[9px] font-medium text-slate-400 uppercase tracking-wider block truncate">
+                  {/* <span style={{color: iconsColor}} className="text-[9px] font-medium text-slate-400 uppercase tracking-wider block truncate">
                     {item.category || "General"}
-                  </span>
-                  <h4 style={{color: textColor}} className="text-[15px] font-semibold text-slate-900 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                  </span> */}
+                  <h4 style={{color: textColor}} className="text-[15px] text-slate-900 leading-tight line-clamp-2 group-hover:text-purple-600 transition-colors">
                     {item.title || "Sin título"}
                   </h4>
                 </div>
@@ -129,14 +129,14 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                   </div>
 
                   {/* Botón de comprar */}
-                  <div className={`w-full py-2 bg-slate-900 group-hover:bg-black text-white text-[12px] font-medium ${styles.radiusImageLink} text-center transition-colors shadow-xs flex items-center justify-center gap-1`}
+                  {/* <div className={`w-full py-2 bg-slate-900 group-hover:bg-black text-white text-[12px] font-medium ${styles.radiusImageLink} text-center transition-colors shadow-xs flex items-center justify-center gap-1`}
                     style={{background: textColor}}
                   >
                     <span style={{color: blockColor}}>Ver producto</span>
                     <svg className="w-3 h-3 transform -rotate-45 group-hover:rotate-0 transition-transform" fill="none" viewBox="0 0 24 24" stroke={blockColor} strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </a>
