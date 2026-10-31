@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Reorder, AnimatePresence, motion } from 'framer-motion';
 import DeleteButton from '@/app/components/AdminFormsComponents/ui/DeleteButton';
@@ -11,32 +13,35 @@ const generateSlug = (str) => {
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '') // Elimina acentos
-        .replace(/[^a-z0-9 -]/g, '')     // Elimina caracteres especiales
-        .replace(/\s+/g, '-')             // Reemplaza espacios por guiones
-        .replace(/-+/g, '-');             // Elimina guiones múltiples
+        .replace(/[^a-z0-9 -]/g, '')    // Elimina caracteres especiales
+        .replace(/\s+/g, '-')            // Reemplaza espacios por guiones
+        .replace(/-+/g, '-');            // Elimina guiones múltiples
 };
 
 export const PageItem = ({
-  page,
-  pageType,
-  pageSlug,
-  portfolioSlug,
-  absoluteShareUrl,
-  isVisibleOnHome,
-  isImageType,
-  isLayoutOpen,
-  isShareOpen,
-  isDeleteOpen,
-  currentLayout,
-  handleTogglePageVisibility,
-  setOpenLayoutPageUid,
-  setOpenSharePageUid,
-  setOpenDeletePageUid,
-  handleUpdatePageLayout,
-  stablePages,
-  portfolioData,
-  setPortfolioData,
-  onSelectPage
+    page,
+    pageType,
+    pageSlug,
+    portfolioSlug,
+    absoluteShareUrl,
+    isVisibleOnHome,
+    isImageType,
+    isLinkType,
+    isAudioType,
+    isStoreType,
+    isLayoutOpen,
+    isShareOpen,
+    isDeleteOpen,
+    currentLayout,
+    handleTogglePageVisibility,
+    setOpenLayoutPageUid,
+    setOpenSharePageUid,
+    setOpenDeletePageUid,
+    handleUpdatePageLayout,
+    stablePages,
+    portfolioData,
+    setPortfolioData,
+    onSelectPage
 }) => {
     // Estados locales para la edición del título de la página
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -67,15 +72,28 @@ export const PageItem = ({
         setIsEditingTitle(false);
     };
 
+    // Función para alternar si se muestra el título en el home
+    const handleToggleShowTitleOnHome = (e) => {
+        e.stopPropagation();
+        const currentVal = page.showTitleOnHome ?? true; // Por defecto true si no existe
+        const updatedPages = stablePages.map(p => {
+            if (p.uid === page.uid) {
+                return { ...p, showTitleOnHome: !currentVal };
+            }
+            return p;
+        });
+        setPortfolioData({ ...portfolioData, pages: updatedPages });
+    };
+
     const layoutOptions = [
         { 
             id: "row", 
             name: "Fila", 
             icon: (
                 <svg className="w-16 h-9" fill="none" viewBox="0 0 44 24" stroke="currentColor">
-                <rect x="1.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
-                <rect x="16" y="7" width="12" height="12" rx="1" strokeWidth="1" />
-                <rect x="30.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                    <rect x="1.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                    <rect x="16" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                    <rect x="30.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
                 </svg>
             )
         },
@@ -112,6 +130,33 @@ export const PageItem = ({
         },
     ];
 
+    // Opciones de layout exclusivas para las páginas de tipo tienda (store)
+    const storeLayoutOptions = [
+        { 
+            id: "row", 
+            name: "Fila", 
+            icon: (
+                <svg className="w-16 h-9" fill="none" viewBox="0 0 44 24" stroke="currentColor">
+                    <rect x="1.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                    <rect x="16" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                    <rect x="30.5" y="7" width="12" height="12" rx="1" strokeWidth="1" />
+                </svg>
+            )
+        },
+        { 
+            id: "carousel", 
+            name: "Carrusel", 
+            icon: (
+                <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="1" width="18" height="15" rx="1" strokeWidth="1" />
+                    <line x1="2" y1="21" x2="22" y2="21" strokeWidth="1" strokeLinecap="round" />
+                </svg>
+            )
+        },
+    ];
+
+    const showTitleChecked = page.showTitleOnHome ?? true;
+
     return (
         <Reorder.Item 
             key={page.uid}
@@ -145,6 +190,16 @@ export const PageItem = ({
                                 {pageType === "link" && (
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                )}
+                                {pageType === "audio" && (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 .895-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                    </svg>
+                                )}
+                                {pageType === "store" && (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                     </svg>
                                 )}
                             </div>
@@ -222,25 +277,23 @@ export const PageItem = ({
                             </svg>
                         </button>
 
-                        {isImageType && (
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (isImageType) {
-                                        setOpenLayoutPageUid(isLayoutOpen ? null : page.uid);
-                                        setOpenSharePageUid(null);
-                                        setOpenDeletePageUid(null);
-                                    }
-                                }}
-                                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLayoutOpen ? "text-black" : "text-slate-500 hover:text-black"}`}
-                                title={isImageType ? "Configurar Layout" : "Solo disponible para páginas de tipo image"}
-                            >
-                                <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-                                </svg>
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (isImageType || isLinkType || isAudioType || isStoreType) {
+                                    setOpenLayoutPageUid(isLayoutOpen ? null : page.uid);
+                                    setOpenSharePageUid(null);
+                                    setOpenDeletePageUid(null);
+                                }
+                            }}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLayoutOpen ? "text-black" : "text-slate-500 hover:text-black"}`}
+                            title="Configurar Página"
+                        >
+                            <svg className="w-4 h-4 stroke-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                            </svg>
+                        </button>
 
                         <button
                             type="button"
@@ -417,7 +470,7 @@ export const PageItem = ({
                 )}
             </AnimatePresence>
 
-            {/* Sección desplegable: Selección de layout */}
+            {/* Sección desplegable: Selección de layout y mostrar título (para type image) */}
             <AnimatePresence>
                 {isImageType && isLayoutOpen && (
                     <motion.div
@@ -425,9 +478,25 @@ export const PageItem = ({
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5"
+                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
                     >
+                        {/* Opción para Mostrar título en el Home */}
+                        <div className="flex items-center justify-between pb-2.5 border-b border-purple-100/60 text-xs text-slate-700">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Mostrar título en el Home</span>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0" title="Decidir si se muestra el título de la página en el inicio">
+                                <input
+                                    type="checkbox"
+                                    checked={showTitleChecked}
+                                    onChange={handleToggleShowTitleOnHome}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                            </label>
+                        </div>
+
+                        {/* Opciones de layout */}
                         <div className="space-y-2.5">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Seleccionar Layout</span>
                             <div className="grid grid-cols-4 gap-2.5">
                                 {layoutOptions.map((option) => {
                                     const isSelected = currentLayout === option.id;
@@ -453,63 +522,117 @@ export const PageItem = ({
                                     </div>
                                     );
                                 })}
-                                {/* Opción 1: Fila de 3 imágenes */}
-                                {/* <button
-                                    type="button"
-                                    onClick={() => handleUpdatePageLayout(page.uid, "grid-3")}
-                                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                    currentLayout === "grid-3" || !currentLayout
-                                        ? "border-black text-black" 
-                                        : "border-slate-200 text-slate-500"
-                                    }`}
-                                >
-                                    <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
-                                    {   option.icon}
-                                    </div>
-                                    <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "grid-3" || !currentLayout ? "text-white" : "text-slate-600"}`}>
-                                        Fila de 3 imágenes
-                                    </span>
-                                </button> */}
-
-                                {/* Opción 2: Imagen grande única */}
-                                {/* <button
-                                    type="button"
-                                    onClick={() => handleUpdatePageLayout(page.uid, "single-large")}
-                                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                    currentLayout === "single-large"
-                                        ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                        : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                                    }`}
-                                >
-                                    <svg className={`w-7 h-7 stroke-2 ${currentLayout === "single-large" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "single-large" ? "text-white" : "text-slate-600"}`}>
-                                        Imagen grande única
-                                    </span>
-                                </button> */}
-
-                                {/* Opción 3: Galería Mosaico */}
-                                {/* <button
-                                    type="button"
-                                    onClick={() => handleUpdatePageLayout(page.uid, "masonry-grid")}
-                                    className={`flex flex-col items-center justify-center p-3.5 rounded-xl border transition cursor-pointer gap-2 ${
-                                    currentLayout === "masonry-grid"
-                                        ? "bg-purple-700 text-white border-purple-700 shadow-sm"
-                                        : "bg-white text-slate-700 border-purple-100 hover:bg-purple-50"
-                                    }`}
-                                >
-                                    <svg className={`w-7 h-7 stroke-2 ${currentLayout === "masonry-grid" ? "text-white" : "text-purple-700"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <rect x="3" y="3" width="10" height="10" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <rect x="14" y="3" width="7" height="6" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <rect x="14" y="10.5" width="7" height="10.5" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <rect x="3" y="14" width="10" height="7" rx="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    <span className={`text-xs font-medium leading-tight text-center ${currentLayout === "masonry-grid" ? "text-white" : "text-slate-600"}`}>
-                                        Galería Mosaico
-                                    </span>
-                                </button> */}
                             </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Sección desplegable: Selección de layout y mostrar título (para type store) */}
+            <AnimatePresence>
+                {isStoreType && isLayoutOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
+                    >
+                        {/* Opción para Mostrar título en el Home */}
+                        <div className="flex items-center justify-between pb-2.5 border-b border-purple-100/60 text-xs text-slate-700">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Mostrar título en el Home</span>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0" title="Decidir si se muestra el título de la página en el inicio">
+                                <input
+                                    type="checkbox"
+                                    checked={showTitleChecked}
+                                    onChange={handleToggleShowTitleOnHome}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                            </label>
+                        </div>
+
+                        {/* Opciones de layout para store (Fila o Carrusel) */}
+                        <div className="space-y-2.5">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Seleccionar Layout</span>
+                            <div className="grid grid-cols-2 gap-2.5">
+                                {storeLayoutOptions.map((option) => {
+                                    const isSelected = (currentLayout || "row") === option.id;
+
+                                    return (
+                                        <div 
+                                            key={option?.id}
+                                            onClick={() => handleUpdatePageLayout && handleUpdatePageLayout(page.uid, option.id)}
+                                            className={`border-2 rounded-xl p-3 flex flex-col items-center gap-2.5 cursor-pointer transition-all text-center group ${
+                                                isSelected 
+                                                    ? "border-black text-black" 
+                                                    : "border-slate-200 text-slate-500"
+                                            }`}
+                                        >
+                                            <div className="h-11 w-full flex items-center justify-center transition-colors overflow-hidden">
+                                                {option?.icon}
+                                            </div>
+                                            <span className={`text-xs font-medium ${
+                                                isSelected ? "text-black font-semibold" : "text-slate-800 group-hover:text-black"
+                                            }`}>
+                                                {option?.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Sección desplegable: Mostrar título (para type audio) */}
+            <AnimatePresence>
+                {isAudioType && isLayoutOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
+                    >
+                        <div className="flex items-center justify-between text-xs text-slate-700">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Mostrar título en el Home</span>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={showTitleChecked}
+                                    onChange={handleToggleShowTitleOnHome}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                            </label>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Sección desplegable: Mostrar título (para type link) */}
+            <AnimatePresence>
+                {isLinkType && isLayoutOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden bg-purple-50/50 border-t border-purple-100 px-4 py-3.5 space-y-3"
+                    >
+                        <div className="flex items-center justify-between text-xs text-slate-700">
+                            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Mostrar título en el Home</span>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={showTitleChecked}
+                                    onChange={handleToggleShowTitleOnHome}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-700"></div>
+                            </label>
                         </div>
                     </motion.div>
                 )}

@@ -103,6 +103,7 @@ export default function AudioPageEditor({ portfolioData, selectedPageId, updateP
   const detectPlatformName = (url) => {
     try {
       const lowerUrl = url.toLowerCase();
+      if (lowerUrl.includes("music.apple.com")) return "Apple Music";
       if (lowerUrl.includes("music.youtube.com")) return "YouTube Music";
       if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) return "YouTube";
       if (lowerUrl.includes("soundcloud.com") || lowerUrl.includes("on.soundcloud.com")) return "SoundCloud";

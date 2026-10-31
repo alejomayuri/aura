@@ -12,11 +12,16 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
 
   const [productName, setProductName] = useState("");
   const [productPrice, setProductPrice] = useState("");
-  const [productCurrency, setProductCurrency] = useState("S/"); // "S/" para Soles o "$" para Dólares
+  const [productCurrency, setProductCurrency] = useState("S/");
   const [productUrl, setProductUrl] = useState("");
-  const [productCategory, setProductCategory] = useState("General");
+  
+  const categories = selectedPage?.categories || [];
+  
+  // Si no hay categorías, forzamos el modo de añadir nueva por defecto
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(categories.length === 0);
+  const [productCategory, setProductCategory] = useState(categories[0] || "");
   const [newCategoryInput, setNewCategoryInput] = useState("");
-  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+
   const [productThumbnail, setProductThumbnail] = useState("");
 
   // Estados de control para edición de título y borrado (igual que en LinkItem)
@@ -31,7 +36,6 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
   const formRef = useRef(null);
 
   const items = selectedPage?.items || [];
-  const categories = selectedPage?.categories?.length > 0 ? selectedPage.categories : ["General"];
 
   // Integración del hook useImageModal para la subida de la foto del producto a Cloudinary
   const {
@@ -89,6 +93,11 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
       }
     }
 
+    if (!finalCategoryName.trim()) {
+      setError("Debes seleccionar o crear una categoría.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -96,13 +105,14 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
       const newItem = {
         id: crypto.randomUUID(),
         title: productName.trim(),
-        price: productPrice.trim() ? Number(productPrice) : 0,
+        price: productPrice.trim() ? Number(productPrice) : null,
         currency: productCurrency,
         url: productUrl.trim(),
-        category: finalCategoryName,
+        category: finalCategoryName.trim(),
         thumbnail: productThumbnail.trim() || "",
         layout: "classic",
         isActive: true,
+        isFeatured: true,
         createdAt: new Date().toISOString()
       };
 
@@ -115,7 +125,8 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
       setProductUrl("");
       setProductThumbnail("");
       setNewCategoryInput("");
-      setIsAddingNewCategory(false);
+      setIsAddingNewCategory(finalCategories.length === 0);
+      setProductCategory(finalCategories[0] || "");
       setShowForm(false);
     } catch (err) {
       console.error("Error al añadir producto:", err);
@@ -256,7 +267,7 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   {/* Precio y Selector de Moneda */}
                   <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-slate-700">Precio</label>
+                      <label className="text-sm font-medium text-slate-700">Precio <span className="text-slate-400 font-normal">(Opcional)</span></label>
                       <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-slate-900 shadow-sm">
                           <select
                           value={productCurrency}
@@ -281,16 +292,26 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-medium text-slate-700">Categoría</label>
-                      <button
-                      type="button"
-                      onClick={() => setIsAddingNewCategory(!isAddingNewCategory)}
-                      className="text-purple-600 hover:underline text-[11px] font-medium cursor-pointer"
-                      >
+                      {categories.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setIsAddingNewCategory(!isAddingNewCategory)}
+                          className="text-purple-600 hover:underline text-[11px] font-medium cursor-pointer"
+                        >
                           {isAddingNewCategory ? "Existente" : "+ Nueva"}
-                      </button>
+                        </button>
+                      )}
                     </div>
 
-                    {!isAddingNewCategory ? (
+                    {categories.length === 0 || isAddingNewCategory ? (
+                      <input
+                        type="text"
+                        placeholder="Nueva categoría..."
+                        value={newCategoryInput}
+                        onChange={(e) => setNewCategoryInput(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-900 shadow-sm h-[38px]"
+                      />
+                    ) : (
                       <select
                         value={productCategory}
                         onChange={(e) => setProductCategory(e.target.value)}
@@ -302,14 +323,6 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                           </option>
                         ))}
                       </select>
-                    ) : (
-                      <input
-                        type="text"
-                        placeholder="Nueva categoría..."
-                        value={newCategoryInput}
-                        onChange={(e) => setNewCategoryInput(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-900 shadow-sm h-[38px]"
-                      />
                     )}
                   </div>
                 </div>
@@ -384,7 +397,7 @@ export default function StorePageEditor({ portfolioData, selectedPageId, updateP
                     setProductUrl("");
                     setProductThumbnail("");
                     setNewCategoryInput("");
-                    setIsAddingNewCategory(false);
+                    setIsAddingNewCategory(categories.length === 0);
                     setShowForm(false);
                   }}
                   className="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"

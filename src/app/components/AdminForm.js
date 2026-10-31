@@ -195,8 +195,12 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
           setPortfolioData={setPortfolioData}
           onSave={onSave}
           onSelectPage={onSelectPage}
-          onReorderPages={(newPages) => {
-            setPortfolioData({ ...portfolioData, pages: newPages });
+          onReorderPages={async (newPages) => {
+            const updatedData = { ...portfolioData, pages: newPages };
+            setPortfolioData(updatedData);
+            if (typeof onSave === "function") {
+              await onSave(updatedData);
+            }
           }}
         />
       </div>

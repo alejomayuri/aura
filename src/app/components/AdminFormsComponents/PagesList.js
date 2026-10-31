@@ -33,6 +33,9 @@ export default function PagesList({
             const isVisibleOnHome = page.showOnHome !== false; 
             const pageType = page.type || page.template || "Página";
             const isImageType = pageType.toLowerCase() === "image" || pageType.toLowerCase() === "imagen";
+            const isLinkType = pageType.toLowerCase() === "link"
+            const isAudioType = pageType.toLowerCase() === "audio"
+            const isStoreType = pageType.toLowerCase() === "store"
             const pageSlug = page.slug || page.path || "";
             const absoluteShareUrl = typeof window !== "undefined" 
               ? `${window.location.origin}/${portfolioSlug}/${pageSlug}` 
@@ -80,6 +83,9 @@ export default function PagesList({
                 absoluteShareUrl={absoluteShareUrl}
                 isVisibleOnHome={isVisibleOnHome}
                 isImageType={isImageType}
+                isLinkType={isLinkType}
+                isAudioType={isAudioType}
+                isStoreType={isStoreType}
                 isLayoutOpen={openLayoutPageUid === pageUid}
                 isShareOpen={openSharePageUid === pageUid}
                 isDeleteOpen={openDeletePageUid === pageUid}

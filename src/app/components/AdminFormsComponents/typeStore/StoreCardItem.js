@@ -26,6 +26,10 @@ export default function StoreCardItem({
   const isDeleteOpen = deleteConfirmId === item.id;
   const isFeatured = item.isFeatured === true;
 
+  const hasPrice = item.price !== null && item.price !== undefined;
+
+  console.log("item", item)
+
   // Tipo de descuento actual ("amount" o "percentage")
   const [discountType, setDiscountType] = useState(item.discountType || "amount"); 
 
@@ -149,26 +153,33 @@ export default function StoreCardItem({
                 )}
 
                 <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
-                  {item.isOnSale && item.discountPrice > 0 ? (
-                    <div className="flex items-center gap-1.5">
-                      <span className="line-through text-slate-400">
+                  {hasPrice ? (
+                    item.isOnSale && item.discountPrice > 0 ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="line-through text-slate-400">
+                          {item.currency || "S/"} {Number(item.price || 0).toFixed(2)}
+                        </span>
+                        <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
+                          {item.currency || "S/"} {Number(item.discountPrice).toFixed(2)}
+                          {item.discountType === "percentage" && item.discountValue ? ` (-${item.discountValue}%)` : ""}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-medium text-slate-700">
                         {item.currency || "S/"} {Number(item.price || 0).toFixed(2)}
                       </span>
-                      <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
-                        {item.currency || "S/"} {Number(item.discountPrice).toFixed(2)}
-                        {item.discountType === "percentage" && item.discountValue ? ` (-${item.discountValue}%)` : ""}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-sm font-medium text-slate-700">
-                      {item.currency || "S/"} {Number(item.price || 0).toFixed(2)}
-                    </span>
+                    )
+                  ) : null}
+
+                  {hasPrice && (
+                    <span>·</span>
                   )}
-                  <span>·</span>
+
                   <span className="bg-slate-100 px-2 py-0.5 rounded-md text-[11px] font-medium text-slate-600 truncate max-w-[120px]">
                     {item.category || "General"}
                   </span>
-                  {item.isOnSale && item.discountPrice > 0 && (
+
+                  {hasPrice && item.isOnSale && item.discountPrice > 0 && (
                     <span className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase">
                       Oferta
                     </span>
@@ -204,17 +215,23 @@ export default function StoreCardItem({
               </svg>
             </button>
 
-            {/* Botón de Oferta (Cierra el panel de eliminar al abrirse) */}
+            {/* Botón de Oferta (Desactivado si no tiene precio) */}
             <button
               type="button"
+              disabled={!hasPrice}
               onClick={() => {
+                if (!hasPrice) return;
                 setIsOfferOpen(!isOfferOpen);
                 setDeleteConfirmId(null);
               }}
-              className={`cursor-pointer transition-all ${
-                item.isOnSale ? "text-purple-600" : "text-slate-400 hover:text-black"
+              className={`transition-all ${
+                !hasPrice 
+                  ? "opacity-30 cursor-not-allowed text-slate-400" 
+                  : item.isOnSale 
+                    ? "text-purple-600 cursor-pointer" 
+                    : "text-slate-400 hover:text-black cursor-pointer"
               }`}
-              title="Configurar oferta"
+              title={hasPrice ? "Configurar oferta" : "Añade un precio para configurar ofertas"}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -244,7 +261,7 @@ export default function StoreCardItem({
 
           {/* Panel desplegable de ofertas */}
           <AnimatePresence>
-            {isOfferOpen && (
+            {isOfferOpen && hasPrice && (
               <motion.form
                 onSubmit={handleSaveOffer}
                 initial={{ opacity: 0, height: 0 }}

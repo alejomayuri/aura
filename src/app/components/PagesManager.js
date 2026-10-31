@@ -197,8 +197,9 @@ export default function PagesManager({ portfolioData, setPortfolioData, onSave, 
           setPortfolioData={setPortfolioData}
           onSave={onSave}
           onSelectPage={onSelectPage}
-           onReorderPages={(newPages) => {
-            setPortfolioData({ ...portfolioData, pages: newPages });
+          onReorderPages={async (newPages) => {
+            // Se llama a syncAndSave para actualizar el estado y guardarlo en la base de datos
+            await syncAndSave(newPages);
           }}
           emptyMessage="No hay páginas guardadas en la base de datos todavía."
         />

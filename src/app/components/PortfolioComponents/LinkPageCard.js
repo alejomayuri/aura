@@ -3,8 +3,8 @@ export default function LinkPageCard({ page, styles, internal, blockColor, textC
 
   return (
     <div key={page.id} className="space-y-3 mb-8">
-      {home && (
-        <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+      {(home && page.showTitleOnHome)  && (
+        <span className={`block text-center whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
           style={{ color: textColor }}
         >
           {page.title}

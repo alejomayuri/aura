@@ -27,12 +27,13 @@ export default function ImagePageCard({ page, portfolioSlug, styles, layout, cur
 
   return (
     <>
-        <span className={`block whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+      {(page.showTitleOnHome)  && (
+        <span className={`block text-center whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
           style={{ color: textColor }}
         >
           {page.title}
         </span>
-      
+      )}
     <Link 
       href={`/${portfolioSlug}/${page.slug || page.id}`}
       className={`w-full p-3 transition-all duration-200 mb-8 cursor-pointer block ${styles.pageCard}`}
