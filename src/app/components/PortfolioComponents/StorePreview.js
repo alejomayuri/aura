@@ -84,7 +84,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 href={item.url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group relative flex flex-col transition-all duration-200 overflow-hidden shrink-0 w-[170px] aspect-[17/28] snap-start ${styles.pageCard}`}
+                className={`group relative flex flex-col transition-all duration-200 overflow-hidden shrink-0 w-[170px] ${hasPrice ? 'aspect-[17/28]' : 'aspect-[17/18]'} snap-start ${styles.pageCard}`}
                 style={blockStyle}
               >
                 {/* Imagen arriba */}
@@ -150,7 +150,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                   href={item.url || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`group relative flex flex-col transition-all duration-200 overflow-hidden aspect-[17/28] ${styles.pageCard}`}
+                  className={`group relative flex flex-col transition-all duration-200 overflow-hidden ${hasPrice ? 'aspect-[17/28]' : 'aspect-[17/18]'} ${styles.pageCard}`}
                   style={blockStyle}
               >
                 {/* Imagen arriba (altura proporcional) */}
@@ -176,9 +176,8 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                     </h4>
                   </div>
 
-                  <div className="space-y-2">
-                    {/* Precios (solo si tiene precio) */}
-                    {hasPrice && (
+                  {hasPrice && (
+                    <div className="space-y-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {isOnSale ? (
                           <div className="flex flex-col">
@@ -195,8 +194,8 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                           </span>
                         )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </a>
             );

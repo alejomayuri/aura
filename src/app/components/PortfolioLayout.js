@@ -232,7 +232,7 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
     if (socialLinks.length === 0) return null;
 
     return (
-      <div className={`flex flex-wrap items-center justify-center ${styles.socialGap} py-3`}>
+      <div className={`flex flex-wrap items-center justify-center ${styles.socialGap} pt-4`}>
         {socialLinks.map((linkItem, index) => {
           const formattedUrl = linkItem.url.startsWith("http") ? linkItem.url : `https://${linkItem.url}`;
           const svgHeight = styles.svgHeight
@@ -413,7 +413,9 @@ export default function PortfolioLayout({ portfolioData, template, children }) {
           {socialPosition === "top" && renderSocialLinks()}
 
           {/* Contenido inyectado (Páginas internas, links destacados, etc.) */}
-          {children}
+          <div className="mt-6">
+            {children}
+          </div>
 
           {/* Redes Sociales ABAJO si socialPosition es 'bottom' */}
           {socialPosition === "bottom" && renderSocialLinks()}
