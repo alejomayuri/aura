@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }) {
   // Estado para controlar si la sección de páginas está abierta o cerrada
   const [isPagesOpen, setIsPagesOpen] = useState(true);
+  // Estado para controlar el menú desplegable inferior del usuario
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Extraemos las páginas del portfolio (si existen)
   const pages = portfolioData?.pages || [];
@@ -26,6 +28,13 @@ export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }
   const isMyLightjausActive = activeTab === "my-lightjaus";
   const isMainActive = activeTab === "main";
   const isCreateActive = activeTab === "create-page" || activeTab === "pages";
+  const isDesignActive = activeTab === "design";
+  const isSettingsActive = activeTab === "settings";
+  const isFeedbackActive = activeTab === "feedback";
+
+  // Obtenemos el slug y la mainImage del portfolioData
+  const userSlug = portfolioData?.slug || user?.email?.split("@")[0] || "usuario";
+  const userAvatar = portfolioData?.mainImage;
 
   return (
     <aside style={{ width: "240px", fontFamily: "'Poppins', sans-serif", backgroundColor: "#F2F1EF" }} className="border-r border-slate-200 p-3.5 flex flex-col justify-between z-25 shrink-0 text-slate-900 shadow-sm relative font-['Poppins']">
@@ -168,7 +177,7 @@ export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }
           <button
             onClick={() => setActiveTab("design")}
             className={`w-full flex items-center gap-3 px-2.5 py-1.5 text-sm focus:outline-none cursor-pointer ${
-              activeTab === "design"
+              isDesignActive
                 ? "text-black font-[500] bg-[#bdbdbd]/35"
                 : "text-slate-900 font-normal hover:text-black hover:bg-[#bdbdbd]/55"
             }`}
@@ -181,16 +190,119 @@ export default function Sidebar({ user, activeTab, setActiveTab, portfolioData }
         </nav>
       </div>
 
-      <div className="pt-2 border-t border-slate-300">
-        <div className="flex items-center justify-between">
-          <p className="text-[11px] font-semibold text-slate-900 truncate pr-2">{user?.email}</p>
-          <button 
-            onClick={() => signOut(auth)}
-            className="py-1 px-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-all focus:outline-none cursor-pointer"
+      {/* Zona Inferior: Bloque desplegable hacia arriba con la info del usuario, configuración, dar feedback y salir */}
+      <div className="pt-2.5 border-t border-slate-300 relative">
+        <AnimatePresence>
+          {isUserMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-30 space-y-1"
+            >
+              {/* Bloque con la imagen, nombre y URL */}
+              <div className="flex items-center gap-2.5 px-2 py-2 truncate border-b border-slate-100 mb-1">
+                {userAvatar ? (
+                  <img 
+                    src={userAvatar} 
+                    alt="Avatar" 
+                    className="w-9 h-9 rounded-full object-cover border border-slate-300 shrink-0" 
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                    {userSlug.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex flex-col text-left truncate">
+                  <span className="text-xs font-bold text-slate-900 truncate">@{userSlug}</span>
+                  <span className="text-[10px] text-slate-500 truncate">lightjaus.com/{userSlug}</span>
+                </div>
+              </div>
+
+              {/* Opción Configuración dentro del menú */}
+              <button
+                onClick={() => {
+                  setActiveTab("settings");
+                  setIsUserMenuOpen(false);
+                }}
+                className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 cursor-pointer ${
+                  isSettingsActive
+                    ? "text-black font-[600] bg-[#bdbdbd]/35"
+                    : "text-slate-900 hover:text-black hover:bg-slate-100"
+                }`}
+              >
+                <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Configuración</span>
+              </button>
+
+              {/* Opción Dar feedback dentro del menú */}
+              <button
+                onClick={() => {
+                  setActiveTab("feedback");
+                  setIsUserMenuOpen(false);
+                }}
+                className={`w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2.5 cursor-pointer ${
+                  isFeedbackActive
+                    ? "text-black font-[600] bg-[#bdbdbd]/35"
+                    : "text-slate-900 hover:text-black hover:bg-slate-100"
+                }`}
+              >
+                <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>Dar feedback</span>
+              </button>
+
+              {/* Botón de Salir */}
+              <button
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  signOut(auth);
+                }}
+                className="w-full text-left py-1.5 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold transition-all flex items-center gap-2.5 cursor-pointer"
+              >
+                <svg className="w-4 h-4 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Salir</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+          className="w-full flex items-center justify-between p-1.5 rounded-xl hover:bg-[#bdbdbd]/40 transition-colors cursor-pointer focus:outline-none"
+        >
+          <div className="flex items-center gap-2 truncate">
+            {userAvatar ? (
+              <img 
+                src={userAvatar} 
+                alt="Avatar" 
+                className="w-7 h-7 rounded-full object-cover border border-slate-300 shrink-0" 
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0">
+                {userSlug.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-xs font-semibold text-slate-900 truncate">@{userSlug}</span>
+          </div>
+
+          <svg 
+            className={`w-4 h-4 text-slate-600 transition-transform duration-300 shrink-0 ${isUserMenuOpen ? "rotate-180" : ""}`} 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor" 
+            strokeWidth="2.5"
           >
-            Salir
-          </button>
-        </div>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
       </div>
     </aside>
   );
