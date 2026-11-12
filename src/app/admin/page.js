@@ -12,6 +12,7 @@ import AudioPageEditor from "@/app/components/AudioPageEditor";
 import StorePageEditor from "@/app/components/StorePageEditor"; // <--- 1. Importas el nuevo componente StorePageEditor
 import PagePreview from "@/app/components/PagePreview";
 import MyLightjaus from "@/app/components/MyLightjaus";
+import Settings from "@/app/components/Settings"; 
 import { usePortfolioSync } from "@/app/hooks/usePortfolioSync";
 
 export default function AdminDashboard() {
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
   } = usePortfolioSync();
 
   const [activeTab, setActiveTab] = useState("my-lightjaus");
+  console.log("activeTab", activeTab)
   const [selectedSubPageId, setSelectedSubPageId] = useState(null);
 
   if (checkingAuth || loading) {
@@ -86,6 +88,10 @@ export default function AdminDashboard() {
           <MyLightjaus portfolioData={portfolioData} user={user} />
         )}
 
+        {activeTab === "settings" && (
+          <Settings user={user} portfolioData={portfolioData} setPortfolioData={setPortfolioData} />
+        )}
+
         {activeTab === "main" && (
           <AdminForm 
             portfolioData={portfolioData} 
@@ -115,7 +121,7 @@ export default function AdminDashboard() {
           />
         )}
 
-        {activeTab !== "design" && selectedPage && selectedPage.type === "image" && (
+        {activeTab !== "design" && activeTab !== "settings" && selectedPage && selectedPage.type === "image" && (
           <ImagePageEditor 
             portfolioData={portfolioData}
             selectedPageId={selectedSubPageId}
@@ -124,7 +130,7 @@ export default function AdminDashboard() {
           />
         )}
 
-        {activeTab !== "design" && selectedPage && selectedPage.type === "link" && (
+        {activeTab !== "design" && activeTab !== "settings" && selectedPage && selectedPage.type === "link" && (
           <LinkPageEditor 
             portfolioData={portfolioData}
             selectedPageId={selectedSubPageId}
@@ -133,7 +139,7 @@ export default function AdminDashboard() {
           />
         )}
 
-        {activeTab !== "design" && selectedPage && selectedPage.type === "audio" && (
+        {activeTab !== "design" && activeTab !== "settings" && selectedPage && selectedPage.type === "audio" && (
           <AudioPageEditor 
             portfolioData={portfolioData}
             selectedPageId={selectedSubPageId}
@@ -143,7 +149,7 @@ export default function AdminDashboard() {
         )}
 
         {/* --- 2. RENDERIZADO DEL EDITOR DE TIENDA (STORE) --- */}
-        {activeTab !== "design" && selectedPage && selectedPage.type === "store" && (
+        {activeTab !== "design" && activeTab !== "settings" && selectedPage && selectedPage.type === "store" && (
           <StorePageEditor 
             portfolioData={portfolioData}
             selectedPageId={selectedSubPageId}
@@ -154,7 +160,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ================= 3. VISTA PREVIA ================= */}
-      {activeTab !== "my-lightjaus" && (
+      {(activeTab !== "my-lightjaus" && activeTab !== "settings") && (
         <section className="w-[680px] bg-slate-50 p-6 pt-20 flex flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
           <div className="w-[400px] flex justify-between items-center mb-4">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
