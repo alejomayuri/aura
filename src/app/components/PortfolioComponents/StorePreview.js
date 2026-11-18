@@ -88,7 +88,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 style={blockStyle}
               >
                 {/* Imagen arriba */}
-                <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden border-b border-slate-100 shrink-0">
+                <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden shrink-0">
                   {item.thumbnail ? (
                     <img
                       src={item.thumbnail}
@@ -154,7 +154,7 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                   style={blockStyle}
               >
                 {/* Imagen arriba (altura proporcional) */}
-                <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden border-b border-slate-100 shrink-0">
+                <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden shrink-0">
                   {item.thumbnail ? (
                     <img
                       src={item.thumbnail}
