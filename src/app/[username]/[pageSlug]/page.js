@@ -117,9 +117,31 @@ export default function PublicCustomPage({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center">
-        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-sm font-mono text-slate-400">Cargando página...</p>
+      <div className="min-h-screen w-full bg-slate-50 flex items-start justify-center p-0 md:pt-8">
+        <div className="w-full max-w-[576px] min-h-screen md:min-h-[calc(100vh-2rem)] bg-white border-0 md:border md:border-slate-200/95 md:rounded-t-[32px] p-6 sm:p-8 flex flex-col items-center animate-pulse shadow-xl md:pt-24 pt-24">
+          {/* Avatar Skeleton */}
+          <div className="w-28 h-28 bg-slate-100 rounded-full mb-6 border border-slate-200/50" />
+          
+          {/* Título y subtítulo Skeleton */}
+          <div className="w-56 h-6 bg-slate-100 rounded-xl mb-3" />
+          <div className="w-36 h-4 bg-slate-100 rounded-lg mb-8" />
+          
+          {/* Redes sociales o iconos Skeleton */}
+          <div className="flex gap-3 mb-8">
+            <div className="w-11 h-11 bg-slate-100 rounded-2xl" />
+            <div className="w-11 h-11 bg-slate-100 rounded-2xl" />
+            <div className="w-11 h-11 bg-slate-100 rounded-2xl" />
+            <div className="w-11 h-11 bg-slate-100 rounded-2xl" />
+          </div>
+
+          {/* Tarjetas / Enlaces Skeleton con bloques de distintos altos */}
+          <div className="w-full space-y-4">
+            <div className="w-full h-16 bg-slate-100/90 rounded-2xl border border-slate-200/40" />
+            <div className="w-full h-20 bg-slate-100/90 rounded-2xl border border-slate-200/40" />
+            <div className="w-full h-14 bg-slate-100/90 rounded-2xl border border-slate-200/40" />
+            <div className="w-full h-24 bg-slate-100/90 rounded-2xl border border-slate-200/40" />
+          </div>
+        </div>
       </div>
     );
   }

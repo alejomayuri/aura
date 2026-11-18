@@ -117,5 +117,19 @@ export const getTemplateStyles = (currentTemplate) => {
         pageTitle: "font-medium uppercase tracking-wider",
         socialGap: "gap-2"
       };
+    case "forest":
+      return {
+        bgScreen: "bg-emerald-950",
+        container: "rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative bg-white",
+        description: "text-black font-semibold",
+        title: "text-black font-black tracking-tight text-xl",
+        pageCard: "bg-white border-2 border-black rounded-[35px] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all",
+        pageTitle: "font-semibold text-black text-md",
+        radiusImageLink: "rounded-full",
+        socialIconBtn: "w-10 h-10 flex items-center justify-center",
+        svgHeight: 7,
+        svgWidth: 7,
+        socialGap: "gap-2",
+      };
   }
 };

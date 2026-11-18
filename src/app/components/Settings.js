@@ -1,16 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Title from "./AdminFormsComponents/Title";
 import { 
   sendPasswordResetEmail, 
   EmailAuthProvider, 
+  GoogleAuthProvider,
   reauthenticateWithCredential, 
+  reauthenticateWithPopup,
   deleteUser,
   signOut 
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { savePortfolioData } from "@/lib/db";
+
+// Lista de palabras reservadas que no se pueden usar como URL
+const RESERVED_SLUGS = [
+  "admin",
+  "login",
+  "register",
+  "signup",
+  "dashboard",
+  "api",
+  "auth",
+  "setup",
+  "settings",
+  "support",
+  "help",
+  "terms",
+  "privacy"
+];
 
 export default function Settings({ user, portfolioData, setPortfolioData }) {
   // Estados para la sección Usuario (Nombre)
@@ -35,6 +56,14 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
   const [deletingAccount, setDeletingAccount] = useState(false);
 
   const planType = portfolioData?.plan || "gratis";
+
+  // Detectar si el usuario tiene contraseña o entró con Google
+  const hasPasswordProvider = user?.providerData?.some(
+    (provider) => provider.providerId === "password"
+  );
+  const isGoogleUser = user?.providerData?.some(
+    (provider) => provider.providerId === "google.com"
+  );
 
   // Manejar actualización del Nombre de usuario
   const handleSaveUser = async (e) => {
@@ -79,19 +108,59 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
     }
   };
 
-  // 2. Manejar actualización del Slug (nombre de usuario)
+  // Formatear automáticamente el input del slug mientras se escribe
+  const handleSlugChange = (e) => {
+    const rawValue = e.target.value;
+    const formattedSlug = rawValue
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-_]/g, "");
+
+    setSlug(formattedSlug);
+    if (slugMessage.text) setSlugMessage({ text: "", type: "" });
+  };
+
+  // 2. Manejar actualización del Slug con validaciones completas
   const handleSaveSlug = async (e) => {
     e.preventDefault();
     setSlugMessage({ text: "", type: "" });
 
-    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-_]/g, "");
+    const cleanSlug = slug
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-_]/g, "");
+
     if (!cleanSlug) {
-      setSlugMessage({ text: "El nombre de usuario no es válido.", type: "error" });
+      setSlugMessage({ text: "Por favor escribe una URL para tu portfolio.", type: "error" });
+      return;
+    }
+
+    if (cleanSlug.length < 3) {
+      setSlugMessage({ text: "La URL debe tener al menos 3 caracteres.", type: "error" });
+      return;
+    }
+
+    if (RESERVED_SLUGS.includes(cleanSlug)) {
+      setSlugMessage({ text: "Esta palabra no puede ser utilizada como URL.", type: "error" });
       return;
     }
 
     setSavingSlug(true);
     try {
+      const portfoliosRef = collection(db, "portfolios");
+      const q = query(portfoliosRef, where("slug", "==", cleanSlug));
+      const querySnapshot = await getDocs(q);
+
+      const isTaken = querySnapshot.docs.some((docSnap) => docSnap.id !== user.uid);
+
+      if (isTaken) {
+        setSlugMessage({ text: "Esta URL ya está en uso. Por favor elige otra.", type: "error" });
+        setSavingSlug(false);
+        return;
+      }
+
       const updatedData = { ...portfolioData, slug: cleanSlug };
       const success = await savePortfolioData(user.uid, updatedData);
 
@@ -104,7 +173,7 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
       }
     } catch (error) {
       console.error(error);
-      setSlugMessage({ text: "Error al actualizar.", type: "error" });
+      setSlugMessage({ text: "Ocurrió un error al verificar o guardar tu URL.", type: "error" });
     } finally {
       setSavingSlug(false);
     }
@@ -128,24 +197,35 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
     }
   };
 
-  // 4. Borrar cuenta
+  // 4. Borrar cuenta y datos en Firestore (soporta Email/Password y Google)
   const handleDeleteAccount = async (e) => {
     e.preventDefault();
     setDeleteError("");
     setDeletingAccount(true);
 
     try {
-      const credential = EmailAuthProvider.credential(user.email, deletePassword);
-      await reauthenticateWithCredential(user, credential);
+      if (hasPasswordProvider) {
+        const credential = EmailAuthProvider.credential(user.email, deletePassword);
+        await reauthenticateWithCredential(user, credential);
+      } else if (isGoogleUser) {
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(user, provider);
+      }
+
+      const userDocRef = doc(db, "portfolios", user.uid);
+      await deleteDoc(userDocRef);
+
       await deleteUser(user);
-      signOut(auth);
+      await signOut(auth);
     } catch (error) {
       console.error(error);
-      setDeleteError(
-        error.code === "auth/wrong-password" 
-          ? "Contraseña incorrecta." 
-          : "Ocurrió un error al eliminar la cuenta. Intente iniciar sesión nuevamente."
-      );
+      if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+        setDeleteError("Contraseña incorrecta.");
+      } else if (error.code === "auth/popup-closed-by-user") {
+        setDeleteError("Se cerró la ventana de verificación de Google antes de confirmar.");
+      } else {
+        setDeleteError("Ocurrió un error al eliminar la cuenta. Intenta cerrar sesión y volver a entrar.");
+      }
       setDeletingAccount(false);
     }
   };
@@ -164,7 +244,6 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
         </div>
        
         <div className="space-y-4 pt-2">
-          {/* Editar Nombre con botón al lado */}
           <form onSubmit={handleSaveUser} className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700">Nombre</label>
             <div className="flex gap-2">
@@ -190,7 +269,6 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
             )}
           </form>
 
-          {/* Correo electrónico (solo lectura) */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-700">Correo electrónico</label>
             <input 
@@ -203,31 +281,37 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
         </div>
       </section>
 
-      {/* SECCIÓN 2: DATA Y PRIVACIDAD (RESTABLECER CONTRASEÑA) */}
+      {/* SECCIÓN 2: DATA Y PRIVACIDAD */}
       <section className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex flex-col gap-2 justify-between">
           <h2 className="text-base font-medium text-slate-950 tracking-wide truncate">
             Data y privacidad
           </h2>
-          <p className="text-xs text-slate-500">Envía un enlace a tu correo electrónico para cambiar tu contraseña de forma segura.</p>
+          <p className="text-xs text-slate-500">
+            {hasPasswordProvider
+              ? "Envía un enlace a tu correo electrónico para cambiar tu contraseña de forma segura."
+              : "Tu cuenta está vinculada con Google. Gestionas tu seguridad directamente desde tu cuenta de Google."}
+          </p>
         </div>
 
-        <div className="pt-2 space-y-3">
-          <button
-            type="button"
-            onClick={handleSendPasswordReset}
-            disabled={sendingReset}
-            className="px-4 py-2.5 bg-black hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-          >
-            {sendingReset ? "Enviando correo..." : "Enviar enlace de cambio de contraseña"}
-          </button>
+        {hasPasswordProvider && (
+          <div className="pt-2 space-y-3">
+            <button
+              type="button"
+              onClick={handleSendPasswordReset}
+              disabled={sendingReset}
+              className="px-4 py-2.5 bg-black hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            >
+              {sendingReset ? "Enviando correo..." : "Enviar enlace de cambio de contraseña"}
+            </button>
 
-          {resetMessage.text && (
-            <p className={`text-xs font-medium ${resetMessage.type === "success" ? "text-emerald-600" : "text-rose-600"}`}>
-              {resetMessage.text}
-            </p>
-          )}
-        </div>
+            {resetMessage.text && (
+              <p className={`text-xs font-medium ${resetMessage.type === "success" ? "text-emerald-600" : "text-rose-600"}`}>
+                {resetMessage.text}
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       {/* SECCIÓN 3: GESTIÓN DE LA CUENTA */}
@@ -239,7 +323,6 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
           <p className="text-xs text-slate-500">Administra tu información de cuenta y preferencias.</p>
         </div>
 
-        {/* Editar Slug */}
         <form onSubmit={handleSaveSlug} className="space-y-3 pb-6 border-b border-slate-100">
           <label className="text-sm font-medium text-slate-700">Nombre de usuario (Slug)</label>
           <div className="flex gap-2">
@@ -247,8 +330,9 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
               <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-xs text-slate-400">lightjaus.com/</span>
               <input 
                 required
+                maxLength={30}
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                onChange={handleSlugChange}
                 className="w-full pl-28 pr-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-black"
               />
             </div>
@@ -267,7 +351,6 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
           )}
         </form>
 
-        {/* Tipo de plan y opción Pro */}
         <div className="flex items-center justify-between pt-2">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Plan actual</p>
@@ -304,24 +387,28 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
         </div>
       </section>
 
-      {/* Modal de confirmación para borrar cuenta */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {/* Modal de confirmación renderizado con Portal para cubrir el 100% de la pantalla */}
+      {showDeleteModal && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 font-['Poppins']">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
             <h3 className="text-lg font-bold text-rose-900">¿Estás completamente seguro?</h3>
             <p className="text-sm text-slate-600">
-              Esta acción eliminará permanentemente tu portfolio, páginas y datos de Firebase. Ingresa tu contraseña actual para confirmar:
+              {hasPasswordProvider
+                ? "Esta acción eliminará permanentemente tu portfolio, páginas y datos de Firebase. Ingresa tu contraseña actual para confirmar:"
+                : "Esta acción eliminará permanentemente tu portfolio, páginas y datos de Firebase. Se abrirá una ventana de Google para confirmar tu identidad:"}
             </p>
 
             <form onSubmit={handleDeleteAccount} className="space-y-4">
-              <input 
-                type="password"
-                required
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Tu contraseña actual"
-                className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-rose-500"
-              />
+              {hasPasswordProvider && (
+                <input 
+                  type="password"
+                  required
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="Tu contraseña actual"
+                  className="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-rose-500"
+                />
+              )}
 
               {deleteError && (
                 <p className="text-xs font-medium text-rose-600">{deleteError}</p>
@@ -340,12 +427,17 @@ export default function Settings({ user, portfolioData, setPortfolioData }) {
                   disabled={deletingAccount}
                   className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold cursor-pointer disabled:opacity-50"
                 >
-                  {deletingAccount ? "Eliminando..." : "Sí, borrar cuenta"}
+                  {deletingAccount 
+                    ? "Eliminando..." 
+                    : hasPasswordProvider 
+                      ? "Sí, borrar cuenta" 
+                      : "Confirmar con Google y borrar"}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
