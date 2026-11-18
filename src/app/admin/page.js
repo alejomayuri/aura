@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.98 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 bg-white border border-purple-100 rounded-2xl p-4 space-y-3 shadow-2xl"
+                  className="absolute left-0 right-0 top-[calc(100%+8px)] z-999 bg-white border border-purple-100 rounded-2xl p-4 space-y-3 shadow-2xl"
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                     <span className="text-xs font-semibold text-slate-700">
