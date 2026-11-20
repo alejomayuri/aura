@@ -26,6 +26,8 @@ export default function Portfolio({ portfolioData, template }) {
                 <LinkPageCard 
                   key={page.id}
                   home={true}
+                  portfolioDocId={portfolioData.id}
+                  portfolioData={portfolioData}
                   page={page}
                   blockColor={portfolioData?.colors?.secondaryColor}
                   textColor={portfolioData?.colors?.textColor}
@@ -41,6 +43,8 @@ export default function Portfolio({ portfolioData, template }) {
                   key={page.id}
                   page={page}
                   layout={page.layout}
+                  portfolioDocId={portfolioData.id}
+                  portfolioData={portfolioData}
                   blockColor={portfolioData?.colors?.secondaryColor}
                   textColor={portfolioData?.colors?.textColor}
                   portfolioSlug={portfolioData?.slug}
@@ -58,6 +62,7 @@ export default function Portfolio({ portfolioData, template }) {
                     page={page} 
                     home={true}
                     portfolioData={portfolioData}
+                    portfolioDocId={portfolioData.id}
                     blockColor={portfolioData?.colors?.secondaryColor}
                     textColor={portfolioData?.colors?.textColor}
                     styles={styles}

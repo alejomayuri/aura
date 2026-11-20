@@ -28,6 +28,8 @@ export default function PagePreview({ page, portfolioData }) {
             <LinkPageCard 
                 key={page.id}
                 page={page}
+                portfolioDocId={portfolioData.id}
+                portfolioData={portfolioData}
                 blockColor={portfolioData?.colors?.secondaryColor}
                 textColor={portfolioData?.colors?.textColor}
                 styles={styles}
@@ -44,7 +46,9 @@ export default function PagePreview({ page, portfolioData }) {
       {page.type === "image" && (
         <ImageGalleryView 
           page={page} 
-          styles={styles} 
+          styles={styles}
+          portfolioDocId={portfolioData.id}
+          portfolioData={portfolioData}
           currentTemplate={currentTemplate}
           galleryColor={portfolioData?.colors?.textColor}
         />
@@ -56,6 +60,7 @@ export default function PagePreview({ page, portfolioData }) {
           <SoundPreview 
             page={page} 
             portfolioData={portfolioData}
+            portfolioDocId={portfolioData.id}
             blockColor={portfolioData?.colors?.secondaryColor}
             styles={styles}
           />
@@ -68,6 +73,7 @@ export default function PagePreview({ page, portfolioData }) {
           <StorePreview 
             page={page} 
             portfolioData={portfolioData}
+            portfolioDocId={portfolioData.id}
             blockColor={portfolioData?.colors?.secondaryColor}
             primaryColor={portfolioData?.colors?.primaryColor}
             secondaryColor={portfolioData?.colors?.secondaryColor}

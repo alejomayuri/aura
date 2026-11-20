@@ -1,27 +1,152 @@
 "use client";
 
 import { useState } from "react";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 
-export default function StorePreview({ page, portfolioData, styles, blockColor, primaryColor, socialColor, secondaryColor, titleColor, textColor, iconsColor, home = false }) {
+async function resolvePortfolioDocId(portfolioData, providedDocId) {
+  if (providedDocId) return providedDocId;
+  if (portfolioData?.id) return portfolioData.id;
+  if (portfolioData?.uid) return portfolioData.uid;
+
+  const slug = portfolioData?.slug?.toLowerCase().trim();
+  if (!slug) return null;
+
+  const q = query(collection(db, "portfolios"), where("slug", "==", slug));
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    return snap.docs[0].id;
+  }
+  return null;
+}
+
+function getStoreItemSessionKey(docId, pageId, productItem) {
+  const itemKey =
+    productItem?.id || productItem?.url || productItem?.title || "unknown";
+  return `lj_store_clicked_${docId}_${pageId}_${encodeURIComponent(
+    String(itemKey)
+  )}`;
+}
+
+async function trackStoreClick(
+  portfolioData,
+  portfolioDocId,
+  page,
+  clickedProduct
+) {
+  if (!page?.id || !clickedProduct || typeof window === "undefined") return;
+
+  try {
+    const docId = await resolvePortfolioDocId(portfolioData, portfolioDocId);
+    if (!docId) return;
+
+    const sessionKey = getStoreItemSessionKey(docId, page.id, clickedProduct);
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, "1");
+
+    const portfolioRef = doc(db, "portfolios", docId);
+    const currentSnap = await getDoc(portfolioRef);
+    if (!currentSnap.exists()) return;
+
+    const latestData = currentSnap.data();
+    const currentPages = Array.isArray(latestData?.pages)
+      ? latestData.pages
+      : Array.isArray(portfolioData?.pages)
+      ? portfolioData.pages
+      : [];
+
+    if (!currentPages.length) return;
+
+    let matchedItem = false;
+
+    const updatedPages = currentPages.map((p) => {
+      if (String(p.id) !== String(page.id)) return p;
+
+      const updatedItems = (p.items || []).map((item) => {
+        const matchesId =
+          clickedProduct.id &&
+          item.id &&
+          String(item.id) === String(clickedProduct.id);
+        const matchesUrl =
+          !clickedProduct.id &&
+          clickedProduct.url &&
+          item.url === clickedProduct.url;
+
+        if (!matchesId && !matchesUrl) return item;
+
+        matchedItem = true;
+        return {
+          ...item,
+          clicks: (Number(item.clicks) || 0) + 1,
+        };
+      });
+
+      return {
+        ...p,
+        items: updatedItems,
+      };
+    });
+
+    if (!matchedItem) {
+      sessionStorage.removeItem(sessionKey);
+      return;
+    }
+
+    await updateDoc(portfolioRef, {
+      pages: updatedPages,
+    });
+  } catch (err) {
+    console.error("Error al registrar clic en producto de tienda:", err);
+  }
+}
+
+export default function StorePreview({
+  page,
+  portfolioData,
+  portfolioDocId,
+  styles,
+  blockColor,
+  primaryColor,
+  socialColor,
+  secondaryColor,
+  titleColor,
+  textColor,
+  iconsColor,
+  home = false,
+}) {
   const items = page?.items || [];
-  const categories = page?.categories?.length > 0 ? page.categories : ["General"];
-  
+  const categories =
+    page?.categories?.length > 0 ? page.categories : ["General"];
+
   const [selectedCategory, setSelectedCategory] = useState("Todos");
 
   // 1. Filtrar productos activos y aplicar el filtro de "featured" si estamos en el home
-  const activeItems = items.filter(item => {
+  const activeItems = items.filter((item) => {
     if (item.isActive === false) return false;
     if (home && !item.isFeatured) return false; // Solo featured si es home
     return true;
   });
 
-  const filteredItems = selectedCategory === "Todos" 
-    ? activeItems 
-    : activeItems.filter(item => item.category === selectedCategory);
+  const filteredItems =
+    selectedCategory === "Todos"
+      ? activeItems
+      : activeItems.filter((item) => item.category === selectedCategory);
 
   if (activeItems.length === 0) {
     return null; // Si no hay productos destacados en el home, no renderiza nada para mantener limpio el diseño
   }
+
+  const handleProductClick = (productItem) => {
+    void trackStoreClick(portfolioData, portfolioDocId, page, productItem);
+  };
 
   // Verificamos si debe mostrarse como carrusel (layout carrusel y exclusivamente en el home)
   const isCarouselLayout = home && page.layout === "carousel";
@@ -29,8 +154,9 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
   return (
     <div className="w-full space-y-4 mb-8">
       {/* Título de la tienda si está en el home */}
-      {(home && page.showTitleOnHome) && (
-        <span className={`block text-center whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
+      {home && page.showTitleOnHome && (
+        <span
+          className={`block text-center whitespace-normal break-words mb-1.5 ${styles.pageTitle}`}
           style={{ color: textColor }}
         >
           {page.title}
@@ -38,15 +164,16 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
       )}
 
       {/* Selector de categorías (oculto en el home o si solo hay una categoría) */}
-      {(categories.length > 1 && !home) && (
+      {categories.length > 1 && !home && (
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => setSelectedCategory("Todos")}
             className={`px-3.5 py-1.5 ${styles.radiusImageLink} text-xs font-medium transition cursor-pointer shrink-0 ${styles.pageCard}`}
             style={{
-              backgroundColor: selectedCategory === "Todos" ? blockColor : textColor,
-              color: selectedCategory === "Todos" ? textColor : secondaryColor
+              backgroundColor:
+                selectedCategory === "Todos" ? blockColor : textColor,
+              color: selectedCategory === "Todos" ? textColor : secondaryColor,
             }}
           >
             Todos
@@ -58,8 +185,9 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 ${styles.radiusImageLink} text-xs font-medium transition cursor-pointer shrink-0 ${styles.pageCard}`}
               style={{
-                backgroundColor: selectedCategory === cat ? blockColor : textColor,
-                color: selectedCategory === cat ? textColor : secondaryColor
+                backgroundColor:
+                  selectedCategory === cat ? blockColor : textColor,
+                color: selectedCategory === cat ? textColor : secondaryColor,
               }}
             >
               {cat}
@@ -73,10 +201,14 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x">
           {filteredItems.map((item) => {
             const hasPrice = item.price !== null && item.price !== undefined;
-            const isOnSale = hasPrice && item.isOnSale && item.discountPrice > 0;
+            const isOnSale =
+              hasPrice && item.isOnSale && item.discountPrice > 0;
             const currencySymbol = item.currency || "S/";
-            const resolvedBlockColor = blockColor || portfolioData?.colors?.secondaryColor;
-            const blockStyle = resolvedBlockColor ? { backgroundColor: resolvedBlockColor } : {};
+            const resolvedBlockColor =
+              blockColor || portfolioData?.colors?.secondaryColor;
+            const blockStyle = resolvedBlockColor
+              ? { backgroundColor: resolvedBlockColor }
+              : {};
 
             return (
               <a
@@ -84,7 +216,10 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 href={item.url || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group relative flex flex-col transition-all duration-200 overflow-hidden shrink-0 w-[170px] ${hasPrice ? 'aspect-[17/28]' : 'aspect-[17/18]'} snap-start ${styles.pageCard}`}
+                onClick={() => handleProductClick(item)}
+                className={`group relative flex flex-col transition-all duration-200 overflow-hidden shrink-0 w-[170px] ${
+                  hasPrice ? "aspect-[17/28]" : "aspect-[17/18]"
+                } snap-start ${styles.pageCard}`}
                 style={blockStyle}
               >
                 {/* Imagen arriba */}
@@ -105,7 +240,10 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 {/* Contenido abajo */}
                 <div className="p-3 flex flex-col flex-1 justify-between gap-1.5">
                   <div className="space-y-0.5">
-                    <h4 style={{color: textColor}} className="text-[15px] text-slate-900 leading-tight line-clamp-2 group-hover:text-purple-600 transition-colors">
+                    <h4
+                      style={{ color: textColor }}
+                      className="text-[15px] text-slate-900 leading-tight line-clamp-2 group-hover:text-purple-600 transition-colors"
+                    >
                       {item.title || "Sin título"}
                     </h4>
                   </div>
@@ -115,15 +253,25 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {isOnSale ? (
                           <div className="flex flex-col">
-                            <span style={{color: textColor}} className="line-through text-slate-400 text-[10px]">
+                            <span
+                              style={{ color: textColor }}
+                              className="line-through text-slate-400 text-[10px]"
+                            >
                               {currencySymbol} {Number(item.price).toFixed(2)}
                             </span>
-                            <span style={{color: textColor}} className="font-bold text-rose-600 text-[15px]">
-                              {currencySymbol} {Number(item.discountPrice).toFixed(2)}
+                            <span
+                              style={{ color: textColor }}
+                              className="font-bold text-rose-600 text-[15px]"
+                            >
+                              {currencySymbol}{" "}
+                              {Number(item.discountPrice).toFixed(2)}
                             </span>
                           </div>
                         ) : (
-                          <span style={{color: textColor}} className="font-bold text-slate-900 text-[15px]">
+                          <span
+                            style={{ color: textColor }}
+                            className="font-bold text-slate-900 text-[15px]"
+                          >
                             {currencySymbol} {Number(item.price).toFixed(2)}
                           </span>
                         )}
@@ -138,20 +286,27 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {filteredItems.map((item) => {
-              const hasPrice = item.price !== null && item.price !== undefined;
-              const isOnSale = hasPrice && item.isOnSale && item.discountPrice > 0;
-              const currencySymbol = item.currency || "S/";
-              const resolvedBlockColor = blockColor || portfolioData?.colors?.secondaryColor;
-              const blockStyle = resolvedBlockColor ? { backgroundColor: resolvedBlockColor } : {};
+            const hasPrice = item.price !== null && item.price !== undefined;
+            const isOnSale =
+              hasPrice && item.isOnSale && item.discountPrice > 0;
+            const currencySymbol = item.currency || "S/";
+            const resolvedBlockColor =
+              blockColor || portfolioData?.colors?.secondaryColor;
+            const blockStyle = resolvedBlockColor
+              ? { backgroundColor: resolvedBlockColor }
+              : {};
 
             return (
               <a
-                  key={item.id}
-                  href={item.url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative flex flex-col transition-all duration-200 overflow-hidden ${hasPrice ? 'aspect-[17/28]' : 'aspect-[17/18]'} ${styles.pageCard}`}
-                  style={blockStyle}
+                key={item.id}
+                href={item.url || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => handleProductClick(item)}
+                className={`group relative flex flex-col transition-all duration-200 overflow-hidden ${
+                  hasPrice ? "aspect-[17/28]" : "aspect-[17/18]"
+                } ${styles.pageCard}`}
+                style={blockStyle}
               >
                 {/* Imagen arriba (altura proporcional) */}
                 <div className="w-full h-[65%] bg-slate-100 relative overflow-hidden shrink-0">
@@ -171,7 +326,10 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                 {/* Contenido abajo: Nombre, precio y botón distribuidos uniformemente */}
                 <div className="p-3 flex flex-col flex-1 justify-between gap-1.5">
                   <div className="space-y-0.5">
-                    <h4 style={{color: textColor}} className="text-[15px] text-slate-900 leading-tight line-clamp-2 group-hover:text-purple-600 transition-colors">
+                    <h4
+                      style={{ color: textColor }}
+                      className="text-[15px] text-slate-900 leading-tight line-clamp-2 group-hover:text-purple-600 transition-colors"
+                    >
                       {item.title || "Sin título"}
                     </h4>
                   </div>
@@ -181,15 +339,25 @@ export default function StorePreview({ page, portfolioData, styles, blockColor, 
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {isOnSale ? (
                           <div className="flex flex-col">
-                            <span style={{color: textColor}} className="line-through text-slate-400 text-[10px]">
+                            <span
+                              style={{ color: textColor }}
+                              className="line-through text-slate-400 text-[10px]"
+                            >
                               {currencySymbol} {Number(item.price).toFixed(2)}
                             </span>
-                            <span style={{color: textColor}} className="font-bold text-rose-600 text-[15px]">
-                              {currencySymbol} {Number(item.discountPrice).toFixed(2)}
+                            <span
+                              style={{ color: textColor }}
+                              className="font-bold text-rose-600 text-[15px]"
+                            >
+                              {currencySymbol}{" "}
+                              {Number(item.discountPrice).toFixed(2)}
                             </span>
                           </div>
                         ) : (
-                          <span style={{color: textColor}} className="font-bold text-slate-900 text-[15px]">
+                          <span
+                            style={{ color: textColor }}
+                            className="font-bold text-slate-900 text-[15px]"
+                          >
                             {currencySymbol} {Number(item.price).toFixed(2)}
                           </span>
                         )}
