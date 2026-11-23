@@ -10,7 +10,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-function getPageTypeIcon(type, className = "w-3.5 h-3.5 text-purple-600 shrink-0") {
+function getPageTypeIcon(type, className = "w-3.5 h-3.5 text-black-600 shrink-0") {
   if (type === "home") return <Home className={className} />;
   if (type === "audio") return <Headphones className={className} />;
   if (type === "image") return <ImageIcon className={className} />;
@@ -182,11 +182,11 @@ export default function WeeklySummary({
   };
 
   const getHeaderIcon = () => {
-    if (isHomeSelected) return <Home className="w-4 h-4 text-purple-600" />;
-    if (isAudioType) return <Headphones className="w-4 h-4 text-purple-600" />;
-    if (isImageType) return <ImageIcon className="w-4 h-4 text-purple-600" />;
-    if (isStoreType) return <ShoppingBag className="w-4 h-4 text-purple-600" />;
-    return <Link2 className="w-4 h-4 text-purple-600" />;
+    if (isHomeSelected) return <Home className="w-4 h-4 text-black-600" />;
+    if (isAudioType) return <Headphones className="w-4 h-4 text-black-600" />;
+    if (isImageType) return <ImageIcon className="w-4 h-4 text-black-600" />;
+    if (isStoreType) return <ShoppingBag className="w-4 h-4 text-black-600" />;
+    return <Link2 className="w-4 h-4 text-black-600" />;
   };
 
   const getFallbackIcon = (typeOverride) => {
@@ -222,7 +222,7 @@ export default function WeeklySummary({
             <button
               type="button"
               onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className="flex items-center justify-between gap-2.5 min-w-[180px] bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3.5 py-2 outline-none focus:border-purple-500 transition cursor-pointer"
+              className="flex items-center justify-between gap-2.5 min-w-[180px] bg-slate-50 hover:bg-slate-100/80 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3.5 py-2 outline-none focus:border-black-500 transition cursor-pointer"
             >
               <span className="flex items-center gap-2 truncate">
                 {getPageTypeIcon(selectedIconType)}
@@ -245,7 +245,7 @@ export default function WeeklySummary({
                   }}
                   className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs transition cursor-pointer ${
                     isHomeSelected
-                      ? "bg-purple-50 text-purple-700 font-semibold"
+                      ? "bg-black-50 text-black-700 font-semibold"
                       : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
@@ -268,7 +268,7 @@ export default function WeeklySummary({
                       }}
                       className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-xs transition cursor-pointer ${
                         isOptionSelected
-                          ? "bg-purple-50 text-purple-700 font-semibold"
+                          ? "bg-black-50 text-black-700 font-semibold"
                           : "text-slate-700 hover:bg-slate-50"
                       }`}
                     >
@@ -285,30 +285,27 @@ export default function WeeklySummary({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Métrica 1: Visitas Totales */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100/80 space-y-1">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Visitas Totales</p>
-            <h4 className="text-2xl font-black text-slate-900">{Number(totalViews).toLocaleString()}</h4>
-            <p className="text-[11px] text-emerald-600 font-medium">Tráfico verificado (semanal)</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Visitas</p>
+            <h4 className="text-2xl font-semibold font-black text-slate-900">{Number(totalViews).toLocaleString()}</h4>
           </div>
 
           {/* Métrica 2: Clics en Enlaces */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100/80 space-y-1">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Clics en Enlaces</p>
-            <h4 className="text-2xl font-black text-slate-900">{Number(totalClicks).toLocaleString()}</h4>
-            <p className="text-[11px] text-purple-600 font-medium">Interacciones semanales</p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Clics</p>
+            <h4 className="text-2xl font-semibold font-black text-slate-900">{Number(totalClicks).toLocaleString()}</h4>
           </div>
 
           {/* Métrica 3: Tasa de Conversión */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100/80 space-y-1">
             <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Tasa de Conversión</p>
-            <h4 className="text-2xl font-black text-slate-900">{conversionRate}%</h4>
-            <p className="text-[11px] text-emerald-600 font-medium">Visitantes que hicieron clic</p>
+            <h4 className="text-2xl font-semibold font-black text-slate-900">{conversionRate}%</h4>
           </div>
         </div>
 
         {/* CONDICIONAL: Top de páginas más visitadas en Home o Top 3 de ítems en páginas específicas */}
         {shouldShowTopThree && (
-          <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                 {getHeaderIcon()} {getHeaderLabel()}
               </span>
@@ -326,7 +323,7 @@ export default function WeeklySummary({
                       className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-slate-100 shadow-sm text-xs"
                     >
                       <div className="flex items-center gap-3 truncate mr-3">
-                        <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-[10px] shrink-0">
+                        <span className="w-5 h-5 text-black-700 font-semibold flex items-center justify-center text-[12px] shrink-0">
                           {idx + 1}
                         </span>
 
@@ -337,7 +334,7 @@ export default function WeeklySummary({
                             className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0"
                           />
                         ) : (
-                          <div className="w-9 h-9 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-lg bg-black-50 border text-black-600 flex items-center justify-center shrink-0">
                             {getFallbackIcon(page.type)}
                           </div>
                         )}
@@ -346,13 +343,13 @@ export default function WeeklySummary({
                           <p className="font-semibold text-slate-800 truncate">
                             {page.title || `Página ${idx + 1}`}
                           </p>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider block">
+                          {/* <span className="text-[10px] text-slate-500 uppercase tracking-wider block">
                             Tipo: {page.type || "página"}
-                          </span>
+                          </span> */}
                         </div>
                       </div>
 
-                      <span className="font-bold text-slate-900 shrink-0">
+                      <span className="font-semibold text-slate-900 shrink-0">
                         {Number(page.views).toLocaleString()} visitas
                       </span>
                     </div>
@@ -399,7 +396,7 @@ export default function WeeklySummary({
                         className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-slate-100 shadow-sm text-xs"
                       >
                         <div className="flex items-center gap-3 truncate mr-3">
-                          <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-[10px] shrink-0">
+                          <span className="w-5 h-5 text-black-700 font-semibold flex items-center justify-center text-[12px] shrink-0">
                             {idx + 1}
                           </span>
 
@@ -410,7 +407,7 @@ export default function WeeklySummary({
                               className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 rounded-lg bg-black-50 border border-black-100 text-black-600 flex items-center justify-center shrink-0">
                               {getFallbackIcon()}
                             </div>
                           )}
@@ -434,7 +431,7 @@ export default function WeeklySummary({
                                   href={item.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-[10px] text-purple-600 hover:underline truncate block"
+                                  className="text-[10px] text-black-600 hover:underline truncate block"
                                 >
                                   {item.url}
                                 </a>
@@ -445,7 +442,7 @@ export default function WeeklySummary({
                               ))}
                           </div>
                         </div>
-                        <span className="font-bold text-slate-900 shrink-0">
+                        <span className="font-semibold text-slate-900 shrink-0">
                           {Number(item.clicks).toLocaleString()} clics
                         </span>
                       </div>

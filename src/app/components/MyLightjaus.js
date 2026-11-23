@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import WeeklySummary from "./AdminFormsComponents/miLightjaus/WeeklySummary";
+import UpdatesAndTips from "./AdminFormsComponents/miLightjaus/UpdatesAndTips";
+import TrafficEvolutionChart from "./AdminFormsComponents/miLightjaus/TrafficEvolutionChart";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -18,7 +20,6 @@ import {
   ExternalLink,
   Share2,
   X,
-  ArrowUpRight,
 } from "lucide-react";
 
 function getPageItemsRealClicks(page) {
@@ -51,9 +52,8 @@ export default function MyLightjaus({ portfolioData: initialPortfolioData, user 
   );
   const [eventsList, setEventsList] = useState([]);
 
-  // Estados para los selectores de análisis
+  // Estado para el selector de página en el resumen semanal
   const [selectedPageFilter, setSelectedPageFilter] = useState("home");
-  const [selectedTimeRange, setSelectedTimeRange] = useState("7days");
 
   const livePortfolioData = useMemo(() => {
     if (!snapshotPortfolioData) return initialPortfolioData || {};
@@ -166,126 +166,19 @@ export default function MyLightjaus({ portfolioData: initialPortfolioData, user 
     : null;
 
   // Clics reales acumulados (semanales) desde los ítems de las páginas
-  const totalRealClicks = useMemo(() => {
-    if (isHomeSelected) {
-      return pagesList.reduce((acc, p) => acc + getPageItemsRealClicks(p), 0);
-    }
-    return getPageItemsRealClicks(selectedPageObj);
-  }, [isHomeSelected, pagesList, selectedPageObj]);
+  const totalRealClicks = isHomeSelected
+    ? pagesList.reduce((acc, p) => acc + getPageItemsRealClicks(p), 0)
+    : getPageItemsRealClicks(selectedPageObj);
 
   // Visitas reales (views) desde el documento del portafolio (Home) o de la página seleccionada
   const realViewsCount = isHomeSelected
     ? Number(livePortfolioData?.views ?? 0)
     : Number(selectedPageObj?.views ?? 0);
 
-  // Datos reales del gráfico según el rango seleccionado y la página/home
-  const currentChartData = useMemo(() => {
-    const now = new Date();
-    const validEvents = eventsList.filter((ev) => {
-      if (ev.type !== "page_view") return false;
-      if (isHomeSelected) {
-        return ev.target === "home" || !ev.pageId;
-      }
-      const matchesId =
-        selectedPageObj?.id && String(ev.pageId) === String(selectedPageObj.id);
-      const matchesSlug =
-        selectedPageObj?.slug && ev.pageSlug === selectedPageObj.slug;
-      return matchesId || matchesSlug;
-    });
-
-    if (selectedTimeRange === "7days") {
-      const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-      const buckets = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(now.getDate() - i);
-        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
-
-        const count = validEvents.filter(
-          (ev) => ev.dateObj && ev.dateObj >= start && ev.dateObj <= end
-        ).length;
-
-        buckets.push({
-          label: dayNames[d.getDay()],
-          views: count,
-        });
-      }
-      return buckets;
-    }
-
-    if (selectedTimeRange === "30days") {
-      const buckets = [];
-      for (let w = 3; w >= 0; w--) {
-        const end = new Date(now);
-        end.setDate(now.getDate() - w * 7);
-        const start = new Date(end);
-        start.setDate(end.getDate() - 6);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
-
-        const count = validEvents.filter(
-          (ev) => ev.dateObj && ev.dateObj >= start && ev.dateObj <= end
-        ).length;
-
-        buckets.push({
-          label: `Sem ${4 - w}`,
-          views: count,
-        });
-      }
-      return buckets;
-    }
-
-    // Este año (últimos 4 meses o meses del año en curso)
-    const monthNames = [
-      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-      "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
-    ];
-    const currentMonth = now.getMonth();
-    const buckets = [];
-    for (let m = Math.max(0, currentMonth - 3); m <= currentMonth; m++) {
-      const count = validEvents.filter(
-        (ev) =>
-          ev.dateObj &&
-          ev.dateObj.getFullYear() === now.getFullYear() &&
-          ev.dateObj.getMonth() === m
-      ).length;
-
-      buckets.push({
-        label: monthNames[m],
-        views: count,
-      });
-    }
-    return buckets;
-  }, [eventsList, selectedTimeRange, isHomeSelected, selectedPageObj]);
-
-  const maxViews = Math.max(...currentChartData.map((d) => d.views), 0) || 1;
   const totalViews = realViewsCount;
   const totalClicks = totalRealClicks;
   const conversionRate =
     totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : "0.0";
-
-  // Coordenadas para el gráfico SVG
-  const svgWidth = 500;
-  const svgHeight = 160;
-  const points = currentChartData.map((item, index) => {
-    const x =
-      currentChartData.length > 1
-        ? (index / (currentChartData.length - 1)) * svgWidth
-        : svgWidth / 2;
-    const y =
-      svgHeight - (item.views / (maxViews || 1)) * (svgHeight - 20) - 10;
-    return { x, y, ...item };
-  });
-
-  const pathString = points.reduce(
-    (acc, p, idx) => (idx === 0 ? `M ${p.x} ${p.y}` : `${acc} L ${p.x} ${p.y}`),
-    ""
-  );
-  const areaString =
-    points.length > 0
-      ? `${pathString} L ${points[points.length - 1].x} ${svgHeight} L ${points[0].x} ${svgHeight} Z`
-      : "";
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12 font-['Poppins']">
@@ -328,168 +221,15 @@ export default function MyLightjaus({ portfolioData: initialPortfolioData, user 
           conversionRate={conversionRate}
         />
 
-        {/* Columna Derecha: Novedades y Tips de Lightjaus */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-slate-900 px-1">
-            Actualizaciones y Tips
-          </h3>
-          <div className="bg-white p-6 sm:p-8 rounded-xl border border-gray-200 flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wider">
-                      Nueva Función
-                    </span>
-                    <span className="text-[10px] text-slate-400">Hace 2 días</span>
-                  </div>
-                  <h5 className="text-xs font-bold text-slate-900">
-                    Personalización de Colores Inteligentes
-                  </h5>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Ahora los fondos adaptativos detectan la paleta de tu marca con mayor precisión.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">
-                      Consejo Pro
-                    </span>
-                    <span className="text-[10px] text-slate-400">Recomendado</span>
-                  </div>
-                  <h5 className="text-xs font-bold text-slate-900">
-                    Añade enlaces destacados
-                  </h5>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Los creadores que fijan un enlace principal aumentan su tasa de conversión un 35%.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wider">
-                      Nueva Función
-                    </span>
-                    <span className="text-[10px] text-slate-400">Hace 2 días</span>
-                  </div>
-                  <h5 className="text-xs font-bold text-slate-900">
-                    Personalización de Colores Inteligentes
-                  </h5>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Ahora los fondos adaptativos detectan la paleta de tu marca con mayor precisión.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5">
-                Ver todas las notas de versión <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Columna Derecha: Actualizaciones */}
+        <UpdatesAndTips />
       </div>
 
       {/* 3. SECCIÓN INFERIOR: Gráfico de Rendimiento Detallado */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Evolución Detallada del Tráfico
-            </h3>
-            <p className="text-xs text-slate-500">
-              Analiza el comportamiento de tus visitas por página y periodo de tiempo
-            </p>
-          </div>
-
-          {/* Selector de tiempo */}
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={selectedTimeRange}
-              onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3.5 py-2.5 outline-none focus:border-purple-500 transition cursor-pointer"
-            >
-              <option value="7days">Últimos 7 días</option>
-              <option value="30days">Últimos 30 días</option>
-              <option value="year">Este año</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Contenedor del Gráfico SVG */}
-        <div className="pt-4 pb-2 flex gap-4 items-center">
-          <div className="h-44 flex flex-col justify-between text-[10px] font-medium text-slate-400 text-right pr-2 select-none">
-            <span>{maxViews}</span>
-            <span>{Math.round(maxViews * 0.75)}</span>
-            <span>{Math.round(maxViews * 0.5)}</span>
-            <span>{Math.round(maxViews * 0.25)}</span>
-            <span>0</span>
-          </div>
-
-          <div className="flex-1 relative h-44 border-b border-l border-slate-200">
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-              <div className="border-b border-slate-100 w-full" />
-              <div className="border-b border-slate-100 w-full" />
-              <div className="border-b border-slate-100 w-full" />
-              <div className="border-b border-slate-100 w-full" />
-            </div>
-
-            <svg
-              viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-              className="w-full h-full overflow-visible"
-            >
-              <defs>
-                <linearGradient id="purpleGradientNew" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9333ea" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#9333ea" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {areaString && <path d={areaString} fill="url(#purpleGradientNew)" />}
-
-              {pathString && (
-                <path
-                  d={pathString}
-                  fill="none"
-                  stroke="#9333ea"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
-
-              {points.map((p, idx) => (
-                <g key={idx} className="group cursor-pointer">
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r="5.5"
-                    className="fill-white stroke-purple-600 stroke-[3.5px] transition-transform group-hover:scale-125"
-                  />
-                  <text
-                    x={p.x}
-                    y={p.y - 12}
-                    textAnchor="middle"
-                    className="text-[11px] font-bold fill-purple-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {p.views}
-                  </text>
-                </g>
-              ))}
-            </svg>
-          </div>
-        </div>
-
-        <div className="flex justify-between pl-10 pr-2 text-xs font-semibold text-slate-500">
-          {currentChartData.map((item, idx) => (
-            <span key={idx} className="text-center flex-1">
-              {item.label}
-            </span>
-          ))}
-        </div>
-      </div>
+      <TrafficEvolutionChart
+        pagesList={pagesList}
+        eventsList={eventsList}
+      />
 
       {/* Modal de Compartir renderizado mediante Portal */}
       {mounted &&
