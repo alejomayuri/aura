@@ -105,7 +105,7 @@ export default function PagesManager({ portfolioData, setPortfolioData, onSave, 
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins']">
+    <div className="max-w-2xl mx-auto bg-transparent border-none md:rounded-2xl md:p-6 space-y-6 text-slate-900 font-['Poppins']">
       <Title title="Crear Página" />
 
       {error && <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100">{error}</p>}

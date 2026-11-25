@@ -217,7 +217,7 @@ export default function LinkPageEditor({ portfolioData, selectedPageId, updatePo
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins'] overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="max-w-2xl mx-auto bg-transparent border-none md:rounded-2xl md:p-6 space-y-6 text-slate-900 font-['Poppins'] overflow-x-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div>
         <Title 
           title={selectedPage?.title}

@@ -63,7 +63,7 @@ export const ImageStyleOption = ({
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className={`flex flex-col items-center p-2 rounded-2xl border text-center transition-all cursor-pointer ${
+      className={`flex flex-col items-center p-1 md:p-2 rounded-2xl border text-center transition-all cursor-pointer ${
         isSelected
           ? 'bg-white border-slate-900 ring-1 ring-slate-900'
           : 'bg-white border-white'
@@ -133,40 +133,7 @@ export const ImageStyleOption = ({
         <span className={`text-[12px] font-semibold text-slate-900 px-2 line-clamp-2 leading-snug text-center ${isFadeBottom ? 'z-10 -mt-0.5' : 'mt-2'}`}>
           {label || "Sin título"}
         </span>
-
-        {/* Redes sociales */}
-        {/* <div className="flex items-center justify-center gap-1.5 px-2 z-10 w-full flex-wrap">
-          {socialLinks.length > 0 ? (
-            socialLinks.slice(0, 5).map((link, idx) => {
-              const iconSrc = getSocialIconMini(link.url);
-              return (
-                <div key={idx} className="w-4 h-4 rounded-full bg-white shadow-2xs flex items-center justify-center p-0.5">
-                  <img src={iconSrc} alt="social icon" className="w-2.5 h-2.5 object-contain opacity-80" />
-                </div>
-              );
-            })
-          ) : (
-            <>
-              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center text-[7px]">🌐</div>
-              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center text-[7px]">💬</div>
-              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center text-[7px]">📸</div>
-              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center text-[7px]">💻</div>
-              <div className="w-3.5 h-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center text-[7px]">🐦</div>
-            </>
-          )}
-        </div> */}
-
-        {/* Bloques de contenido */}
-        {/* <div className="w-full space-y-1.5 px-1.5 opacity-90 z-10 pt-1">
-          <div className="w-full h-7 bg-white rounded-sm shadow-2xs"></div>
-          <div className="w-full h-7 bg-white rounded-sm shadow-2xs"></div>
-          <div className="w-full h-7 bg-white rounded-sm shadow-2xs"></div>
-        </div> */}
       </div>
-
-      {/* <span className="text-[12px] font-semibold text-slate-700 mt-2">
-        {label}
-      </span> */}
     </button>
   );
 };

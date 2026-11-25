@@ -112,7 +112,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
   ];
 
   return (
-    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins']">
+    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl md:p-6 space-y-6 text-slate-900 font-['Poppins']">
       <Title title="Diseño" />
 
       {/* SECCIÓN: Imagen Principal */}
@@ -152,11 +152,11 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
           <h4 className="text-base font-semibold text-slate-800">Layout de la imagen</h4>
 
           <div className="w-full overflow-x-auto pb-3 pt-1 snap-x snap-mandatory">
-            <div className="flex gap-3 w-max">
+            <div className="flex md:gap-3 w-max">
               {imageStyleOptions.map(({ styleValue, label }) => (
                 <div 
                   key={styleValue} 
-                  className="w-[180px] min-w-[180px] max-w-[180px] px-0.5 shrink-0 snap-start flex flex-col [&>div]:w-full [&>button]:w-full"
+                  className="w-[160px] md:w-[180px] px-0.5 shrink-0 snap-start flex flex-col [&>div]:w-full [&>button]:w-full"
                 >
                   <ImageStyleOption 
                     styleValue={styleValue}
@@ -191,7 +191,7 @@ export default function DesignForm({ portfolioData, setPortfolioData, onSave, sa
       <div className="pt-2">
         <h3 className="text-base font-semibold text-slate-900 mb-1">Plantilla</h3>
       
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 max-h-[540px] overflow-y-auto p-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-[540px] overflow-y-auto p-2">
           {templates.map((t) => {
             const isSelected = portfolioData.template === t.id || (!portfolioData.template && t.id === "minimal");
 

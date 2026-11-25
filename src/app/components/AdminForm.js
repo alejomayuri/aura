@@ -66,7 +66,7 @@ export default function AdminForm({ portfolioData, setPortfolioData, onSave, sav
   const portfolioSlug = portfolioData?.slug || portfolioData?.username || "tu-usuario";
 
   return (
-    <div className="max-w-2xl mx-auto bg-transparent border-none rounded-2xl p-6 space-y-6 text-slate-900 font-['Poppins']">
+    <div className="max-w-2xl mx-auto bg-transparent border-none md:rounded-2xl md:p-6 space-y-6 text-slate-900 font-['Poppins']">
       <Title title="Página Principal" externalRoute={`/${portfolioSlug}`} openInNewTab={true} />
 
       {/* SECCIÓN: Imagen Principal */}
