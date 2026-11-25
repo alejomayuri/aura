@@ -157,7 +157,7 @@ export default function UserPortfolioPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-slate-50 flex items-start justify-center p-0 md:pt-8">
-        <div className="w-full max-w-[576px] min-h-screen md:min-h-[calc(100vh-2rem)] bg-white border-0 md:border md:border-slate-200/95 md:rounded-t-[32px] p-6 sm:p-8 flex flex-col items-center animate-pulse shadow-xl md:pt-24 pt-24">
+        <div className="w-full max-w-[576px] min-h-screen md:min-h-[calc(100vh-2rem)] bg-white border-0 md:border md:border-slate-200/95  p-6 sm:p-8 flex flex-col items-center animate-pulse shadow-xl md:pt-24 pt-24">
           {/* Avatar Skeleton */}
           <div className="w-28 h-28 bg-slate-100 rounded-full mb-6 border border-slate-200/50" />
 
@@ -213,7 +213,7 @@ export default function UserPortfolioPage({ params }) {
       className="min-h-screen w-full flex justify-center p-0 md:pt-8 md:pb-0 overflow-x-hidden"
       style={{ backgroundColor: desktopBackground }}
     >
-      <div className="w-full max-w-[576px] min-h-screen md:min-h-[calc(100vh-2rem)] bg-white shadow-2xl flex flex-col md:rounded-t-[32px] overflow-hidden">
+      <div className="w-full max-w-[576px] min-h-screen md:min-h-[calc(100vh-2rem)] shadow-2xl flex flex-col overflow-hidden">
         <Portfolio
           portfolioData={portfolioData}
           portfolioDocId={portfolioDocId}

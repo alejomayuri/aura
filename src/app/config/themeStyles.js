@@ -13,6 +13,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "brutal":
       return {
         bgScreen: "bg-amber-100", // Color de fondo desktop para brutal
+        container: "border-r-5 border-black",
         headerLayout: "flex flex-col items-start gap-2",
         description: "text-black font-bold tracking-tight text-center",
         title: "text-black font-black tracking-tighter uppercase leading-none",
@@ -39,7 +40,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "comic":
       return {
         bgScreen: "bg-yellow-400", // Color de fondo desktop para comic
-        container: "border-4 border-black rounded-t-[2rem]",
+        container: "border-r-5 border-black",
         description: "text-black font-bold tracking-tight text-center",
         title: "text-black font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_#fff]",
         socialIconBtn: "w-10 h-10 border-3 border-black text-black hover:bg-red-500 hover:text-white transition-all rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] flex items-center justify-center font-bold",
@@ -79,7 +80,7 @@ export const getTemplateStyles = (currentTemplate) => {
     default:
       return {
         bgScreen: "bg-slate-100", // Color de fondo desktop por defecto (minimal)
-        container: "shadow-xl rounded-t-3xl relative",
+        container: "shadow-xl relative",
         description: "font-bold",
         title: "font-bold tracking-tight",
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
@@ -93,7 +94,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "holographic":
       return {
         bgScreen: "bg-indigo-950", // Color de fondo desktop para holographic
-        container: "shadow-xl rounded-t-3xl relative",
+        container: "shadow-xl relative",
         description: "text-white font-bold text-center",
         title: "text-white font-extrabold tracking-wide drop-shadow-md",
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
@@ -107,7 +108,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "neon":
       return {
         bgScreen: "bg-slate-950 flex items-center justify-center bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]",
-        container: "bg-slate-950 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] rounded-none border-x-2 border-y-0 relative overflow-hidden",
+        container: "bg-slate-950 border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.15)] border-x-2 border-y-0 relative overflow-hidden",
         description: "font-bold",
         title: "font-bold tracking-widest uppercase",
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
@@ -120,7 +121,7 @@ export const getTemplateStyles = (currentTemplate) => {
     case "forest":
       return {
         bgScreen: "bg-emerald-950",
-        container: "rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative bg-white",
+        container: "relative bg-white",
         description: "text-black font-semibold",
         title: "text-black font-black tracking-tight text-xl",
         pageCard: "bg-white border-2 border-black rounded-[35px] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all",

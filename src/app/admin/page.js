@@ -211,8 +211,8 @@ export default function AdminDashboard() {
 
       {/* ================= 3. VISTA PREVIA (OCULTA EN MOBILE Y TABLET PEQUEÑA) ================= */}
       {activeTab !== "my-lightjaus" && activeTab !== "settings" && (
-        <section className="hidden lg:flex w-[520px] xl:w-[680px] bg-slate-50 p-6 pt-20 flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
-          <div className="w-[400px] max-w-full relative mb-4">
+        <section className="hidden lg:flex flex-1 min-w-[360px] max-w-[680px] bg-slate-50 p-4 xl:p-6 pt-12 xl:pt-20 flex-col items-center justify-start overflow-y-auto relative z-10 shrink-0">
+          <div className="w-full max-w-[400px] relative mb-4">
             <div className="flex justify-between items-center gap-3">
               {/* Selector de páginas con mejor diseño y padding */}
               <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200/90 shadow-sm flex-1 hover:border-slate-300 transition-all">
@@ -478,7 +478,10 @@ export default function AdminDashboard() {
             </AnimatePresence>
           </div>
 
-          <div className="w-[400px] h-[750px] bg-white border-slate-900 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col">
+          <div
+            style={{ height: "min(750px, calc(100vh - 150px))", aspectRatio: "400 / 750" }}
+            className="max-w-full bg-white border-slate-900 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] relative overflow-hidden flex flex-col shrink-0"
+          >
             <div className="hide-scrollbar w-full h-full overflow-y-auto flex flex-col">
               {previewPage ? (
                 <PagePreview page={previewPage} portfolioData={portfolioData} />

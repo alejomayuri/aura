@@ -471,7 +471,7 @@ export default function PortfolioLayout({
       {/* Contenedor Principal del Layout */}
       <div className={`w-full flex justify-center`}>
         <div
-          className={`relative w-full max-w-xl pt-0 shadow-2xl rounded-none md:rounded-3xl bg-white transition-all duration-300 ${styles.container}`}
+          className={`relative w-full max-w-xl pt-0 shadow-2xl md:rounded-t-[32px] bg-white transition-all duration-300 ${styles.container}`}
           style={{
             background: pageColors?.primaryColorEnd
               ? `linear-gradient(to top right, ${pageColors?.primaryColor}, ${pageColors?.primaryColorEnd})`
