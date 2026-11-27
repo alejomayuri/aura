@@ -19,6 +19,8 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-black font-black tracking-tighter uppercase leading-none",
         socialIconBtn: "w-10 h-10 border-2 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]",
         pageCard: "border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all rounded-none text-left mb-3",
+        imageCard: "p-[4px] transition-all rounded-none text-left font-mono",
+        shadow: "border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
         svgHeight: 5,
         svgWidth: 5,
         pageTitle: "font-medium",
@@ -33,6 +35,8 @@ export const getTemplateStyles = (currentTemplate) => {
         pageCard: "backdrop-blur-md border border-white/40 hover:bg-white/30 rounded-[1.5rem] text-left shadow-sm",
         pageTitle: "text-slate-700 font-semibold text-md",
         radiusImageLink: "rounded-md",
+        // imageCard: "p-[4px] transition-all rounded-none text-left font-mono",
+        shadow: "rounded-[1.5rem]",
         svgHeight: 5,
         svgWidth: 5,
         socialGap: "gap-2"
@@ -47,6 +51,8 @@ export const getTemplateStyles = (currentTemplate) => {
         pageCard: "border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
         pageTitle: "text-black font-black uppercase text-md tracking-tight",
         radiusImageLink: "rounded-md",
+        imageCard: "p-[5px] transition-all rounded-none text-left font-mono",
+        shadow: "border-3 border-black shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all rounded-xl text-left",
         svgHeight: 5,
         svgWidth: 5,
         socialGap: "gap-2"
@@ -59,10 +65,12 @@ export const getTemplateStyles = (currentTemplate) => {
         title: "text-lime-300 font-black uppercase tracking-tighter drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]",
         socialIconBtn: "w-10 h-10 bg-lime-300 border-2 border-fuchsia-950 text-fuchsia-950 transition-all rounded-none flex items-center justify-center shadow-[3px_3px_0px_0px_#000]",
         pageCard: "border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87] hover:bg-lime-300 transition-all rounded-none text-left font-mono",
+        imageCard: "p-[4px] transition-all rounded-none text-left font-mono",
         pageTitle: "text-fuchsia-950 font-black text-md uppercase font-mono",
         svgHeight: 5,
         svgWidth: 5,
-        socialGap: "gap-2"
+        socialGap: "gap-2",
+        shadow: "border-2 border-fuchsia-950 shadow-[4px_4px_0px_0px_#581c87]"
       };
     case "terminal":
       return {
@@ -72,6 +80,8 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-11 h-11 ",
         pageCard: "border border-green-500/30 hover:bg-green-900/20 text-left rounded-none border-l-4 hover:border-l-green-400",
         pageTitle: "font-mono text-green-400 text-md",
+        imageCard: "transition-all rounded-none text-left font-mono",
+        shadow: "border border-green-500/30 hover:bg-green-900/20 text-left rounded-none border-l-4 hover:border-l-green-400",
         svgHeight: 7,
         svgWidth: 7,
         socialGap: "gap-1"
@@ -100,6 +110,8 @@ export const getTemplateStyles = (currentTemplate) => {
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
         pageCard: "shadow-sm rounded-2xl text-left",
         pageTitle: "text-white font-bold text-md",
+        imageCard: "transition-all rounded-none text-left font-mono",
+        shadow: "rounded-2xl",
         svgHeight: 7,
         svgWidth: 7,
         socialGap: "gap-2",
@@ -112,6 +124,8 @@ export const getTemplateStyles = (currentTemplate) => {
         description: "font-bold",
         title: "font-bold tracking-widest uppercase",
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
+        imageCard: "transition-all rounded-none text-left font-mono",
+        shadow: "border border-purple-500/30",
         svgHeight: 7,
         svgWidth: 7,
         pageCard: "border border-purple-500/30",
@@ -128,6 +142,8 @@ export const getTemplateStyles = (currentTemplate) => {
         pageTitle: "font-semibold text-black text-md",
         radiusImageLink: "rounded-full",
         socialIconBtn: "w-10 h-10 flex items-center justify-center",
+        imageCard: "p-[2px] transition-all rounded-none text-left font-mono",
+        shadow: "border-2 border-black rounded-[35px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
         svgHeight: 7,
         svgWidth: 7,
         socialGap: "gap-2",

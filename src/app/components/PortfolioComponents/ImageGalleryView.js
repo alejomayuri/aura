@@ -156,13 +156,13 @@ export default function ImageGalleryView({
 
             {galleryLayout === "column" ? (
               /* Layout Column: Imágenes una encima de otra, ancho máximo y altura proporcional */
-              <div className="space-y-3">
+              <div className={`space-y-3 ${styles.imageCard}`}>
                 {activeItems.map((img) => (
                   <div
                     key={img.id}
                     onClick={() => handleImageClick(gal, img)}
                     className={`overflow-hidden bg-white/5 w-full cursor-pointer ${
-                      styles.miniImgShape || ""
+                      styles.shadow || ""
                     }`}
                   >
                     <img
@@ -175,13 +175,13 @@ export default function ImageGalleryView({
               </div>
             ) : galleryLayout === "row" ? (
               /* Layout Row: Filas de 3 imágenes con proporción cuadrada estilo Instagram */
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid grid-cols-2 gap-2 ${styles.imageCard}`}>
                 {activeItems.map((img) => (
                   <div
                     key={img.id}
                     onClick={() => handleImageClick(gal, img)}
                     className={`aspect-square overflow-hidden bg-white/5 cursor-pointer ${
-                      styles.miniImgShape || ""
+                      styles.shadow || ""
                     }`}
                   >
                     <img
@@ -195,13 +195,13 @@ export default function ImageGalleryView({
             ) : galleryLayout === "carousel" ? (
               /* Layout Carousel: Scroll horizontal fluido con barra fina y limpia */
               <div className="relative mt-2">
-                <div className="flex gap-2.5 overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-2 [-webkit-overflow-scrolling:touch] custom-scrollbar">
+                <div className={`flex gap-2.5 overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-2 [-webkit-overflow-scrolling:touch] custom-scrollbar ${styles.imageCard}`}>
                   {activeItems.map((img) => (
                     <div
                       key={img.id}
                       onClick={() => handleImageClick(gal, img)}
                       className={`h-[220px] shrink-0 snap-start flex items-center justify-center overflow-hidden bg-white/5 cursor-pointer ${
-                        styles.miniImgShape || ""
+                        styles.shadow || ""
                       }`}
                     >
                       <img
@@ -215,13 +215,13 @@ export default function ImageGalleryView({
               </div>
             ) : (
               /* Layout Grid (por defecto): Cuadrícula en columnas estilo masonry */
-              <div className="columns-2 gap-2 space-y-2">
+              <div className={`columns-2 gap-2 space-y-2 ${styles.imageCard}`}>
                 {activeItems.map((img) => (
                   <div
                     key={img.id}
                     onClick={() => handleImageClick(gal, img)}
                     className={`overflow-hidden bg-white/5 break-inside-avoid cursor-pointer ${
-                      styles.miniImgShape || ""
+                      styles.shadow || ""
                     }`}
                   >
                     <img

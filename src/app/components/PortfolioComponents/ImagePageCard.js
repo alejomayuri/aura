@@ -189,34 +189,34 @@ export default function ImagePageCard({
         </span>
       )}
       <div
-        className={`w-full p-3 transition-all duration-200 mb-8 block ${styles.pageCard}`}
-        style={{ background: blockColor }}
+        className={`w-full overflow-hidden transition-all duration-200 mb-8 block ${styles.imageCard}`}
+        // style={{ background: blockColor }}
       >
         {cardLayout === "single" && singleImage ? (
           <div
             onClick={(e) => handleImageItemClick(e, singleImage)}
-            className="mt-2 overflow-hidden bg-slate-900 flex items-center justify-center cursor-pointer"
+            className={`w-full overflow-hidden flex items-center justify-center cursor-pointer ${styles.shadow}`}
           >
             <img
               src={singleImage.url}
               alt={page.title || "Preview"}
-              className="w-full h-auto object-contain transition-opacity"
+              className={`w-full h-auto object-cover transition-opacity`}
             />
           </div>
         ) : cardLayout === "carousel" && carouselImages.length > 0 ? (
           /* Carrusel con scroll horizontal fino y limpio */
-          <div className="relative mt-2">
-            <div className="flex gap-2.5 overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-2 [-webkit-overflow-scrolling:touch] custom-scrollbar">
+          <div className="relative w-full overflow-hidden">
+            <div className="flex gap-2.5 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [-webkit-overflow-scrolling:touch] custom-scrollbar">
               {carouselImages.map((img, idx) => (
                 <div
                   key={img.id || idx}
                   onClick={(e) => handleImageItemClick(e, img)}
-                  className="h-[200px] shrink-0 snap-start flex items-center justify-center overflow-hidden cursor-pointer"
+                  className={`h-[200px] shrink-0 snap-start flex items-center justify-center overflow-hidden cursor-pointer ${styles.shadow}`}
                 >
                   <img
                     src={img.url}
                     alt="Carousel Preview"
-                    className="h-full w-auto object-contain"
+                    className="h-full w-auto object-cover"
                   />
                 </div>
               ))}
@@ -224,12 +224,12 @@ export default function ImagePageCard({
           </div>
         ) : cardLayout === "grid" && gridImages.length > 0 ? (
           /* Layout Grid: Cuadrícula simétrica de 2x2 con imágenes cuadradas */
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="grid grid-cols-2 gap-2 w-full">
             {gridImages.map((img, idx) => (
               <div
                 key={img.id || idx}
                 onClick={(e) => handleImageItemClick(e, img)}
-                className="aspect-square overflow-hidden bg-slate-900 cursor-pointer"
+                className={`aspect-square w-full overflow-hidden cursor-pointer ${styles.shadow}`}
               >
                 <img
                   src={img.url}
@@ -240,12 +240,12 @@ export default function ImagePageCard({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-1.5 mt-2">
+          <div className="grid grid-cols-3 gap-1.5 w-full">
             {previewImages.map((img, idx) => (
               <div
                 key={img.id || idx}
                 onClick={(e) => handleImageItemClick(e, img)}
-                className="overflow-hidden cursor-pointer"
+                className={`w-full overflow-hidden cursor-pointer ${styles.shadow}`}
               >
                 <img
                   src={img.url}
